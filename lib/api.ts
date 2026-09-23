@@ -277,3 +277,159 @@ export function createTransfer(data: {
 export function listTransfers() {
   return request<Transferencia[]>(`${TRANSFER_URL}/transfers`);
 }
+
+
+const CARD_URL =
+  process.env.NEXT_PUBLIC_CARD_API_URL ?? "http://localhost:8005";
+const FRAUD_URL =
+  process.env.NEXT_PUBLIC_FRAUD_API_URL ?? "http://localhost:8006";
+
+// ---------- Card Service (tablas: tarjeta, autorizacion, bloqueo) ----------
+
+export type Bloqueo = {
+  id_bloqueo: string;
+  id_tarjeta: string;
+  motivo: string;
+  fecha_inicio: string;
+  fecha_fin: string | null;
+};
+
+export type Tarjeta = {
+  id_tarjeta: string;
+  id_cuenta: string;
+  tipo_tarjeta: string;
+  procesador_externo: string;
+  estado: "activa" | "bloqueada" | "vencida";
+  fecha_emision: string;
+  bloqueos?: Bloqueo[];
+};
+
+export type Autorizacion = {
+  id_autorizacion: string;
+  id_tarjeta: string;
+  monto: number;
+  comercio: string;
+  resultado: "aprobada" | "rechazada";
+  fecha_hora: string;
+};
+
+export function createCard(data: {
+  id_cuenta: string;
+  tipo_tarjeta?: string;
+  procesador_externo?: string;
+  estado?: "activa" | "bloqueada" | "vencida";
+}) {
+  return request<Tarjeta>(`${CARD_URL}/cards`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function listCards(idCuenta?: string) {
+  const url = idCuenta ? `${CARD_URL}/cards?id_cuenta=${idCuenta}` : `${CARD_URL}/cards`;
+  return request<Tarjeta[]>(url);
+}
+
+export function getCard(idTarjeta: string) {
+  return request<Tarjeta>(`${CARD_URL}/cards/${idTarjeta}`);
+}
+
+export function blockCard(idTarjeta: string, motivo: string) {
+  return request<Bloqueo>(`${CARD_URL}/cards/${idTarjeta}/bloquear`, {
+    method: "POST",
+    body: JSON.stringify({ motivo }),
+  });
+}
+
+export function unblockCard(idTarjeta: string) {
+  return request<Tarjeta>(`${CARD_URL}/cards/${idTarjeta}/desbloquear`, {
+    method: "POST",
+  });
+}
+
+export function authorizeCardTransaction(data: {
+  id_tarjeta: string;
+  monto: number;
+  comercio: string;
+}) {
+  return request<Autorizacion>(`${CARD_URL}/cards/autorizar`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function listCardAuthorizations(idTarjeta: string) {
+  return request<Autorizacion[]>(`${CARD_URL}/cards/${idTarjeta}/autorizaciones`);
+}
+
+export function listAllAuthorizations() {
+  return request<Autorizacion[]>(`${CARD_URL}/cards/all/autorizaciones`);
+}
+
+// ---------- Fraud Service (tablas: regla_fraude, evaluacion_fraude, alerta_fraude) ----------
+
+export type ReglaFraude = {
+  id_regla: string;
+  nombre: string;
+  tipo: string;
+  umbral: number;
+  activa: boolean;
+};
+
+export type AlertaFraude = {
+  id_alerta: string;
+  id_evaluacion: string;
+  estado: string;
+  prioridad: "baja" | "media" | "alta";
+  fecha_generacion: string;
+};
+
+export type EvaluacionFraude = {
+  id_evaluacion: string;
+  id_transaccion: string;
+  id_regla: string;
+  score_riesgo: number;
+  resultado: string;
+  fecha_evaluacion: string;
+  alertas?: AlertaFraude[];
+};
+
+export function createFraudRule(data: {
+  nombre: string;
+  tipo?: string;
+  umbral: number;
+  activa?: boolean;
+}) {
+  return request<ReglaFraude>(`${FRAUD_URL}/fraud/rules`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function listFraudRules() {
+  return request<ReglaFraude[]>(`${FRAUD_URL}/fraud/rules`);
+}
+
+export function evaluateTransactionManual(data: {
+  id_transaccion: string;
+  monto_transaccion: number;
+}) {
+  return request<EvaluacionFraude>(`${FRAUD_URL}/fraud/evaluate`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function listFraudEvaluations() {
+  return request<EvaluacionFraude[]>(`${FRAUD_URL}/fraud/evaluations`);
+}
+
+export function listFraudAlerts() {
+  return request<AlertaFraude[]>(`${FRAUD_URL}/fraud/alerts`);
+}
+
+export function resolveFraudAlert(idAlerta: string) {
+  return request<AlertaFraude>(`${FRAUD_URL}/fraud/alerts/${idAlerta}/resolve`, {
+    method: "PATCH",
+  });
+}

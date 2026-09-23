@@ -3,42 +3,58 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { StatCard } from "@/components/StatCard";
-import { Users, CreditCard, ArrowRightLeft, ShieldCheck, BookOpen } from "lucide-react";
+import { Users, Wallet, CreditCard, ArrowRightLeft, ShieldAlert, BookOpen, CheckCircle2 } from "lucide-react";
 import {
   Usuario,
   Cuenta,
-  Transferencia,
-  TransferenciaRecibida,
+  Tarjeta,
+  AlertaFraude,
   listUsuarios,
   listAccounts,
-  listTransfers,
-  listTransfersReceived,
+  listCards,
+  listFraudAlerts,
 } from "@/lib/api";
 
 const SECCIONES = [
   {
     href: "/identidad",
-    titulo: "Módulo de Identidad",
+    titulo: "Identidad & KYC",
     icon: Users,
     color: "bg-indigo-50 text-indigo-600 ring-indigo-500/30",
     hover: "hover:border-indigo-300 hover:ring-2 hover:ring-indigo-100",
-    descripcion: "Onboarding, KYC y perfiles. (identity-service)",
+    descripcion: "Onboarding, validaci?n KYC y perfiles. (identity-service)",
   },
   {
     href: "/cuentas",
-    titulo: "Módulo de Cuentas",
-    icon: CreditCard,
+    titulo: "Cuentas Bancarias",
+    icon: Wallet,
     color: "bg-emerald-50 text-emerald-600 ring-emerald-500/30",
     hover: "hover:border-emerald-300 hover:ring-2 hover:ring-emerald-100",
-    descripcion: "Gestión de productos y límites. (account-service)",
+    descripcion: "Apertura, estados y l?mites operativos. (account-service)",
+  },
+  {
+    href: "/tarjetas",
+    titulo: "Tarjetas & Autorizaciones",
+    icon: CreditCard,
+    color: "bg-purple-50 text-purple-600 ring-purple-500/30",
+    hover: "hover:border-purple-300 hover:ring-2 hover:ring-purple-100",
+    descripcion: "Emisi?n de tarjetas, bloqueos y transacciones. (card-service)",
+  },
+  {
+    href: "/fraude",
+    titulo: "Detecci?n de Fraude",
+    icon: ShieldAlert,
+    color: "bg-rose-50 text-rose-600 ring-rose-500/30",
+    hover: "hover:border-rose-300 hover:ring-2 hover:ring-rose-100",
+    descripcion: "Motor de reglas, scoring de riesgo y alertas. (fraud-service)",
   },
   {
     href: "/ledger",
-    titulo: "Core Bancario (Ledger)",
+    titulo: "Core Ledger Contable",
     icon: BookOpen,
     color: "bg-amber-50 text-amber-600 ring-amber-500/30",
     hover: "hover:border-amber-300 hover:ring-2 hover:ring-amber-100",
-    descripcion: "Motor transaccional y partida doble. (ledger-service)",
+    descripcion: "Fuente de verdad contable y partida doble. (ledger-service)",
   },
   {
     href: "/transferencias",
@@ -46,122 +62,84 @@ const SECCIONES = [
     icon: ArrowRightLeft,
     color: "bg-sky-50 text-sky-600 ring-sky-500/30",
     hover: "hover:border-sky-300 hover:ring-2 hover:ring-sky-100",
-    descripcion: "Rieles de pago y automatización. (transfer-service)",
+    descripcion: "Rieles de pago y automatizaci?n de env?os. (transfer-service)",
   },
 ];
 
 export default function Home() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [cuentas, setCuentas] = useState<Cuenta[]>([]);
-  const [transferencias, setTransferencias] = useState<Transferencia[]>([]);
-  const [recibidas, setRecibidas] = useState<TransferenciaRecibida[]>([]);
+  const [tarjetas, setTarjetas] = useState<Tarjeta[]>([]);
+  const [alertas, setAlertas] = useState<AlertaFraude[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([listUsuarios(), listAccounts(), listTransfers(), listTransfersReceived()])
-      .then(([u, c, t, r]) => {
+    Promise.all([
+      listUsuarios().catch(() => []),
+      listAccounts().catch(() => []),
+      listCards().catch(() => []),
+      listFraudAlerts().catch(() => []),
+    ])
+      .then(([u, c, t, a]) => {
         setUsuarios(u);
         setCuentas(c);
-        setTransferencias(t);
-        setRecibidas(r);
+        setTarjetas(t);
+        setAlertas(a);
       })
-      .catch(() =>
-        setError(
-          "Error de conexión con los microservicios. Verifique que los contenedores estén corriendo."
-        )
-      )
       .finally(() => setLoading(false));
   }, []);
 
   const verificados = usuarios.filter((u) => u.estado === "verificado").length;
-  const cuentasActivas = cuentas.filter((c) => c.estado === "activa").length;
-  const transferenciasCompletadas = transferencias.filter((t) => t.estado === "completada").length;
+  const tarjetasActivas = tarjetas.filter((t) => t.estado === "activa").length;
+  const alertasAbiertas = alertas.filter((a) => a.estado === "abierta").length;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Visión Global del Sistema</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Visi?n Global del Ecosistema BankLite</h1>
         <p className="text-slate-500 mt-1">
-          Monitor de operaciones en tiempo real. Todos los microservicios operando de forma autónoma.
+          Arquitectura desacoplada basada en microservicios independientes, consistencia eventual (RabbitMQ) y seguridad financiera.
         </p>
       </div>
 
-      {error && (
-        <div className="flex items-center gap-3 px-4 py-3 rounded-lg border bg-red-50 text-red-700 border-red-200">
-          <ShieldCheck className="h-5 w-5 flex-shrink-0" />
-          <p className="text-sm font-medium">{error}</p>
-        </div>
-      )}
-
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard label="Usuarios Registrados" value={loading ? "…" : usuarios.length} accent="text-slate-900" />
-        <StatCard label="KYC Aprobados" value={loading ? "…" : verificados} accent="text-indigo-600" />
-        <StatCard label="Cuentas Activas" value={loading ? "…" : cuentasActivas} accent="text-emerald-600" />
-        <StatCard label="Transacciones Exitosas" value={loading ? "…" : transferenciasCompletadas} accent="text-sky-600" />
+        <StatCard label="Usuarios Totales" value={loading ? "?" : usuarios.length} accent="text-slate-900" />
+        <StatCard label="KYC Verificados" value={loading ? "?" : verificados} accent="text-indigo-600" />
+        <StatCard label="Tarjetas Emitidas" value={loading ? "?" : `${tarjetasActivas} activas`} accent="text-purple-600" />
+        <StatCard label="Alertas de Fraude" value={loading ? "?" : alertasAbiertas} accent={alertasAbiertas > 0 ? "text-rose-600" : "text-emerald-600"} />
       </div>
 
-      {/* Access Modules */}
-      <div>
-        <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wide mb-4">Centros de Operación</h3>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {SECCIONES.map((s) => (
+      {/* Modules Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {SECCIONES.map((s) => {
+          const Icon = s.icon;
+          return (
             <Link
               key={s.href}
               href={s.href}
-              className={`group flex flex-col bg-white rounded-xl shadow-sm border border-slate-200 p-5 transition-all ${s.hover}`}
+              className={`p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm transition-all duration-300 flex flex-col justify-between group ${s.hover}`}
             >
-              <div className={`h-12 w-12 rounded-xl flex items-center justify-center ring-1 mb-4 ${s.color}`}>
-                <s.icon size={22} />
+              <div>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ring-4 ${s.color} transition-transform group-hover:scale-110`}>
+                  <Icon size={24} />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                  {s.titulo}
+                </h3>
+                <p className="text-sm text-slate-500 mt-2 leading-relaxed">
+                  {s.descripcion}
+                </p>
               </div>
-              <h4 className="text-base font-bold text-slate-800 mb-1 group-hover:text-indigo-600 transition-colors">{s.titulo}</h4>
-              <p className="text-sm text-slate-500 flex-1">{s.descripcion}</p>
-              <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-xs font-medium text-slate-400 group-hover:text-indigo-500">Ingresar al módulo</span>
-                <ArrowRightLeft size={14} className="text-slate-300 group-hover:text-indigo-500" />
+
+              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-indigo-600">
+                <span>Abrir Panel</span>
+                <span className="group-hover:translate-x-1 transition-transform">?</span>
               </div>
             </Link>
-          ))}
-        </div>
+          );
+        })}
       </div>
-
-      {/* Real-time feed */}
-      {recibidas.length > 0 && (
-        <div className="mt-8">
-          <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wide mb-4">
-            Auditoría: Eventos Consumidos (RabbitMQ)
-          </h3>
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <ul className="divide-y divide-slate-100">
-              {recibidas
-                .slice(-5)
-                .reverse()
-                .map((r) => (
-                  <li key={r.id_transferencia} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
-                        <ArrowRightLeft size={14} />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-slate-900">
-                          Transferencia acreditada
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          Cuenta destino: <span className="font-mono text-slate-700">{r.id_cuenta_origen.slice(0, 8)}…</span>
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-bold text-slate-900">${r.monto}</p>
-                      <p className="text-xs text-slate-400">{new Date(r.recibido_en).toLocaleTimeString()}</p>
-                    </div>
-                  </li>
-                ))}
-            </ul>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
