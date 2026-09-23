@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/Card";
 import { Banner } from "@/components/Banner";
+import { Field } from "@/components/Field";
+import { FlowBanner } from "@/components/FlowBanner";
 import {
   ApiError,
   Cuenta,
@@ -93,6 +95,13 @@ export default function LedgerPage() {
 
       {feedback && <Banner kind={feedback.kind} text={feedback.text} />}
 
+      <FlowBanner
+        steps={[
+          "Una cuenta nueva empieza en saldo 0 — primero deposita fondos de prueba.",
+          "Luego puedes consultar el saldo cuando quieras: se recalcula sumando débitos y créditos (partida doble).",
+        ]}
+      />
+
       {cuentas.length === 0 && (
         <p className="text-sm text-slate-400">
           Todavía no hay cuentas — ábrelas primero en la sección Cuentas.
@@ -102,6 +111,7 @@ export default function LedgerPage() {
       <div className="grid md:grid-cols-2 gap-6">
         <Card title="Ver saldo" subtitle="GET /ledger/accounts/{id}">
           <form onSubmit={handleVerSaldo} className="space-y-3">
+            <Field label="Cuenta" hint="El saldo se calcula a partir de los asientos contables de esta cuenta.">
             <select
               value={saldoCuentaId}
               onChange={(e) => setSaldoCuentaId(e.target.value)}
@@ -114,6 +124,7 @@ export default function LedgerPage() {
                 </option>
               ))}
             </select>
+            </Field>
             <button
               type="submit"
               className="bg-brand-600 hover:bg-brand-700 text-white rounded-md px-4 py-2 text-sm font-medium"
@@ -141,29 +152,33 @@ export default function LedgerPage() {
           subtitle="POST /ledger/entries (atajo: acredita la cuenta y debita la cuenta puente)"
         >
           <form onSubmit={handleDepositar} className="space-y-3">
-            <select
-              value={depositoCuentaId}
-              onChange={(e) => setDepositoCuentaId(e.target.value)}
-              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
+            <Field label="Cuenta destino">
+              <select
+                value={depositoCuentaId}
+                onChange={(e) => setDepositoCuentaId(e.target.value)}
+                className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
+              >
+                <option value="">Selecciona una cuenta…</option>
+                {cuentas.map((c) => (
+                  <option key={c.id_cuenta} value={c.id_cuenta}>
+                    {c.id_cuenta.slice(0, 8)}… ({c.moneda})
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field
+              label="Monto a depositar"
+              hint="Necesario antes de poder transferir: una cuenta nueva empieza en 0."
             >
-              <option value="">Selecciona una cuenta…</option>
-              {cuentas.map((c) => (
-                <option key={c.id_cuenta} value={c.id_cuenta}>
-                  {c.id_cuenta.slice(0, 8)}… ({c.moneda})
-                </option>
-              ))}
-            </select>
-            <input
-              type="number"
-              min="1"
-              step="1"
-              value={depositoMonto}
-              onChange={(e) => setDepositoMonto(e.target.value)}
-              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
-            />
-            <p className="text-xs text-slate-400">
-              Necesario antes de poder transferir: una cuenta nueva empieza en 0.
-            </p>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                value={depositoMonto}
+                onChange={(e) => setDepositoMonto(e.target.value)}
+                className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
+              />
+            </Field>
             <button
               type="submit"
               className="bg-brand-600 hover:bg-brand-700 text-white rounded-md px-4 py-2 text-sm font-medium"

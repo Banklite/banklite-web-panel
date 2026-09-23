@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/Card";
 import { Banner } from "@/components/Banner";
 import { StatusPill } from "@/components/StatusPill";
+import { Field } from "@/components/Field";
+import { FlowBanner } from "@/components/FlowBanner";
 import { ApiError, Usuario, createUsuario, listUsuarios, verificarKyc } from "@/lib/api";
 
 const PAISES = ["CO", "MX", "US", "ES", "PE"];
@@ -112,51 +114,69 @@ export default function IdentidadPage() {
 
       {feedback && <Banner kind={feedback.kind} text={feedback.text} />}
 
+      <FlowBanner
+        steps={[
+          "Registra un usuario con sus datos básicos (queda en estado \"pendiente_verificacion\").",
+          "Verifica su identidad (KYC) con un número de documento — así pasa a \"verificado\".",
+          "Con el usuario verificado, ya puedes abrirle una cuenta en la sección Cuentas.",
+        ]}
+      />
+
       <div className="grid md:grid-cols-2 gap-6">
-        <Card title="Registrar usuario" subtitle="POST /users">
+        <Card title="Paso 1 — Registrar usuario" subtitle="POST /users">
           <form onSubmit={handleCreateUsuario} className="space-y-3">
-            <input
-              type="text"
-              required
-              placeholder="Nombre"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
-            />
-            <input
-              type="text"
-              placeholder="Apellido (opcional)"
-              value={apellido}
-              onChange={(e) => setApellido(e.target.value)}
-              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
-            />
-            <input
-              type="email"
-              required
-              placeholder="correo@ejemplo.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
-            />
-            <input
-              type="text"
-              required
-              placeholder="+573001234567"
-              value={telefono}
-              onChange={(e) => setTelefono(e.target.value)}
-              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
-            />
-            <select
-              value={paisResidencia}
-              onChange={(e) => setPaisResidencia(e.target.value)}
-              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
-            >
-              {PAISES.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </select>
+            <Field label="Nombre" hint="Nombre de pila del cliente.">
+              <input
+                type="text"
+                required
+                placeholder="Ej: Juan"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
+              />
+            </Field>
+            <Field label="Apellido" hint="Opcional.">
+              <input
+                type="text"
+                placeholder="Ej: Rhenals"
+                value={apellido}
+                onChange={(e) => setApellido(e.target.value)}
+                className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
+              />
+            </Field>
+            <Field label="Correo electrónico" hint="Debe ser único: no se puede repetir entre usuarios.">
+              <input
+                type="email"
+                required
+                placeholder="correo@ejemplo.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
+              />
+            </Field>
+            <Field label="Teléfono" hint="Con código de país, ej: +573001234567.">
+              <input
+                type="text"
+                required
+                placeholder="+573001234567"
+                value={telefono}
+                onChange={(e) => setTelefono(e.target.value)}
+                className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
+              />
+            </Field>
+            <Field label="País de residencia">
+              <select
+                value={paisResidencia}
+                onChange={(e) => setPaisResidencia(e.target.value)}
+                className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
+              >
+                {PAISES.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+            </Field>
             <button
               type="submit"
               className="bg-brand-600 hover:bg-brand-700 text-white rounded-md px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-600"
@@ -166,59 +186,69 @@ export default function IdentidadPage() {
           </form>
         </Card>
 
-        <Card title="Verificación KYC" subtitle="POST /kyc/verify">
+        <Card title="Paso 2 — Verificación KYC" subtitle="POST /kyc/verify">
           <form onSubmit={handleKyc} className="space-y-3">
-            <select
-              value={kycUsuarioId}
-              onChange={(e) => setKycUsuarioId(e.target.value)}
-              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
-            >
-              <option value="">Selecciona un usuario…</option>
-              {usuarios.map((u) => (
-                <option key={u.id_usuario} value={u.id_usuario}>
-                  {u.email} — {u.estado}
-                </option>
-              ))}
-            </select>
-            <select
-              value={tipoDocumento}
-              onChange={(e) => setTipoDocumento(e.target.value)}
-              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
-            >
-              <option value="cedula">Cédula</option>
-              <option value="pasaporte">Pasaporte</option>
-              <option value="licencia">Licencia</option>
-            </select>
-            <input
-              type="text"
-              required
-              placeholder="Número de documento"
-              value={numeroDocumento}
-              onChange={(e) => setNumeroDocumento(e.target.value)}
-              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
-            />
-            <div className="flex gap-2">
+            <Field label="Usuario" hint="El usuario que se va a verificar.">
               <select
-                value={paisEmision}
-                onChange={(e) => setPaisEmision(e.target.value)}
-                className="w-1/2 border border-slate-300 rounded-md px-3 py-2 text-sm"
+                value={kycUsuarioId}
+                onChange={(e) => setKycUsuarioId(e.target.value)}
+                className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
               >
-                {PAISES.map((p) => (
-                  <option key={p} value={p}>
-                    {p} (emisión)
+                <option value="">Selecciona un usuario…</option>
+                {usuarios.map((u) => (
+                  <option key={u.id_usuario} value={u.id_usuario}>
+                    {u.email} — {u.estado}
                   </option>
                 ))}
               </select>
+            </Field>
+            <Field label="Tipo de documento">
+              <select
+                value={tipoDocumento}
+                onChange={(e) => setTipoDocumento(e.target.value)}
+                className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
+              >
+                <option value="cedula">Cédula</option>
+                <option value="pasaporte">Pasaporte</option>
+                <option value="licencia">Licencia</option>
+              </select>
+            </Field>
+            <Field
+              label="Número de documento"
+              hint="Truco de la simulación: si termina en 0000, la verificación se rechaza a propósito."
+            >
               <input
-                type="date"
-                value={fechaExpiracion}
-                onChange={(e) => setFechaExpiracion(e.target.value)}
-                className="w-1/2 border border-slate-300 rounded-md px-3 py-2 text-sm"
+                type="text"
+                required
+                placeholder="Ej: 1029384756"
+                value={numeroDocumento}
+                onChange={(e) => setNumeroDocumento(e.target.value)}
+                className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
               />
+            </Field>
+            <div className="flex gap-2">
+              <Field label="País de emisión" >
+                <select
+                  value={paisEmision}
+                  onChange={(e) => setPaisEmision(e.target.value)}
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
+                >
+                  {PAISES.map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Fecha de expiración" hint="Fecha en la que vence el documento (no la de expedición: ese dato no se captura en este sistema).">
+                <input
+                  type="date"
+                  value={fechaExpiracion}
+                  onChange={(e) => setFechaExpiracion(e.target.value)}
+                  className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
+                />
+              </Field>
             </div>
-            <p className="text-xs text-slate-400">
-              Truco de la simulación: un número que termine en 0000 se rechaza.
-            </p>
             <button
               type="submit"
               className="bg-brand-600 hover:bg-brand-700 text-white rounded-md px-4 py-2 text-sm font-medium"

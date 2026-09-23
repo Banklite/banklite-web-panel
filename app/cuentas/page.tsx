@@ -4,6 +4,8 @@ import { Fragment, useEffect, useState } from "react";
 import { Card } from "@/components/Card";
 import { Banner } from "@/components/Banner";
 import { StatusPill } from "@/components/StatusPill";
+import { Field } from "@/components/Field";
+import { FlowBanner } from "@/components/FlowBanner";
 import { short } from "@/lib/format";
 import {
   ApiError,
@@ -112,25 +114,38 @@ export default function CuentasPage() {
 
       {feedback && <Banner kind={feedback.kind} text={feedback.text} />}
 
+      <FlowBanner
+        steps={[
+          "Elige un usuario que ya esté verificado (KYC aprobado en la sección Identidad).",
+          "Abre la cuenta: el sistema le asigna automáticamente sus límites y una restricción según su país.",
+          "Con la cuenta abierta, ya puedes depositar y transferir desde Ledger y Transferencias.",
+        ]}
+      />
+
       <Card
         title="Abrir cuenta"
         subtitle="POST /accounts (síncrono con identity-service)"
       >
         <form onSubmit={handleOpenAccount} className="space-y-3 md:w-1/2">
-          <select
-            value={accountUsuarioId}
-            onChange={(e) => setAccountUsuarioId(e.target.value)}
-            className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
+          <Field
+            label="Usuario verificado"
+            hint="Solo aparecen usuarios con KYC aprobado — si no ves al tuyo, revisa la sección Identidad."
           >
-            <option value="">Selecciona un usuario verificado…</option>
-            {usuarios
-              .filter((u) => u.estado === "verificado")
-              .map((u) => (
-                <option key={u.id_usuario} value={u.id_usuario}>
-                  {u.email} ({u.pais_residencia})
-                </option>
-              ))}
-          </select>
+            <select
+              value={accountUsuarioId}
+              onChange={(e) => setAccountUsuarioId(e.target.value)}
+              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
+            >
+              <option value="">Selecciona un usuario verificado…</option>
+              {usuarios
+                .filter((u) => u.estado === "verificado")
+                .map((u) => (
+                  <option key={u.id_usuario} value={u.id_usuario}>
+                    {u.email} ({u.pais_residencia})
+                  </option>
+                ))}
+            </select>
+          </Field>
           <button
             type="submit"
             className="bg-brand-600 hover:bg-brand-700 text-white rounded-md px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-600"
@@ -151,6 +166,7 @@ export default function CuentasPage() {
       >
         <CuentasTable
           cuentas={cuentas}
+          usuarios={usuarios}
           limitesPorCuenta={limitesPorCuenta}
           onStatusChange={handleStatusChange}
           onVerLimites={handleVerLimites}
@@ -169,33 +185,46 @@ export default function CuentasPage() {
 
 function CuentasTable({
   cuentas,
+  usuarios,
   limitesPorCuenta,
   onStatusChange,
   onVerLimites,
 }: {
   cuentas: Cuenta[];
+  usuarios: Usuario[];
   limitesPorCuenta: Record<string, LimiteOperativo[]>;
   onStatusChange: (id: string, estado: string) => void;
   onVerLimites: (id: string) => void;
 }) {
   if (cuentas.length === 0) return <p className="text-sm text-slate-400">Aún no hay cuentas.</p>;
+
+  const usuarioPorId = new Map(usuarios.map((u) => [u.id_usuario, u]));
+  function nombreCliente(idUsuario: string) {
+    const u = usuarioPorId.get(idUsuario);
+    if (!u) return short(idUsuario);
+    const nombreCompleto = [u.nombre, u.apellido].filter(Boolean).join(" ");
+    return nombreCompleto || u.email;
+  }
+
   return (
     <div className="overflow-x-auto space-y-2">
       <table className="w-full text-sm">
         <thead>
           <tr className="text-left text-slate-400 border-b border-slate-100">
             <th className="py-1 pr-2">Cuenta</th>
+            <th className="py-1 pr-2">Cliente</th>
             <th className="py-1 pr-2">Moneda</th>
             <th className="py-1 pr-2">Estado</th>
             <th className="py-1 pr-2">Cambiar a</th>
-            <th className="py-1 pr-2">Límites</th>
+            <th className="py-1 pr-2">Límite operativo</th>
           </tr>
         </thead>
         <tbody>
           {cuentas.map((c) => (
             <Fragment key={c.id_cuenta}>
               <tr className="border-b border-slate-50">
-                <td className="py-1 pr-2 font-mono text-xs">{short(c.id_cuenta)}</td>
+                <td className="py-1 pr-2 font-mono text-xs text-slate-400">{short(c.id_cuenta)}</td>
+                <td className="py-1 pr-2 font-medium text-slate-800">{nombreCliente(c.id_usuario)}</td>
                 <td className="py-1 pr-2">{c.moneda}</td>
                 <td className="py-1 pr-2">
                   <StatusPill value={c.estado} />
@@ -224,16 +253,22 @@ function CuentasTable({
                     onClick={() => onVerLimites(c.id_cuenta)}
                     className="text-xs text-brand-600 hover:text-brand-700 underline"
                   >
-                    ver limite_operativo
+                    ver límites
                   </button>
                 </td>
               </tr>
               {limitesPorCuenta[c.id_cuenta] && (
                 <tr className="bg-slate-50">
-                  <td colSpan={5} className="py-1 px-2 text-xs text-slate-500">
-                    {limitesPorCuenta[c.id_cuenta]
-                      .map((l) => `${l.tipo_limite}: ${l.monto_maximo} (${l.periodo})`)
-                      .join(" · ")}
+                  <td colSpan={6} className="py-2 px-2 text-xs text-slate-500">
+                    <p className="mb-1">
+                      {limitesPorCuenta[c.id_cuenta]
+                        .map((l) => `${l.tipo_limite}: ${l.monto_maximo} (${l.periodo})`)
+                        .join(" · ")}
+                    </p>
+                    <p className="text-slate-400 italic">
+                      Límite regulatorio automático según el país de residencia del cliente — no
+                      depende del tipo de cuenta ni del riesgo KYC.
+                    </p>
                   </td>
                 </tr>
               )}
