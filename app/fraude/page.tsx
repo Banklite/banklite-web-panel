@@ -134,9 +134,11 @@ export default function FraudePage() {
   return (
     <div className="space-y-8 animate-fade-in">
       <FlowBanner
-        step="Microservicio 6: Fraud Service"
-        title="Detecci?n de Fraude, Motor de Reglas y Scoring de Riesgo"
-        description="Monitoreo en tiempo real de transferencias y pagos con tarjeta. Consume eventos de RabbitMQ, calcula scores de riesgo y genera alertas cr?ticas para el equipo de cumplimiento."
+        steps={[
+          "1. Configurar reglas antifraude con sus respectivos tipos y montos de umbral.",
+          "2. Simular scoring de riesgo sobre transacciones y transferencias.",
+          "3. Monitorear y resolver alertas cr?ticas de seguridad generadas en tiempo real.",
+        ]}
       />
 
       {feedback && (

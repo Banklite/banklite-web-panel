@@ -173,9 +173,11 @@ export default function TarjetasPage() {
   return (
     <div className="space-y-8 animate-fade-in">
       <FlowBanner
-        step="Microservicio 5: Card Service"
-        title="Administraci?n de Tarjetas y Autorizaci?n de Transacciones"
-        description="Gesti?n integral de tarjetas f?sicas y virtuales, bloqueos temporales por seguridad y procesamiento de autorizaciones con publicaci?n as?ncrona hacia Detecci?n de Fraude."
+        steps={[
+          "1. Emitir tarjeta f?sica o virtual asoci?ndola a una cuenta abierta en account-service.",
+          "2. Simular compras en comercios para autorizar o rechazar transacciones en tiempo real.",
+          "3. Bloquear tarjetas por seguridad y verificar el cese de autorizaciones.",
+        ]}
       />
 
       {feedback && (
