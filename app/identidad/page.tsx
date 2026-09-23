@@ -100,12 +100,14 @@ export default function IdentidadPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-semibold text-slate-800">Identidad y KYC</h2>
-        <p className="text-slate-500 text-sm mt-1">
-          identity-service · puerto 8001 · tablas usuario, documento_identidad, verificacion_kyc, evaluacion_riesgo
-        </p>
+    <div className="space-y-6 animate-fade-in-up">
+      <div className="flex items-center justify-between border-b border-slate-200 pb-5">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Identidad & KYC</h2>
+          <p className="text-slate-500 text-sm mt-1">
+            Gestión de onboarding de clientes y perfiles de riesgo (identity-service)
+          </p>
+        </div>
       </div>
 
       {feedback && <Banner kind={feedback.kind} text={feedback.text} />}
@@ -119,14 +121,14 @@ export default function IdentidadPage() {
               placeholder="Nombre"
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
-              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
+              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
             />
             <input
               type="text"
               placeholder="Apellido (opcional)"
               value={apellido}
               onChange={(e) => setApellido(e.target.value)}
-              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
+              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
             />
             <input
               type="email"
@@ -134,7 +136,7 @@ export default function IdentidadPage() {
               placeholder="correo@ejemplo.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
+              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
             />
             <input
               type="text"
@@ -142,12 +144,12 @@ export default function IdentidadPage() {
               placeholder="+573001234567"
               value={telefono}
               onChange={(e) => setTelefono(e.target.value)}
-              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
+              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
             />
             <select
               value={paisResidencia}
               onChange={(e) => setPaisResidencia(e.target.value)}
-              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
+              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
             >
               {PAISES.map((p) => (
                 <option key={p} value={p}>
@@ -157,7 +159,7 @@ export default function IdentidadPage() {
             </select>
             <button
               type="submit"
-              className="bg-brand-600 hover:bg-brand-700 text-white rounded-md px-4 py-2 text-sm font-medium"
+              className="bg-brand-600 hover:bg-brand-700 text-white rounded-md px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-600"
             >
               Crear usuario
             </button>

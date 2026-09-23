@@ -158,12 +158,14 @@ export default function TransferenciasPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-semibold text-slate-800">Transferencias</h2>
-        <p className="text-slate-500 text-sm mt-1">
-          transfer-service · puerto 8004 · tablas transferencia, beneficiario, riel_pago, transferencia_programada
-        </p>
+    <div className="space-y-6 animate-fade-in-up">
+      <div className="flex items-center justify-between border-b border-slate-200 pb-5">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Switch de Transferencias</h2>
+          <p className="text-slate-500 text-sm mt-1">
+            Enrutamiento de pagos, rieles y programación de operaciones (transfer-service)
+          </p>
+        </div>
       </div>
 
       {feedback && <Banner kind={feedback.kind} text={feedback.text} />}

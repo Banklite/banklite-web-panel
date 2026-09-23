@@ -1,38 +1,84 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
+import { Building2, Activity, Globe } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "BankLite — Panel",
-  description: "Panel web de BankLite: Identidad, Cuentas, Ledger y Transferencias",
+  title: "BankLite Core Banking",
+  description: "Enterprise Banking System Panel",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <body className="min-h-screen text-slate-800">
-        <header className="bg-gradient-to-r from-brand-700 to-brand-600 text-white sticky top-0 z-10 shadow-md">
-          <div className="max-w-6xl mx-auto px-6 pt-5">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-lg bg-white/15 flex items-center justify-center font-bold text-lg">
-                B
-              </div>
-              <div>
-                <h1 className="text-xl font-semibold leading-tight">BankLite</h1>
-                <p className="text-brand-100 text-xs">
-                  Panel operativo — Identity · Account · Ledger · Transfer
-                </p>
-              </div>
+      <body className="min-h-screen bg-slate-50/50 text-slate-800 flex flex-col md:flex-row font-sans selection:bg-indigo-500/30">
+        
+        {/* Sidebar - Premium Dark Mode */}
+        <aside className="w-full md:w-72 bg-corporate-gradient text-slate-300 md:min-h-screen flex flex-col shadow-2xl z-20 relative overflow-hidden">
+          {/* Subtle Background Glows */}
+          <div className="absolute top-0 -left-1/2 w-full h-64 bg-indigo-500/10 blur-[100px] pointer-events-none"></div>
+          <div className="absolute bottom-0 -right-1/2 w-full h-64 bg-fuchsia-500/10 blur-[100px] pointer-events-none"></div>
+
+          <div className="p-8 flex items-center gap-4 relative z-10">
+            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/40 animate-fade-in-up">
+              <Building2 size={26} strokeWidth={1.5} />
             </div>
-            <div className="mt-4">
-              <Nav />
+            <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+              <h1 className="text-2xl font-bold text-white tracking-tight leading-none">BankLite</h1>
+              <p className="text-[10px] text-indigo-300 font-bold tracking-[0.2em] uppercase mt-1">Core Banking</p>
             </div>
           </div>
-        </header>
-        <main className="max-w-6xl mx-auto px-6 py-8">{children}</main>
-        <footer className="max-w-6xl mx-auto px-6 pb-8 text-xs text-slate-400">
-          BankLite · Arquitectura y Modelamiento de Software · Universidad Cooperativa de Colombia
-        </footer>
+          
+          <div className="flex-1 px-5 py-6 overflow-y-auto relative z-10 space-y-8">
+            <Nav />
+
+            {/* System Status Premium Widget */}
+            <div className="mt-8 p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+              <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2 mb-3">
+                <Activity size={14} className="text-emerald-400 animate-pulse-slow" />
+                System Status
+              </h4>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-300">Gateway</span>
+                  <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span> Online</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-300">Event Bus</span>
+                  <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span> RabbitMQ</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 bg-black/20 text-[11px] text-slate-500 border-t border-white/5 flex items-center justify-between relative z-10">
+            <div>
+              <p className="font-semibold text-slate-300 flex items-center gap-1"><Globe size={12}/> Global Network</p>
+              <p className="mt-0.5">Enterprise v1.0.0</p>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main Content Area */}
+        <main className="flex-1 flex flex-col min-w-0 bg-[url('/grid.svg')] bg-center relative">
+          {/* Subtle noise/grid overlay if needed, currently just plain */}
+          <header className="h-[72px] bg-white/80 backdrop-blur-md border-b border-slate-200/80 flex items-center justify-between px-10 shadow-sm z-10 sticky top-0">
+            <h2 className="text-lg font-bold text-slate-800 tracking-tight">Centro de Operaciones</h2>
+            <div className="flex items-center gap-3">
+              <div className="flex flex-col text-right">
+                <span className="text-sm font-bold text-slate-900">Admin Session</span>
+                <span className="text-xs text-slate-500">Administrador de Core</span>
+              </div>
+              <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center border-2 border-white shadow-sm text-indigo-700 font-bold">
+                AD
+              </div>
+            </div>
+          </header>
+          
+          <div className="p-6 md:p-10 max-w-[1400px] mx-auto w-full relative z-0">
+            {children}
+          </div>
+        </main>
       </body>
     </html>
   );

@@ -100,12 +100,14 @@ export default function CuentasPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-semibold text-slate-800">Cuentas</h2>
-        <p className="text-slate-500 text-sm mt-1">
-          account-service · puerto 8002 · tablas cuenta, limite_operativo, restriccion_regulatoria
-        </p>
+    <div className="space-y-6 animate-fade-in-up">
+      <div className="flex items-center justify-between border-b border-slate-200 pb-5">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Gestión de Cuentas</h2>
+          <p className="text-slate-500 text-sm mt-1">
+            Administración de productos financieros y límites operativos (account-service)
+          </p>
+        </div>
       </div>
 
       {feedback && <Banner kind={feedback.kind} text={feedback.text} />}
@@ -118,7 +120,7 @@ export default function CuentasPage() {
           <select
             value={accountUsuarioId}
             onChange={(e) => setAccountUsuarioId(e.target.value)}
-            className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
+            className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
           >
             <option value="">Selecciona un usuario verificado…</option>
             {usuarios
@@ -131,7 +133,7 @@ export default function CuentasPage() {
           </select>
           <button
             type="submit"
-            className="bg-brand-600 hover:bg-brand-700 text-white rounded-md px-4 py-2 text-sm font-medium"
+            className="bg-brand-600 hover:bg-brand-700 text-white rounded-md px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-600"
           >
             Abrir cuenta
           </button>

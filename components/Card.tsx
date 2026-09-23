@@ -8,10 +8,12 @@ export function Card({
   children: React.ReactNode;
 }) {
   return (
-    <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-      <h2 className="text-lg font-semibold text-slate-800">{title}</h2>
-      {subtitle && <p className="text-sm text-slate-500 mb-3">{subtitle}</p>}
-      <div className="mt-3">{children}</div>
+    <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
+        <h2 className="text-base font-bold text-slate-800">{title}</h2>
+        {subtitle && <p className="text-xs font-medium text-slate-500 mt-1 uppercase tracking-wide">{subtitle}</p>}
+      </div>
+      <div className="p-6">{children}</div>
     </section>
   );
 }

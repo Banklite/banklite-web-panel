@@ -81,12 +81,14 @@ export default function LedgerPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-semibold text-slate-800">Ledger</h2>
-        <p className="text-slate-500 text-sm mt-1">
-          ledger-service · puerto 8003 · tablas transaccion, asiento_contable, cuenta_contable — partida doble
-        </p>
+    <div className="space-y-6 animate-fade-in-up">
+      <div className="flex items-center justify-between border-b border-slate-200 pb-5">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Ledger Contable</h2>
+          <p className="text-slate-500 text-sm mt-1">
+            Libro mayor distribuido y motor de partida doble (ledger-service)
+          </p>
+        </div>
       </div>
 
       {feedback && <Banner kind={feedback.kind} text={feedback.text} />}

@@ -2,31 +2,35 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { LayoutDashboard, Users, CreditCard, BookOpen, ArrowRightLeft } from "lucide-react";
 
 const LINKS = [
-  { href: "/", label: "Inicio" },
-  { href: "/identidad", label: "Identidad" },
-  { href: "/cuentas", label: "Cuentas" },
-  { href: "/ledger", label: "Ledger" },
-  { href: "/transferencias", label: "Transferencias" },
+  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/identidad", label: "Identidad & KYC", icon: Users },
+  { href: "/cuentas", label: "Cuentas", icon: CreditCard },
+  { href: "/ledger", label: "Ledger Contable", icon: BookOpen },
+  { href: "/transferencias", label: "Transferencias", icon: ArrowRightLeft },
 ];
 
 export function Nav() {
   const pathname = usePathname();
   return (
-    <nav className="flex gap-1 overflow-x-auto">
+    <nav className="flex flex-col gap-2">
+      <p className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Módulos Core</p>
       {LINKS.map((link) => {
         const active = pathname === link.href;
+        const Icon = link.icon;
         return (
           <Link
             key={link.href}
             href={link.href}
-            className={`px-4 py-2 text-sm font-medium rounded-t-md whitespace-nowrap transition-colors ${
+            className={`flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
               active
-                ? "bg-slate-50 text-brand-700"
-                : "text-brand-100 hover:bg-white/10 hover:text-white"
+                ? "bg-indigo-600 text-white shadow-md shadow-indigo-900/20"
+                : "text-slate-400 hover:bg-slate-800 hover:text-slate-100"
             }`}
           >
+            <Icon size={18} className={active ? "text-indigo-200" : "text-slate-500"} />
             {link.label}
           </Link>
         );
