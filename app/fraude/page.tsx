@@ -141,18 +141,12 @@ export default function FraudePage() {
         ]}
       />
 
-      {feedback && (
-        <Banner
-          variant={feedback.kind === "success" ? "success" : "error"}
-          message={feedback.text}
-          onClose={() => setFeedback(null)}
-        />
-      )}
+      {feedback && <Banner kind={feedback.kind} text={feedback.text} />}
 
       {/* Grid Superior: Reglas y Simulador */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* 1. Gesti?n de Reglas */}
-        <Card title="Configurar Regla Antifraude" description="Definir umbrales y pol?ticas de mitigaci?n de riesgo">
+        <Card title="Configurar Regla Antifraude" subtitle="Definir umbrales y pol?ticas de mitigaci?n de riesgo">
           <form onSubmit={handleCrearRegla} className="space-y-4">
             <Field label="Nombre de la Regla">
               <input
@@ -201,7 +195,7 @@ export default function FraudePage() {
         </Card>
 
         {/* 2. Simulador de Scoring */}
-        <Card title="Simulador de Scoring Antifraude" description="Ejecuta una evaluaci?n heur?stica sobre una transacci?n">
+        <Card title="Simulador de Scoring Antifraude" subtitle="Ejecuta una evaluaci?n heur?stica sobre una transacci?n">
           <form onSubmit={handleEvaluarManual} className="space-y-4">
             <Field label="ID Transacci?n (Opcional - Autogenerable)">
               <input
@@ -236,7 +230,7 @@ export default function FraudePage() {
       </div>
 
       {/* Centro de Alertas Cr?ticas */}
-      <Card title="Centro de Alertas de Seguridad & Fraude" description="Alertas generadas autom?ticamente por el motor de reglas y eventos de RabbitMQ">
+      <Card title="Centro de Alertas de Seguridad & Fraude" subtitle="Alertas generadas autom?ticamente por el motor de reglas y eventos de RabbitMQ">
         {alertas.length === 0 ? (
           <div className="p-8 text-center text-slate-400">No hay alertas activas de fraude. El sistema opera normalmente.</div>
         ) : (
@@ -293,7 +287,7 @@ export default function FraudePage() {
       </Card>
 
       {/* Tabla de Evaluaciones */}
-      <Card title="Historial de Evaluaciones de Riesgo" description="Registro inmutable de scoring de transacciones">
+      <Card title="Historial de Evaluaciones de Riesgo" subtitle="Registro inmutable de scoring de transacciones">
         {evaluaciones.length === 0 ? (
           <div className="p-6 text-center text-slate-400">No hay evaluaciones registradas a?n.</div>
         ) : (

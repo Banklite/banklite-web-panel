@@ -180,18 +180,12 @@ export default function TarjetasPage() {
         ]}
       />
 
-      {feedback && (
-        <Banner
-          variant={feedback.kind === "success" ? "success" : "error"}
-          message={feedback.text}
-          onClose={() => setFeedback(null)}
-        />
-      )}
+      {feedback && <Banner kind={feedback.kind} text={feedback.text} />}
 
       {/* Grid Superior: Emisi?n y Autorizaci?n */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 1. Emisi?n */}
-        <Card title="Emitir Nueva Tarjeta" description="Crear tarjeta f?sica o virtual vinculada a una cuenta">
+        <Card title="Emitir Nueva Tarjeta" subtitle="Crear tarjeta f?sica o virtual vinculada a una cuenta">
           <form onSubmit={handleEmitirTarjeta} className="space-y-4">
             <Field label="Cuenta Bancaria de Origen">
               <select
@@ -241,7 +235,7 @@ export default function TarjetasPage() {
         </Card>
 
         {/* 2. Simulador de Autorizaciones */}
-        <Card title="Simulador de Autorizaci?n" description="Prueba de compra en comercios con emisi?n de eventos">
+        <Card title="Simulador de Autorizaci?n" subtitle="Prueba de compra en comercios con emisi?n de eventos">
           <form onSubmit={handleAutorizar} className="space-y-4">
             <Field label="Tarjeta de Pago">
               <select
@@ -289,7 +283,7 @@ export default function TarjetasPage() {
         </Card>
 
         {/* 3. Bloqueo de Seguridad */}
-        <Card title="Control de Bloqueos" description="Restricci?n o reactivaci?n inmediata de tarjetas">
+        <Card title="Control de Bloqueos" subtitle="Restricci?n o reactivaci?n inmediata de tarjetas">
           <form onSubmit={handleBloquearTarjeta} className="space-y-4">
             <Field label="Tarjeta a Bloquear">
               <select
@@ -329,7 +323,7 @@ export default function TarjetasPage() {
       </div>
 
       {/* Grid Tarjetas Visuales & Listado */}
-      <Card title="Inventario de Tarjetas Emitidas" description="Tarjetas registradas en base de datos independiente (3FN)">
+      <Card title="Inventario de Tarjetas Emitidas" subtitle="Tarjetas registradas en base de datos independiente (3FN)">
         {tarjetas.length === 0 ? (
           <div className="p-8 text-center text-slate-400">No hay tarjetas emitidas en el sistema a?n.</div>
         ) : (
@@ -389,7 +383,7 @@ export default function TarjetasPage() {
       </Card>
 
       {/* Historial de Autorizaciones */}
-      <Card title="Historial de Autorizaciones de Compra" description="Transacciones evaluadas y procesadas por Card Service">
+      <Card title="Historial de Autorizaciones de Compra" subtitle="Transacciones evaluadas y procesadas por Card Service">
         {autorizaciones.length === 0 ? (
           <div className="p-6 text-center text-slate-400">No hay transacciones registradas.</div>
         ) : (
