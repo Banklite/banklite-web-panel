@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Building2, Activity, Globe, LogOut } from "lucide-react";
 import { Nav } from "@/components/Nav";
+import { WizardBanner } from "@/components/WizardBanner";
 import { Sesion, cerrarSesion, obtenerSesion } from "@/lib/auth";
 
 /**
@@ -126,7 +127,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <div className="p-6 md:p-10 max-w-[1400px] mx-auto w-full relative z-0">{children}</div>
+        <div className="p-6 md:p-10 max-w-[1400px] mx-auto w-full relative z-0">
+          <WizardBanner />
+          {children}
+        </div>
       </main>
     </div>
   );
