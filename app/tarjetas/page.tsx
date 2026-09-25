@@ -12,6 +12,7 @@ import {
   Cuenta,
   Tarjeta,
   Autorizacion,
+  Usuario,
   listAccounts,
   listCards,
   createCard,
@@ -20,16 +21,23 @@ import {
   authorizeCardTransaction,
   listCardAuthorizations,
   listAllAuthorizations,
+  listUsuarios,
 } from "@/lib/api";
-import { CreditCard, Shield, Lock, Unlock, ShoppingCart, CheckCircle2, XCircle } from "lucide-react";
+import { CreditCard, Shield, Lock, Unlock, ShoppingCart, CheckCircle2, XCircle, Eye, EyeOff } from "lucide-react";
 
 type Feedback = { kind: "success" | "error"; text: string } | null;
 
 export default function TarjetasPage() {
   const [cuentas, setCuentas] = useState<Cuenta[]>([]);
   const [tarjetas, setTarjetas] = useState<Tarjeta[]>([]);
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [autorizaciones, setAutorizaciones] = useState<Autorizacion[]>([]);
   const [feedback, setFeedback] = useState<Feedback>(null);
+  const [showFullNumber, setShowFullNumber] = useState<Record<string, boolean>>({});
+
+  const toggleShowNumber = (cardId: string) => {
+    setShowFullNumber((prev) => ({ ...prev, [cardId]: !prev[cardId] }));
+  };
 
   // Formulario Emisi?n
   const [selectedCuentaId, setSelectedCuentaId] = useState("");
@@ -47,17 +55,28 @@ export default function TarjetasPage() {
 
   async function refresh() {
     try {
-      const [accs, crds, auths] = await Promise.all([
+      const [accs, crds, auths, usrs] = await Promise.all([
         listAccounts().catch(() => []),
         listCards().catch(() => []),
         listAllAuthorizations().catch(() => []),
+        listUsuarios().catch(() => []),
       ]);
       setCuentas(accs);
       setTarjetas(crds);
       setAutorizaciones(auths);
+      setUsuarios(usrs);
     } catch (err) {
       showError(err);
     }
+  }
+
+  // Resuelve nombre del dueño: tarjeta.id_cuenta → cuenta.id_usuario → usuario.nombre apellido
+  function ownerName(idCuenta: string): string {
+    const cuenta = cuentas.find((c) => c.id_cuenta === idCuenta);
+    if (!cuenta) return "Sin cuenta";
+    const usuario = usuarios.find((u) => u.id_usuario === cuenta.id_usuario);
+    if (!usuario) return "Usuario desconocido";
+    return `${usuario.nombre}${usuario.apellido ? " " + usuario.apellido : ""}`;
   }
 
   useEffect(() => {
@@ -341,11 +360,33 @@ export default function TarjetasPage() {
                   <StatusPill value={t.estado} />
                 </div>
 
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-8 rounded bg-amber-400/80 border border-amber-300/60 flex items-center justify-center text-[10px] text-slate-900 font-mono font-bold">
-                    CHIP
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-8 rounded bg-amber-400/80 border border-amber-300/60 flex items-center justify-center text-[10px] text-slate-900 font-mono font-bold">
+                      CHIP
+                    </div>
+                    <span className="text-xs text-slate-300 font-mono tracking-wider">
+                      {showFullNumber[t.id_tarjeta]
+                        ? `4532 ${t.id_tarjeta.replace(/-/g, "").slice(0, 4).toUpperCase()} ${t.id_tarjeta.replace(/-/g, "").slice(4, 8).toUpperCase()} ${t.id_tarjeta.slice(-4).toUpperCase()}`
+                        : `•••• •••• •••• ${t.id_tarjeta.slice(-4).toUpperCase()}`}
+                    </span>
                   </div>
-                  <span className="text-xs text-slate-400 font-mono">???? ???? ???? {t.id_tarjeta.slice(-4).toUpperCase()}</span>
+                  <button
+                    type="button"
+                    onClick={() => toggleShowNumber(t.id_tarjeta)}
+                    className="p-1 text-slate-400 hover:text-white transition rounded focus:outline-none"
+                    title={showFullNumber[t.id_tarjeta] ? "Ocultar número" : "Ver número completo"}
+                  >
+                    {showFullNumber[t.id_tarjeta] ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+
+                {/* Nombre del titular */}
+                <div className="mb-4">
+                  <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-0.5">Titular</p>
+                  <p className="text-sm font-semibold text-white tracking-wide truncate">
+                    {ownerName(t.id_cuenta).toUpperCase()}
+                  </p>
                 </div>
 
                 <div className="space-y-1 text-xs text-slate-300 border-t border-white/10 pt-4">

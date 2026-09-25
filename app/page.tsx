@@ -104,10 +104,70 @@ export default function Home() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard label="Usuarios Totales" value={loading ? "?" : usuarios.length} accent="text-slate-900" />
-        <StatCard label="KYC Verificados" value={loading ? "?" : verificados} accent="text-indigo-600" />
-        <StatCard label="Tarjetas Emitidas" value={loading ? "?" : `${tarjetasActivas} activas`} accent="text-purple-600" />
-        <StatCard label="Alertas de Fraude" value={loading ? "?" : alertasAbiertas} accent={alertasAbiertas > 0 ? "text-rose-600" : "text-emerald-600"} />
+        <StatCard label="Usuarios Totales" value={loading ? "..." : usuarios.length} accent="text-slate-900" />
+        <StatCard label="KYC Verificados" value={loading ? "..." : verificados} accent="text-indigo-600" />
+        <StatCard label="Tarjetas Emitidas" value={loading ? "..." : `${tarjetasActivas} activas`} accent="text-purple-600" />
+        <StatCard label="Alertas de Fraude" value={loading ? "..." : alertasAbiertas} accent={alertasAbiertas > 0 ? "text-rose-600" : "text-emerald-600"} />
+      </div>
+
+      {/* Quick Start Wizard Card */}
+      <div className="p-6 md:p-8 rounded-3xl bg-gradient-to-br from-indigo-900 via-indigo-950 to-slate-900 text-white shadow-xl border border-indigo-500/30 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 blur-3xl pointer-events-none"></div>
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 text-indigo-300 text-xs font-bold uppercase tracking-wider mb-2">
+            <CheckCircle2 size={16} className="text-emerald-400" /> ¿Cómo comenzar a operar?
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">Flujo Guiado Completo</h2>
+          <p className="text-slate-300 text-sm max-w-2xl mb-6">
+            Para probar el sistema sin complicaciones, sigue estos 4 sencillos pasos en orden.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Link
+              href="/identidad"
+              className="p-4 rounded-2xl bg-white/10 hover:bg-indigo-600/80 border border-white/15 transition-all text-left group"
+            >
+              <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-500/40 text-indigo-200 mb-2">
+                Paso 1
+              </span>
+              <h4 className="font-bold text-sm text-white group-hover:underline">1. Registrar Cliente</h4>
+              <p className="text-xs text-slate-300 mt-1">Crea un usuario y verifica su KYC.</p>
+            </Link>
+
+            <Link
+              href="/cuentas"
+              className="p-4 rounded-2xl bg-white/10 hover:bg-emerald-600/80 border border-white/15 transition-all text-left group"
+            >
+              <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/40 text-emerald-200 mb-2">
+                Paso 2
+              </span>
+              <h4 className="font-bold text-sm text-white group-hover:underline">2. Abrir Cuenta</h4>
+              <p className="text-xs text-slate-300 mt-1">Vincula una cuenta al usuario.</p>
+            </Link>
+
+            <Link
+              href="/tarjetas"
+              className="p-4 rounded-2xl bg-white/10 hover:bg-purple-600/80 border border-white/15 transition-all text-left group"
+            >
+              <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded bg-purple-500/40 text-purple-200 mb-2">
+                Paso 3
+              </span>
+              <h4 className="font-bold text-sm text-white group-hover:underline">3. Emitir Tarjeta</h4>
+              <p className="text-xs text-slate-300 mt-1">Crea tarjeta física o virtual.</p>
+            </Link>
+
+            <Link
+              href="/tarjetas"
+              className="p-4 rounded-2xl bg-white/10 hover:bg-rose-600/80 border border-white/15 transition-all text-left group"
+            >
+              <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded bg-rose-500/40 text-rose-200 mb-2">
+                Paso 4
+              </span>
+              <h4 className="font-bold text-sm text-white group-hover:underline">4. Simular Compra</h4>
+              <p className="text-xs text-slate-300 mt-1">Prueba compras y ve alertas.</p>
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Modules Grid */}

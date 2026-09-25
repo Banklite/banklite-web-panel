@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
+import { WizardBanner } from "@/components/WizardBanner";
 import { Building2, Activity, Globe } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -75,6 +76,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </header>
 
           <div className="p-6 md:p-10 max-w-[1400px] mx-auto w-full relative z-0">
+            <WizardBanner />
             {children}
           </div>
         </main>
