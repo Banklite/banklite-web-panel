@@ -21,6 +21,7 @@ export default function IdentidadPage() {
   const [email, setEmail] = useState("");
   const [telefono, setTelefono] = useState("+573001234567");
   const [paisResidencia, setPaisResidencia] = useState("CO");
+  const [password, setPassword] = useState("");
 
   const [kycUsuarioId, setKycUsuarioId] = useState("");
   const [tipoDocumento, setTipoDocumento] = useState("cedula");
@@ -63,11 +64,16 @@ export default function IdentidadPage() {
         email,
         telefono,
         pais_residencia: paisResidencia,
+        password,
       });
-      setFeedback({ kind: "success", text: `Usuario creado en la tabla usuario: ${usuario.id_usuario}` });
+      setFeedback({
+        kind: "success",
+        text: `Usuario creado: ${usuario.id_usuario}. Ya puede iniciar sesión en el panel con su correo y contraseña.`,
+      });
       setNombre("");
       setApellido("");
       setEmail("");
+      setPassword("");
       await refresh();
     } catch (err) {
       showError(err);
@@ -176,6 +182,17 @@ export default function IdentidadPage() {
                   </option>
                 ))}
               </select>
+            </Field>
+            <Field label="Contraseña" hint="Con esta contraseña el usuario inicia sesión en el panel (mínimo 6 caracteres).">
+              <input
+                type="password"
+                required
+                minLength={6}
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
+              />
             </Field>
             <button
               type="submit"

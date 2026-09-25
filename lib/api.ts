@@ -57,6 +57,7 @@ export function createUsuario(data: {
   email: string;
   telefono: string;
   pais_residencia: string;
+  password: string;
 }) {
   return request<Usuario>(`${IDENTITY_URL}/users`, {
     method: "POST",
@@ -66,6 +67,21 @@ export function createUsuario(data: {
 
 export function listUsuarios() {
   return request<Usuario[]>(`${IDENTITY_URL}/users`);
+}
+
+// ---------- Autenticación (POST /auth/login en identity-service) ----------
+
+export type LoginResponse = {
+  access_token: string;
+  token_type: string;
+  usuario: Usuario;
+};
+
+export function login(email: string, password: string) {
+  return request<LoginResponse>(`${IDENTITY_URL}/auth/login`, {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
 }
 
 export type EvaluacionRiesgo = {
