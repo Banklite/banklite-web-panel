@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -17,10 +17,10 @@ const PAISES = [
 ];
 
 const SERVICIOS_BANCARIOS = [
-  "Cuenta de Ahorros Digital",
-  "Cuenta Corriente Empresarial",
-  "Tarjeta de Crédito BankLite Gold",
-  "Tarjeta Débito Contactless",
+  'Cuenta de Ahorros Digital', 'Cuenta de Ahorros Tradicional', 'Cuenta de Ahorros Infantil', 'Cuenta de Ahorros Pensional',
+  'Cuenta Corriente Personal', 'Cuenta Corriente Empresarial', 'Cuenta Corriente Premium',
+  'Tarjeta de Crédito BankLite Gold', 'Tarjeta de Crédito BankLite Platinum', 'Tarjeta Débito Contactless',
+  'CDT (Certificado de Depósito a Término)', 'Microcrédito',
 ];
 
 export default function LoginPage() {
@@ -42,6 +42,10 @@ export default function LoginPage() {
   const [telefonoLocal, setTelefonoLocal] = useState("3001234567");
   const [paisResidencia, setPaisResidencia] = useState("CO");
   const [servicioSolicitado, setServicioSolicitado] = useState("Cuenta de Ahorros Digital");
+  const [cedula, setCedula] = useState("");
+  const [fechaExpedicion, setFechaExpedicion] = useState("");
+  const [fechaVencimiento, setFechaVencimiento] = useState("");
+  const [paisExpedicion, setPaisExpedicion] = useState("CO");
   const [regEmail, setRegEmail] = useState("");
   const [regPassword, setRegPassword] = useState("");
 
@@ -81,7 +85,11 @@ export default function LoginPage() {
         pais_residencia: paisResidencia,
         password: regPassword,
         fecha_nacimiento: fechaNacimiento,
-        servicio_solicitado: servicioSolicitado,
+                  servicio_solicitado: servicioSolicitado,
+          cedula,
+          fecha_expedicion: fechaExpedicion,
+          fecha_vencimiento: fechaVencimiento,
+          pais_expedicion: paisExpedicion,
       });
       // Entra directo al sistema tras el registro
       await entrarConSesion(regEmail, regPassword);
@@ -311,6 +319,24 @@ export default function LoginPage() {
                 ))}
               </select>
             </Field>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Field label="Número de Documento" hint="Cédula o Pasaporte">
+                <input type="text" required placeholder="Ej: 10101010" value={cedula} onChange={(e) => setCedula(e.target.value)} className="w-full border-2 border-slate-200 rounded-xl px-4 py-2.5 text-base focus:border-indigo-600 focus:outline-none" />
+              </Field>
+              <Field label="País Expedición">
+                <select value={paisExpedicion} onChange={(e) => setPaisExpedicion(e.target.value)} className="w-full border-2 border-slate-200 rounded-xl px-4 py-2.5 text-base focus:border-indigo-600 focus:outline-none bg-white">
+                  {PAISES.map((p) => (<option key={p.code} value={p.code}>{p.label}</option>))}
+                </select>
+              </Field>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Field label="Fecha Expedición">
+                <input type="date" required value={fechaExpedicion} onChange={(e) => setFechaExpedicion(e.target.value)} className="w-full border-2 border-slate-200 rounded-xl px-4 py-2.5 text-base focus:border-indigo-600 focus:outline-none" />
+              </Field>
+              <Field label="Fecha Vencimiento">
+                <input type="date" value={fechaVencimiento} onChange={(e) => setFechaVencimiento(e.target.value)} className="w-full border-2 border-slate-200 rounded-xl px-4 py-2.5 text-base focus:border-indigo-600 focus:outline-none" />
+              </Field>
+            </div>
 
             <Field label="Correo electrónico" hint="Donde te enviaremos notificaciones de tu cuenta.">
               <input
@@ -349,3 +375,8 @@ export default function LoginPage() {
     </div>
   );
 }
+
+
+
+
+

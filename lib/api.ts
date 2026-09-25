@@ -51,6 +51,12 @@ export type Usuario = {
   fecha_registro: string;
   fecha_nacimiento?: string | null;
   servicio_solicitado?: string | null;
+  cedula?: string | null;
+  fecha_expedicion?: string | null;
+  fecha_vencimiento?: string | null;
+  pais_expedicion?: string | null;
+  estado_kyc?: string | null;
+  role: "admin" | "cliente";
 };
 
 export function createUsuario(data: {
@@ -62,9 +68,27 @@ export function createUsuario(data: {
   password: string;
   fecha_nacimiento?: string;
   servicio_solicitado?: string;
+  cedula?: string;
+  fecha_expedicion?: string;
+  fecha_vencimiento?: string;
+  pais_expedicion?: string;
 }) {
   return request<Usuario>(`${IDENTITY_URL}/users`, {
     method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+
+export function updateUsuario(id_usuario: string, data: {
+  cedula?: string;
+  fecha_nacimiento?: string;
+  fecha_expedicion?: string;
+  fecha_vencimiento?: string;
+  pais_expedicion?: string;
+}) {
+  return request<Usuario>(`${IDENTITY_URL}/users/${id_usuario}`, {
+    method: 'PATCH',
     body: JSON.stringify(data),
   });
 }
@@ -278,6 +302,8 @@ export type Transferencia = {
   monto: string;
   estado: string;
   fecha_solicitud: string;
+  concepto?: string | null;
+  referencia?: string | null;
 };
 
 export function createTransfer(data: {
@@ -285,6 +311,8 @@ export function createTransfer(data: {
   id_beneficiario: string;
   id_riel: string;
   monto: string;
+  concepto?: string;
+  idempotency_key?: string;
 }) {
   return request<{
     transferencia: Transferencia;
@@ -453,3 +481,7 @@ export function resolveFraudAlert(idAlerta: string) {
     method: "PATCH",
   });
 }
+
+
+
+
