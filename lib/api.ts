@@ -49,6 +49,8 @@ export type Usuario = {
   pais_residencia: string;
   estado: string;
   fecha_registro: string;
+  fecha_nacimiento?: string | null;
+  servicio_solicitado?: string | null;
 };
 
 export function createUsuario(data: {
@@ -58,6 +60,8 @@ export function createUsuario(data: {
   telefono: string;
   pais_residencia: string;
   password: string;
+  fecha_nacimiento?: string;
+  servicio_solicitado?: string;
 }) {
   return request<Usuario>(`${IDENTITY_URL}/users`, {
     method: "POST",
