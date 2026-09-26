@@ -4,7 +4,17 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/Card";
 import { Banner } from "@/components/Banner";
 import { StatusPill } from "@/components/StatusPill";
-import { ApiError, Transferencia, listTransfers } from "@/lib/api";
+import {
+  ApiError,
+  Transferencia,
+  Cuenta,
+  Usuario,
+  Beneficiario,
+  listTransfers,
+  listAccounts,
+  listUsuarios,
+  listBeneficiaries,
+} from "@/lib/api";
 import { Search, RefreshCw, AlertCircle } from "lucide-react";
 
 type Feedback = { kind: "success" | "error"; text: string } | null;
@@ -12,6 +22,9 @@ type Feedback = { kind: "success" | "error"; text: string } | null;
 export default function RastreoPage() {
   const [transferencias, setTransferencias] = useState<Transferencia[]>([]);
   const [filtradas, setFiltradas] = useState<Transferencia[]>([]);
+  const [cuentas, setCuentas] = useState<Cuenta[]>([]);
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [beneficiarios, setBeneficiarios] = useState<Beneficiario[]>([]);
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [loading, setLoading] = useState(true);
 
@@ -20,13 +33,33 @@ export default function RastreoPage() {
   const [fechaDesde, setFechaDesde] = useState("");
   const [fechaHasta, setFechaHasta] = useState("");
 
+  function nombreCuentaOrigen(idCuenta: string): string {
+    const cuenta = cuentas.find((c) => c.id_cuenta === idCuenta);
+    if (!cuenta) return idCuenta.slice(0, 8) + "…";
+    const usuario = usuarios.find((u) => u.id_usuario === cuenta.id_usuario);
+    return usuario ? `${usuario.nombre} ${usuario.apellido ?? ""}`.trim() : idCuenta.slice(0, 8) + "…";
+  }
+
+  function nombreBeneficiario(idBeneficiario: string): string {
+    const b = beneficiarios.find((x) => x.id_beneficiario === idBeneficiario);
+    return b?.nombre ?? (idBeneficiario.slice(0, 8) + "…");
+  }
+
   async function refresh() {
     setLoading(true);
     setFeedback(null);
     try {
-      const todas = await listTransfers();
+      const [todas, accs, usrs, benefs] = await Promise.all([
+        listTransfers(),
+        listAccounts().catch(() => []),
+        listUsuarios().catch(() => []),
+        listBeneficiaries().catch(() => []),
+      ]);
       setTransferencias(todas);
       setFiltradas(todas);
+      setCuentas(accs);
+      setUsuarios(usrs);
+      setBeneficiarios(benefs);
     } catch (err) {
       if (err instanceof ApiError) {
         setFeedback({ kind: "error", text: `(${err.status}) ${err.message}` });
@@ -167,11 +200,11 @@ export default function RastreoPage() {
                         {t.id_transferencia.slice(0, 8)}...
                       </span>
                     </td>
-                    <td className="py-2.5 pr-3 font-mono text-xs text-slate-500" title={t.id_cuenta_origen}>
-                      {t.id_cuenta_origen.slice(0, 8)}...
+                    <td className="py-2.5 pr-3 text-xs text-slate-700" title={t.id_cuenta_origen}>
+                      {nombreCuentaOrigen(t.id_cuenta_origen)}
                     </td>
-                    <td className="py-2.5 pr-3 font-mono text-xs text-slate-500" title={t.id_beneficiario}>
-                      {t.id_beneficiario.slice(0, 8)}...
+                    <td className="py-2.5 pr-3 text-xs text-slate-700" title={t.id_beneficiario}>
+                      {nombreBeneficiario(t.id_beneficiario)}
                     </td>
                     <td className="py-2.5 pr-3 font-bold text-slate-800">
                       ${Number(t.monto).toLocaleString("es-CO", { minimumFractionDigits: 2 })}

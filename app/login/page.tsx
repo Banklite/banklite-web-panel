@@ -26,7 +26,7 @@ const SERVICIOS_BANCARIOS = [
 export default function LoginPage() {
   const router = useRouter();
   const [rolPortal, setRolPortal] = useState<"cliente" | "admin">("cliente");
-  const [modo, setModo] = useState<"login" | "registro">("registro");
+  const [modo, setModo] = useState<"login" | "registro">("login");
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

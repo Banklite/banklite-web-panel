@@ -12,12 +12,20 @@ import {
   depositar,
   getLedgerBalance,
   listAccounts,
+  listUsuarios,
+  Usuario,
 } from "@/lib/api";
 
 type Feedback = { kind: "success" | "error"; text: string } | null;
 
+function nombreCuenta(c: Cuenta, usuarios: Usuario[]): string {
+  const u = usuarios.find((u) => u.id_usuario === c.id_usuario);
+  return u ? `${u.nombre} ${u.apellido ?? ""}`.trim() : c.id_cuenta.slice(0, 8) + "…";
+}
+
 export default function LedgerPage() {
   const [cuentas, setCuentas] = useState<Cuenta[]>([]);
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [feedback, setFeedback] = useState<Feedback>(null);
 
   const [saldoCuentaId, setSaldoCuentaId] = useState("");
@@ -30,6 +38,9 @@ export default function LedgerPage() {
     listAccounts()
       .then(setCuentas)
       .catch(showError);
+    listUsuarios()
+      .then(setUsuarios)
+      .catch(() => {});
   }, []);
 
   function showError(err: unknown) {
@@ -120,7 +131,7 @@ export default function LedgerPage() {
               <option value="">Selecciona una cuenta…</option>
               {cuentas.map((c) => (
                 <option key={c.id_cuenta} value={c.id_cuenta}>
-                  {c.id_cuenta.slice(0, 8)}… ({c.moneda})
+                  {nombreCuenta(c, usuarios)} ({c.moneda})
                 </option>
               ))}
             </select>
@@ -161,7 +172,7 @@ export default function LedgerPage() {
                 <option value="">Selecciona una cuenta…</option>
                 {cuentas.map((c) => (
                   <option key={c.id_cuenta} value={c.id_cuenta}>
-                    {c.id_cuenta.slice(0, 8)}… ({c.moneda})
+                    {nombreCuenta(c, usuarios)} ({c.moneda})
                   </option>
                 ))}
               </select>
