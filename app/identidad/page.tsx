@@ -19,7 +19,8 @@ export default function IdentidadPage() {
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
   const [email, setEmail] = useState("");
-  const [telefono, setTelefono] = useState("+573001234567");
+  const [telefonoPrefix, setTelefonoPrefix] = useState("+57");
+  const [telefonoLocal, setTelefonoLocal] = useState("3001234567");
   const [paisResidencia, setPaisResidencia] = useState("CO");
   const [password, setPassword] = useState("");
 
@@ -62,7 +63,7 @@ export default function IdentidadPage() {
         nombre,
         apellido: apellido || undefined,
         email,
-        telefono,
+        telefono: telefonoPrefix + telefonoLocal,
         pais_residencia: paisResidencia,
         password,
       });
@@ -160,15 +161,30 @@ export default function IdentidadPage() {
                 className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
               />
             </Field>
-            <Field label="Teléfono" hint="Con código de país, ej: +573001234567.">
-              <input
-                type="text"
-                required
-                placeholder="+573001234567"
-                value={telefono}
-                onChange={(e) => setTelefono(e.target.value)}
-                className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
-              />
+            <Field label="Teléfono" hint="El prefijo de país no se puede eliminar, solo cambiar. Ingresa el número sin el código de país.">
+              <div className="flex rounded-md border border-slate-300 overflow-hidden focus-within:ring-2 focus-within:ring-brand-600">
+                {/* Prefijo: no se puede borrar, sí modificar */}
+                <select
+                  value={telefonoPrefix}
+                  onChange={(e) => setTelefonoPrefix(e.target.value)}
+                  className="bg-slate-100 border-r border-slate-300 px-2 py-2 text-sm font-mono text-slate-700 focus:outline-none cursor-pointer"
+                >
+                  <option value="+57">🇨🇴 +57</option>
+                  <option value="+52">🇲🇽 +52</option>
+                  <option value="+1">🇺🇸 +1</option>
+                  <option value="+34">🇪🇸 +34</option>
+                  <option value="+51">🇵🇪 +51</option>
+                </select>
+                {/* Número local */}
+                <input
+                  type="tel"
+                  required
+                  placeholder="3001234567"
+                  value={telefonoLocal}
+                  onChange={(e) => setTelefonoLocal(e.target.value.replace(/\D/g, ""))}
+                  className="flex-1 px-3 py-2 text-sm focus:outline-none bg-white font-mono"
+                />
+              </div>
             </Field>
             <Field label="País de residencia">
               <select
