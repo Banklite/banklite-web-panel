@@ -334,7 +334,7 @@ export default function TransferenciasPage() {
               <option value="">Cuenta origen…</option>
               {cuentas.map((c) => (
                 <option key={c.id_cuenta} value={c.id_cuenta}>
-                  {short(c.id_cuenta)} ({c.moneda})
+                  {cuentaLabel(c, usuarios)}
                 </option>
               ))}
             </select>
