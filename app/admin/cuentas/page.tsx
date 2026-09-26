@@ -138,12 +138,12 @@ export default function CuentasPage() {
             >
               <option value="">Selecciona un usuario verificado…</option>
               {usuarios
-                .filter((u) => u.estado === "verificado")
-                .map((u) => (
-                  <option key={u.id_usuario} value={u.id_usuario}>
-                    {u.email} ({u.pais_residencia})
-                  </option>
-                ))}
+                 .filter((u) => u.estado === "verificado")
+                 .map((u) => (
+                   <option key={u.id_usuario} value={u.id_usuario}>
+                     {u.nombre} {u.apellido ?? ""} - {u.email}
+                   </option>
+                 ))}
             </select>
           </Field>
           <button
