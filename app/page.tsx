@@ -22,7 +22,7 @@ const SECCIONES = [
     icon: Users,
     color: "bg-indigo-50 text-indigo-600 ring-indigo-500/30",
     hover: "hover:border-indigo-300 hover:ring-2 hover:ring-indigo-100",
-    descripcion: "Onboarding, validaci?n KYC y perfiles. (identity-service)",
+    descripcion: "Onboarding, validación KYC y perfiles. (identity-service)",
   },
   {
     href: "/cuentas",
@@ -30,7 +30,7 @@ const SECCIONES = [
     icon: Wallet,
     color: "bg-emerald-50 text-emerald-600 ring-emerald-500/30",
     hover: "hover:border-emerald-300 hover:ring-2 hover:ring-emerald-100",
-    descripcion: "Apertura, estados y l?mites operativos. (account-service)",
+    descripcion: "Apertura, estados y límites operativos. (account-service)",
   },
   {
     href: "/tarjetas",
@@ -38,11 +38,11 @@ const SECCIONES = [
     icon: CreditCard,
     color: "bg-purple-50 text-purple-600 ring-purple-500/30",
     hover: "hover:border-purple-300 hover:ring-2 hover:ring-purple-100",
-    descripcion: "Emisi?n de tarjetas, bloqueos y transacciones. (card-service)",
+    descripcion: "Emisión de tarjetas, bloqueos y transacciones. (card-service)",
   },
   {
     href: "/fraude",
-    titulo: "Detecci?n de Fraude",
+    titulo: "Detección de Fraude",
     icon: ShieldAlert,
     color: "bg-rose-50 text-rose-600 ring-rose-500/30",
     hover: "hover:border-rose-300 hover:ring-2 hover:ring-rose-100",
@@ -62,7 +62,7 @@ const SECCIONES = [
     icon: ArrowRightLeft,
     color: "bg-sky-50 text-sky-600 ring-sky-500/30",
     hover: "hover:border-sky-300 hover:ring-2 hover:ring-sky-100",
-    descripcion: "Rieles de pago y automatizaci?n de env?os. (transfer-service)",
+    descripcion: "Rieles de pago y automatización de envíos. (transfer-service)",
   },
 ];
 
@@ -96,7 +96,7 @@ export default function Home() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Visi?n Global del Ecosistema BankLite</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Visión Global del Ecosistema BankLite</h1>
         <p className="text-slate-500 mt-1">
           Arquitectura desacoplada basada en microservicios independientes, consistencia eventual (RabbitMQ) y seguridad financiera.
         </p>
@@ -194,7 +194,7 @@ export default function Home() {
 
               <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-indigo-600">
                 <span>Abrir Panel</span>
-                <span className="group-hover:translate-x-1 transition-transform">?</span>
+                <span className="group-hover:translate-x-1 transition-transform">→</span>
               </div>
             </Link>
           );

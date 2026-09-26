@@ -30,11 +30,11 @@ export default function FraudePage() {
   const [feedback, setFeedback] = useState<Feedback>(null);
 
   // Formulario Regla
-  const [nombreRegla, setNombreRegla] = useState("L?mite de Riesgo Alto");
+  const [nombreRegla, setNombreRegla] = useState("Límite de Riesgo Alto");
   const [tipoRegla, setTipoRegla] = useState("monto_maximo");
   const [umbralRegla, setUmbralRegla] = useState("3000.00");
 
-  // Formulario Evaluaci?n Manual
+  // Formulario Evaluación Manual
   const [evalTxId, setEvalTxId] = useState("");
   const [evalMonto, setEvalMonto] = useState("4500.00");
 
@@ -63,10 +63,10 @@ export default function FraudePage() {
     } else if (err instanceof Error) {
       setFeedback({
         kind: "error",
-        text: `Error de conexi?n con fraud-service: ${err.message}. ?Est? corriendo en el puerto 8006?`,
+        text: `Error de conexión con fraud-service: ${err.message}. ¿Está corriendo en el puerto 8006?`,
       });
     } else {
-      setFeedback({ kind: "error", text: "Ocurri? un error inesperado." });
+      setFeedback({ kind: "error", text: "Ocurrió un error inesperado." });
     }
   }
 
@@ -75,7 +75,7 @@ export default function FraudePage() {
     setFeedback(null);
     const umbralNum = parseFloat(umbralRegla);
     if (isNaN(umbralNum) || umbralNum < 0) {
-      setFeedback({ kind: "error", text: "El umbral debe ser un n?mero mayor o igual a 0." });
+      setFeedback({ kind: "error", text: "El umbral debe ser un número mayor o igual a 0." });
       return;
     }
     try {
@@ -101,7 +101,7 @@ export default function FraudePage() {
     setFeedback(null);
     const montoNum = parseFloat(evalMonto);
     if (isNaN(montoNum) || montoNum <= 0) {
-      setFeedback({ kind: "error", text: "Ingresa un monto v?lido mayor a 0." });
+      setFeedback({ kind: "error", text: "Ingresa un monto válido mayor a 0." });
       return;
     }
     const txId = evalTxId.trim() || crypto.randomUUID();
@@ -112,7 +112,7 @@ export default function FraudePage() {
       });
       setFeedback({
         kind: res.resultado === "sospechosa" ? "error" : "success",
-        text: `Evaluaci?n completada: Resultado "${res.resultado.toUpperCase()}" (Score de Riesgo: ${res.score_riesgo}/100).`,
+        text: `Evaluación completada: Resultado "${res.resultado.toUpperCase()}" (Score de Riesgo: ${res.score_riesgo}/100).`,
       });
       await refresh();
     } catch (err) {
@@ -137,7 +137,7 @@ export default function FraudePage() {
         steps={[
           "1. Configurar reglas antifraude con sus respectivos tipos y montos de umbral.",
           "2. Simular scoring de riesgo sobre transacciones y transferencias.",
-          "3. Monitorear y resolver alertas cr?ticas de seguridad generadas en tiempo real.",
+          "3. Monitorear y resolver alertas críticas de seguridad generadas en tiempo real.",
         ]}
       />
 
@@ -145,8 +145,8 @@ export default function FraudePage() {
 
       {/* Grid Superior: Reglas y Simulador */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* 1. Gesti?n de Reglas */}
-        <Card title="Configurar Regla Antifraude" subtitle="Definir umbrales y pol?ticas de mitigaci?n de riesgo">
+        {/* 1. Gestión de Reglas */}
+        <Card title="Configurar Regla Antifraude" subtitle="Definir umbrales y políticas de mitigación de riesgo">
           <form onSubmit={handleCrearRegla} className="space-y-4">
             <Field label="Nombre de la Regla">
               <input
@@ -166,9 +166,9 @@ export default function FraudePage() {
                   onChange={(e) => setTipoRegla(e.target.value)}
                   className="w-full rounded-lg border border-slate-300 p-2.5 text-sm bg-white"
                 >
-                  <option value="monto_maximo">Monto M?ximo</option>
+                  <option value="monto_maximo">Monto Máximo</option>
                   <option value="frecuencia_alta">Alta Frecuencia</option>
-                  <option value="geolocalizacion">Geolocalizaci?n Inusual</option>
+                  <option value="geolocalizacion">Geolocalización Inusual</option>
                 </select>
               </Field>
 
@@ -195,14 +195,14 @@ export default function FraudePage() {
         </Card>
 
         {/* 2. Simulador de Scoring */}
-        <Card title="Simulador de Scoring Antifraude" subtitle="Ejecuta una evaluaci?n heur?stica sobre una transacci?n">
+        <Card title="Simulador de Scoring Antifraude" subtitle="Ejecuta una evaluación heurística sobre una transacción">
           <form onSubmit={handleEvaluarManual} className="space-y-4">
-            <Field label="ID Transacci?n (Opcional - Autogenerable)">
+            <Field label="ID Transacción (Opcional - Autogenerable)">
               <input
                 type="text"
                 value={evalTxId}
                 onChange={(e) => setEvalTxId(e.target.value)}
-                placeholder="Dejar vac?o para generar UUID autom?tico"
+                placeholder="Dejar vacío para generar UUID automático"
                 className="w-full rounded-lg border border-slate-300 p-2.5 text-sm font-mono"
               />
             </Field>
@@ -229,8 +229,8 @@ export default function FraudePage() {
         </Card>
       </div>
 
-      {/* Centro de Alertas Cr?ticas */}
-      <Card title="Centro de Alertas de Seguridad & Fraude" subtitle="Alertas generadas autom?ticamente por el motor de reglas y eventos de RabbitMQ">
+      {/* Centro de Alertas Críticas */}
+      <Card title="Centro de Alertas de Seguridad & Fraude" subtitle="Alertas generadas automáticamente por el motor de reglas y eventos de RabbitMQ">
         {alertas.length === 0 ? (
           <div className="p-8 text-center text-slate-400">No hay alertas activas de fraude. El sistema opera normalmente.</div>
         ) : (
@@ -259,7 +259,7 @@ export default function FraudePage() {
 
                 <div className="text-xs space-y-1 text-slate-600">
                   <div className="flex justify-between">
-                    <span>Evaluaci?n:</span>
+                    <span>Evaluación:</span>
                     <span className="font-mono text-slate-900">{short(a.id_evaluacion)}</span>
                   </div>
                   <div className="flex justify-between">
@@ -289,14 +289,14 @@ export default function FraudePage() {
       {/* Tabla de Evaluaciones */}
       <Card title="Historial de Evaluaciones de Riesgo" subtitle="Registro inmutable de scoring de transacciones">
         {evaluaciones.length === 0 ? (
-          <div className="p-6 text-center text-slate-400">No hay evaluaciones registradas a?n.</div>
+          <div className="p-6 text-center text-slate-400">No hay evaluaciones registradas aún.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-100/80 text-xs text-slate-600 uppercase border-b border-slate-200">
                 <tr>
-                  <th className="p-3">ID Evaluaci?n</th>
-                  <th className="p-3">Transacci?n Evaluada</th>
+                  <th className="p-3">ID Evaluación</th>
+                  <th className="p-3">Transacción Evaluada</th>
                   <th className="p-3">Regla Aplicada</th>
                   <th className="p-3 text-center">Score de Riesgo</th>
                   <th className="p-3 text-center">Resultado</th>

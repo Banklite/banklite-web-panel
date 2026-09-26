@@ -9,15 +9,18 @@ import {
   ApiError,
   Cuenta,
   CuentaContable,
+  Usuario,
   depositar,
   getLedgerBalance,
   listAccounts,
+  listUsuarios,
 } from "@/lib/api";
 
 type Feedback = { kind: "success" | "error"; text: string } | null;
 
 export default function LedgerPage() {
   const [cuentas, setCuentas] = useState<Cuenta[]>([]);
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [feedback, setFeedback] = useState<Feedback>(null);
 
   const [saldoCuentaId, setSaldoCuentaId] = useState("");
@@ -27,10 +30,20 @@ export default function LedgerPage() {
   const [depositoMonto, setDepositoMonto] = useState("100000");
 
   useEffect(() => {
-    listAccounts()
-      .then(setCuentas)
+    Promise.all([listAccounts(), listUsuarios()])
+      .then(([c, u]) => {
+        setCuentas(c);
+        setUsuarios(u);
+      })
       .catch(showError);
   }, []);
+
+  // Identifica la cuenta por el nombre del cliente dueño, no por su UUID.
+  function nombreCuenta(c: Cuenta): string {
+    const u = usuarios.find((u) => u.id_usuario === c.id_usuario);
+    const nombre = u ? [u.nombre, u.apellido].filter(Boolean).join(" ") || u.email : "Cliente desconocido";
+    return `${nombre} — ${c.moneda} (${c.estado})`;
+  }
 
   function showError(err: unknown) {
     if (err instanceof ApiError) {
@@ -120,7 +133,7 @@ export default function LedgerPage() {
               <option value="">Selecciona una cuenta…</option>
               {cuentas.map((c) => (
                 <option key={c.id_cuenta} value={c.id_cuenta}>
-                  {c.id_cuenta.slice(0, 8)}… ({c.moneda})
+                  {nombreCuenta(c)}
                 </option>
               ))}
             </select>
@@ -161,7 +174,7 @@ export default function LedgerPage() {
                 <option value="">Selecciona una cuenta…</option>
                 {cuentas.map((c) => (
                   <option key={c.id_cuenta} value={c.id_cuenta}>
-                    {c.id_cuenta.slice(0, 8)}… ({c.moneda})
+                    {nombreCuenta(c)}
                   </option>
                 ))}
               </select>

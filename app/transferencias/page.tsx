@@ -41,6 +41,14 @@ function nombreRiel(tipo: string) {
   return RIEL_LABELS[tipo] ?? tipo;
 }
 
+// Identifica la cuenta por el nombre del cliente dueño, no por su UUID —
+// para que sea obvio de quién es cada cuenta al elegirla en un select.
+function nombreCuenta(c: Cuenta, usuarios: Usuario[]): string {
+  const u = usuarios.find((u) => u.id_usuario === c.id_usuario);
+  const nombre = u ? [u.nombre, u.apellido].filter(Boolean).join(" ") || u.email : "Cliente desconocido";
+  return `${nombre} — ${c.moneda} (${c.estado})`;
+}
+
 type Feedback = { kind: "success" | "error"; text: string } | null;
 
 export default function TransferenciasPage() {
@@ -276,7 +284,7 @@ export default function TransferenciasPage() {
                   <option value="">Selecciona la cuenta destino…</option>
                   {cuentas.map((c) => (
                     <option key={c.id_cuenta} value={c.id_cuenta}>
-                      {short(c.id_cuenta)} ({c.moneda})
+                      {nombreCuenta(c, usuarios)}
                     </option>
                   ))}
                 </select>
@@ -328,7 +336,7 @@ export default function TransferenciasPage() {
               <option value="">Cuenta origen…</option>
               {cuentas.map((c) => (
                 <option key={c.id_cuenta} value={c.id_cuenta}>
-                  {short(c.id_cuenta)} ({c.moneda})
+                  {nombreCuenta(c, usuarios)}
                 </option>
               ))}
             </select>
