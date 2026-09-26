@@ -384,14 +384,14 @@ export default function TransferenciasPage() {
 
       <div className="grid md:grid-cols-2 gap-6">
         <Card title="Transferencias" subtitle="GET /transfers">
-          <TransferenciasTable transferencias={transferencias} />
+          <TransferenciasTable transferencias={transferencias} cuentas={cuentas} usuarios={usuarios} beneficiarios={beneficiarios} />
         </Card>
 
         <Card
           title="Proyección asíncrona — transferencias recibidas"
           subtitle="account-service · GET /transfers-received — alimentada solo por el evento transfer.completed"
         >
-          <TransferenciasRecibidasTable rows={transferenciasRecibidas} />
+          <TransferenciasRecibidasTable rows={transferenciasRecibidas} cuentas={cuentas} usuarios={usuarios} />
         </Card>
       </div>
     </div>
@@ -451,7 +451,17 @@ function BeneficiariosTable({ beneficiarios }: { beneficiarios: Beneficiario[] }
   );
 }
 
-function TransferenciasTable({ transferencias }: { transferencias: Transferencia[] }) {
+function getOwnerName(cuenta: Cuenta, usuarios: Usuario[]): string {
+  const u = usuarios.find((x) => x.id_usuario === cuenta.id_usuario);
+  return u ? `${u.nombre} ${u.apellido ?? ""}`.trim() : short(cuenta.id_cuenta);
+}
+
+function getBeneficiarioName(id: string, beneficiarios: Beneficiario[]): string {
+  const b = beneficiarios.find((x) => x.id_beneficiario === id);
+  return b ? (b.nombre ?? short(b.id_beneficiario)) : "—";
+}
+
+function TransferenciasTable({ transferencias, cuentas, usuarios, beneficiarios }: { transferencias: Transferencia[]; cuentas: Cuenta[]; usuarios: Usuario[]; beneficiarios: Beneficiario[] }) {
   if (transferencias.length === 0)
     return <p className="text-sm text-slate-400">Aún no hay transferencias.</p>;
   return (
@@ -459,6 +469,9 @@ function TransferenciasTable({ transferencias }: { transferencias: Transferencia
       <table className="w-full text-sm">
         <thead>
           <tr className="text-left text-slate-400 border-b border-slate-100">
+            <th className="py-1 pr-2">Propietario origen</th>
+            <th className="py-1 pr-2">Cuenta origen</th>
+            <th className="py-1 pr-2">Beneficiario</th>
             <th className="py-1 pr-2">Monto</th>
             <th className="py-1 pr-2">Estado</th>
             <th className="py-1 pr-2">Fecha</th>
@@ -467,6 +480,9 @@ function TransferenciasTable({ transferencias }: { transferencias: Transferencia
         <tbody>
           {transferencias.map((t) => (
             <tr key={t.id_transferencia} className="border-b border-slate-50">
+              <td className="py-1 pr-2">{getOwnerName(cuentas.find((c) => c.id_cuenta === t.id_cuenta_origen) ?? { id_cuenta: "", id_usuario: "", tipo_cuenta: "", moneda: "", estado: "", fecha_apertura: "", fecha_cierre: null }, usuarios)}</td>
+              <td className="py-1 pr-2 font-mono text-xs">{short(t.id_cuenta_origen)}</td>
+              <td className="py-1 pr-2">{getBeneficiarioName(t.id_beneficiario, beneficiarios)}</td>
               <td className="py-1 pr-2">{t.monto}</td>
               <td className="py-1 pr-2">
                 <StatusPill value={t.estado} />
@@ -480,7 +496,7 @@ function TransferenciasTable({ transferencias }: { transferencias: Transferencia
   );
 }
 
-function TransferenciasRecibidasTable({ rows }: { rows: TransferenciaRecibida[] }) {
+function TransferenciasRecibidasTable({ rows, cuentas, usuarios }: { rows: TransferenciaRecibida[]; cuentas: Cuenta[]; usuarios: Usuario[] }) {
   if (rows.length === 0)
     return (
       <p className="text-sm text-slate-400">
@@ -492,6 +508,7 @@ function TransferenciasRecibidasTable({ rows }: { rows: TransferenciaRecibida[] 
       <table className="w-full text-sm">
         <thead>
           <tr className="text-left text-slate-400 border-b border-slate-100">
+            <th className="py-1 pr-2">Propietario origen</th>
             <th className="py-1 pr-2">Monto</th>
             <th className="py-1 pr-2">Estado</th>
             <th className="py-1 pr-2">Recibido</th>
@@ -500,6 +517,7 @@ function TransferenciasRecibidasTable({ rows }: { rows: TransferenciaRecibida[] 
         <tbody>
           {rows.map((r) => (
             <tr key={r.id_transferencia} className="border-b border-slate-50">
+              <td className="py-1 pr-2">{getOwnerName(cuentas.find((c) => c.id_cuenta === r.id_cuenta_origen) ?? { id_cuenta: "", id_usuario: "", tipo_cuenta: "", moneda: "", estado: "", fecha_apertura: "", fecha_cierre: null }, usuarios)}</td>
               <td className="py-1 pr-2">{r.monto}</td>
               <td className="py-1 pr-2">
                 <StatusPill value={r.estado} />
