@@ -43,6 +43,12 @@ function nombreRiel(tipo: string) {
 
 type Feedback = { kind: "success" | "error"; text: string } | null;
 
+function cuentaLabel(c: Cuenta, usuarios: Usuario[]): string {
+  const u = usuarios.find((x) => x.id_usuario === c.id_usuario);
+  const nombre = u ? `${u.nombre} ${u.apellido ?? ""}`.trim() : "";
+  return `${c.moneda} ${c.tipo_cuenta}${nombre ? ` — ${nombre}` : ""}`;
+}
+
 export default function TransferenciasPage() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [cuentas, setCuentas] = useState<Cuenta[]>([]);
@@ -274,11 +280,11 @@ export default function TransferenciasPage() {
                   className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
                 >
                   <option value="">Selecciona la cuenta destino…</option>
-                  {cuentas.map((c) => (
-                    <option key={c.id_cuenta} value={c.id_cuenta}>
-                      {short(c.id_cuenta)} ({c.moneda})
-                    </option>
-                  ))}
+{cuentas.map((c) => (
+  <option key={c.id_cuenta} value={c.id_cuenta}>
+    {cuentaLabel(c, usuarios)}
+  </option>
+))}
                 </select>
               </Field>
             ) : (
