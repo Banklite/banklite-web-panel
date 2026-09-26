@@ -9,22 +9,13 @@ const LINKS = [
   { href: "/identidad", label: "Identidad & KYC", step: "1", hint: "Crear Usuario", icon: Users },
   { href: "/cuentas", label: "Cuentas Bancarias", step: "2", hint: "Abrir Cuenta", icon: Wallet },
   { href: "/tarjetas", label: "Tarjetas & Pagos", step: "3", hint: "Emitir / Pagar", icon: CreditCard },
-  { href: "/ledger", label: "Ledger Contable", step: "4", hint: "Partida Doble", icon: BookOpen },
-  { href: "/transferencias", label: "Transferencias", step: "5", hint: "Rieles de Pago", icon: ArrowRightLeft },
-  { href: "/fraude", label: "Monitoreo Fraude", step: "6", hint: "Alertas Riesgo", icon: ShieldAlert },
+  { href: "/fraude", label: "Monitoreo Fraude", step: "4", hint: "Alertas Riesgo", icon: ShieldAlert },
+  { href: "/ledger", label: "Ledger Contable", step: "5", hint: "Partida Doble", icon: BookOpen },
+  { href: "/transferencias", label: "Transferencias", step: "6", hint: "Rieles de Pago", icon: ArrowRightLeft },
 ];
 
 export function Nav() {
   const pathname = usePathname();
-
-  function linkClass(active: boolean) {
-    return `flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
-      active
-        ? "bg-indigo-600 text-white shadow-md shadow-indigo-900/20"
-        : "text-slate-400 hover:bg-slate-800 hover:text-slate-100"
-    }`;
-  }
-
   return (
     <nav className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between px-3 mb-2">
