@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/Card";
 import { Banner } from "@/components/Banner";
-import { StatusPill } from "@/components/StatusPill";
 import { Field } from "@/components/Field";
 import { FlowBanner } from "@/components/FlowBanner";
 import { ApiError, Usuario, listUsuarios, verificarKyc } from "@/lib/api";
@@ -95,18 +94,18 @@ export default function IdentidadPage() {
         <Card title="Verificación KYC" subtitle="POST /kyc/verify">
           <form onSubmit={handleKyc} className="space-y-3">
             <Field label="Usuario" hint="El usuario que se va a verificar.">
-              <select
-                value={kycUsuarioId}
-                onChange={(e) => handleUserSelect(e.target.value)}
-                className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
-              >
-                <option value="">Selecciona un usuario...</option>
-                {usuarios.map((u) => (
-                  <option key={u.id_usuario} value={u.id_usuario}>
-                    {u.nombre} - {u.email} - {u.estado}
-                  </option>
-                ))}
-              </select>
+        <select
+                 value={kycUsuarioId}
+                 onChange={(e) => handleUserSelect(e.target.value)}
+                 className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
+               >
+                 <option value="">Selecciona un usuario...</option>
+                 {usuarios.map((u) => (
+                   <option key={u.id_usuario} value={u.id_usuario}>
+                     {u.nombre} - {u.email}
+                   </option>
+                 ))}
+               </select>
             </Field>
             <Field label="Tipo de documento">
               <select
@@ -178,22 +177,20 @@ function UsuariosTable({ usuarios }: { usuarios: Usuario[] }) {
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-left text-slate-400 border-b border-slate-100">
-            <th className="py-1 pr-2">Cédula</th>
-            <th className="py-1 pr-2">Nombre</th>
-            <th className="py-1 pr-2">Email</th>
-            <th className="py-1 pr-2">Estado</th>`r`n            <th className="py-1 pr-2">Estado KYC</th>
-          </tr>
+           <tr className="text-left text-slate-400 border-b border-slate-100">
+             <th className="py-1 pr-2">Cédula</th>
+             <th className="py-1 pr-2">Nombre</th>
+             <th className="py-1 pr-2">Email</th>
+           </tr>
         </thead>
         <tbody>
-          {usuarios.map((u) => (
-            <tr key={u.id_usuario} className="border-b border-slate-50">
-              <td className="py-1 pr-2 font-mono">{u.cedula || "N/A"}</td>
-              <td className="py-1 pr-2">{u.nombre}</td>
-              <td className="py-1 pr-2">{u.email}</td>
-              <td className="py-1 pr-2">`r`n                <StatusPill value={u.estado} />`r`n              </td>`r`n              <td className="py-1 pr-2">`r`n                <StatusPill value={u.estado_kyc || "pendiente"} />`r`n              </td>
-            </tr>
-          ))}
+{usuarios.map((u) => (
+             <tr key={u.id_usuario} className="border-b border-slate-50">
+               <td className="py-1 pr-2 font-mono">{u.cedula || "N/A"}</td>
+               <td className="py-1 pr-2">{u.nombre}</td>
+               <td className="py-1 pr-2">{u.email}</td>
+             </tr>
+           ))}
         </tbody>
       </table>
     </div>
