@@ -5,15 +5,20 @@ import { useEffect, useState } from "react";
 /** Notificación flotante de éxito/error.
  *
  * Antes se insertaba en el flujo normal de la página (empujaba el resto del
- * contenido hacia abajo). Ahora flota en la esquina superior derecha y se
- * oculta sola después de unos segundos, como una notificación (toast), sin
+ * contenido hacia abajo). Ahora flota en la esquina superior derecha, sin
  * afectar el layout de la página.
+ *
+ * Los mensajes de éxito se autoocultan solos (son informativos, no requieren
+ * acción). Los de error NO se autoocultan — el usuario debe cerrarlos con la
+ * ×, porque suelen indicar algo que hay que corregir (fondos insuficientes,
+ * credenciales incorrectas, etc.) y es fácil perderlos si desaparecen solos.
  */
 export function Banner({ kind, text }: { kind: "success" | "error"; text: string }) {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
     setVisible(true);
+    if (kind === "error") return;
     const timer = setTimeout(() => setVisible(false), 5000);
     return () => clearTimeout(timer);
   }, [kind, text]);
