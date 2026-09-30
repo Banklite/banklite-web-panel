@@ -81,8 +81,7 @@ export default function ClienteMovimientosPage() {
                 <Wallet size={80} />
               </div>
               <div className="relative z-10">
-                <p className="text-indigo-200 font-semibold mb-1">Cuenta {c.moneda}</p>
-                <p className="text-sm font-mono text-indigo-300 mb-4">{c.id_cuenta}</p>
+                <p className="text-indigo-200 font-semibold mb-1 capitalize">Cuenta {c.tipo_cuenta} — {c.moneda}</p>
                 <p className="text-indigo-100 text-sm mb-1">Saldo Disponible</p>
                 {s ? (
                   <p className="text-4xl font-black">${Number(s.saldo_actual).toLocaleString()}</p>

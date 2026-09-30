@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { obtenerSesion } from "@/lib/auth";
 import {
+  ApiError,
   listAccounts, listBeneficiaries, listRails, createBeneficiary, createTransfer,
   Cuenta, Beneficiario, RielPago
 } from "@/lib/api";
@@ -62,8 +63,8 @@ export default function ClienteTransferenciasPage() {
       setBeneficiarios(b.filter(be => be.id_usuario === sesion?.usuario.id_usuario));
       setNuevoNombre("");
       setNuevaCuentaDest("");
-    } catch {
-      setError("No se pudo agregar el destinatario.");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "No se pudo agregar el destinatario.");
     }
   }
 
@@ -85,8 +86,12 @@ export default function ClienteTransferenciasPage() {
       const benefNombre = beneficiarios.find(b => b.id_beneficiario === beneficiario)?.nombre ?? "destinatario";
       setResultado(`Transferencia de $${Number(monto).toLocaleString()} enviada exitosamente a ${benefNombre}.`);
       setPaso("exito");
-    } catch {
-      setError("No pudimos procesar la transferencia en este momento. Tu dinero no fue descontado.");
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else {
+        setError("No pudimos procesar la transferencia en este momento. Tu dinero no fue descontado.");
+      }
     } finally {
       setEnviando(false);
     }
@@ -142,8 +147,8 @@ export default function ClienteTransferenciasPage() {
                   cuentaOrigen === c.id_cuenta ? "border-indigo-600 bg-indigo-50" : "border-slate-200 hover:border-indigo-300"
                 }`}
               >
-                <p className="font-bold text-lg">{c.moneda} - {c.estado}</p>
-                <p className="text-slate-500 font-mono text-sm mt-1">ID: {c.id_cuenta}</p>
+                <p className="font-bold text-lg capitalize">{c.tipo_cuenta} — {c.moneda}</p>
+                <p className="text-slate-500 text-sm mt-1">Estado: {c.estado}</p>
               </button>
             ))}
           </div>
