@@ -15,15 +15,15 @@ import {
   Usuario,
   listAccounts,
   listCards,
-  createCard,
   blockCard,
   unblockCard,
+  eliminarTarjeta,
   authorizeCardTransaction,
   listCardAuthorizations,
   listAllAuthorizations,
   listUsuarios,
 } from "@/lib/api";
-import { CreditCard, Shield, Lock, Unlock, ShoppingCart, CheckCircle2, XCircle, Eye, EyeOff } from "lucide-react";
+import { CreditCard, Shield, Lock, Unlock, ShoppingCart, CheckCircle2, XCircle, Trash2 } from "lucide-react";
 
 type Feedback = { kind: "success" | "error"; text: string } | null;
 
@@ -33,16 +33,6 @@ export default function TarjetasPage() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [autorizaciones, setAutorizaciones] = useState<Autorizacion[]>([]);
   const [feedback, setFeedback] = useState<Feedback>(null);
-  const [showFullNumber, setShowFullNumber] = useState<Record<string, boolean>>({});
-
-  const toggleShowNumber = (cardId: string) => {
-    setShowFullNumber((prev) => ({ ...prev, [cardId]: !prev[cardId] }));
-  };
-
-  // Formulario Emisión
-  const [selectedCuentaId, setSelectedCuentaId] = useState("");
-  const [tipoTarjeta, setTipoTarjeta] = useState("virtual");
-  const [procesador, setProcesador] = useState("Visa Direct");
 
   // Formulario Bloqueo
   const [bloqueoCardId, setBloqueoCardId] = useState("");
@@ -89,34 +79,10 @@ export default function TarjetasPage() {
     } else if (err instanceof Error) {
       setFeedback({
         kind: "error",
-        text: `Error de conexión con card-service: ${err.message}. ¿Está corriendo en el puerto 8005?`,
+        text: `Error de conexión con card-service: ${err.message}.`,
       });
     } else {
       setFeedback({ kind: "error", text: "Ocurrió un error inesperado." });
-    }
-  }
-
-  async function handleEmitirTarjeta(e: React.FormEvent) {
-    e.preventDefault();
-    setFeedback(null);
-    if (!selectedCuentaId) {
-      setFeedback({ kind: "error", text: "Debes seleccionar una cuenta bancaria." });
-      return;
-    }
-    try {
-      const card = await createCard({
-        id_cuenta: selectedCuentaId,
-        tipo_tarjeta: tipoTarjeta,
-        procesador_externo: procesador,
-        estado: "activa",
-      });
-      setFeedback({
-        kind: "success",
-        text: `Tarjeta ${card.tipo_tarjeta} emitida exitosamente (${short(card.id_tarjeta)}) vinculada a la cuenta ${short(card.id_cuenta)}.`,
-      });
-      await refresh();
-    } catch (err) {
-      showError(err);
     }
   }
 
@@ -147,6 +113,21 @@ export default function TarjetasPage() {
       setFeedback({
         kind: "success",
         text: `Tarjeta ${short(idTarjeta)} reactivada exitosamente.`,
+      });
+      await refresh();
+    } catch (err) {
+      showError(err);
+    }
+  }
+
+  async function handleEliminar(idTarjeta: string) {
+    setFeedback(null);
+    if (!confirm(`¿Confirma que desea eliminar la tarjeta ${short(idTarjeta)}? Esta acción marcará la tarjeta como vencida.`)) return;
+    try {
+      await eliminarTarjeta(idTarjeta);
+      setFeedback({
+        kind: "success",
+        text: `Tarjeta ${short(idTarjeta)} eliminada (marcada como vencida).`,
       });
       await refresh();
     } catch (err) {
@@ -193,66 +174,60 @@ export default function TarjetasPage() {
     <div className="space-y-8 animate-fade-in">
       <FlowBanner
         steps={[
-          "1. Emitir tarjeta física o virtual asociándola a una cuenta abierta en account-service.",
-          "2. Simular compras en comercios para autorizar o rechazar transacciones en tiempo real.",
-          "3. Bloquear tarjetas por seguridad y verificar el cese de autorizaciones.",
+          "1. Bloquear tarjetas por seguridad en caso de pérdida o sospecha de fraude.",
+          "2. Reactivar o eliminar tarjetas desde el inventario de la tabla inferior.",
+          "3. Simular compras en comercios para autorizar o rechazar transacciones en tiempo real.",
         ]}
       />
 
       {feedback && <Banner kind={feedback.kind} text={feedback.text} />}
 
-      {/* Grid Superior: Emisión y Autorización */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* 1. Emisión */}
-        <Card title="Emitir Nueva Tarjeta" subtitle="Crear tarjeta física o virtual vinculada a una cuenta">
-          <form onSubmit={handleEmitirTarjeta} className="space-y-4">
-            <Field label="Cuenta Bancaria de Origen">
+      {/* Nota: La emisión de tarjetas es exclusiva del portal del cliente */}
+      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-start gap-3">
+        <Shield size={20} className="text-blue-600 flex-shrink-0 mt-0.5" />
+        <p className="text-blue-700 text-sm font-semibold">
+          La emisión de tarjetas es responsabilidad del propio usuario desde su portal de cliente.
+          Aquí solo puede bloquear, desbloquear y eliminar tarjetas existentes.
+        </p>
+      </div>
+
+      {/* Grid Superior: Bloqueo y Autorización */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* 1. Bloqueo de Seguridad */}
+        <Card title="Bloquear Tarjeta" subtitle="Restricción inmediata de tarjetas por seguridad">
+          <form onSubmit={handleBloquearTarjeta} className="space-y-4">
+            <Field label="Tarjeta a Bloquear">
               <select
-                value={selectedCuentaId}
-                onChange={(e) => setSelectedCuentaId(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 p-2.5 text-sm bg-white focus:ring-2 focus:ring-indigo-500"
+                value={bloqueoCardId}
+                onChange={(e) => setBloqueoCardId(e.target.value)}
+                className="w-full rounded-lg border border-slate-300 p-2.5 text-sm bg-white"
               >
-                <option value="">-- Selecciona una cuenta --</option>
-                {cuentas.map((c) => {
-                  const dueno = usuarios.find((u) => u.id_usuario === c.id_usuario);
-                  const nombreDueno = dueno ? `${dueno.nombre}${dueno.apellido ? " " + dueno.apellido : ""}` : "Usuario desconocido";
-                  return (
-                    <option key={c.id_cuenta} value={c.id_cuenta}>
-                      {nombreDueno} — {c.moneda} ({c.estado}) [{short(c.id_cuenta)}]
+                <option value="">-- Selecciona tarjeta activa --</option>
+                {tarjetas
+                  .filter((t) => t.estado === "activa")
+                  .map((t) => (
+                    <option key={t.id_tarjeta} value={t.id_tarjeta}>
+                      {ownerName(t.id_cuenta)} — {short(t.id_tarjeta)} ({t.tipo_tarjeta})
                     </option>
-                  );
-                })}
+                  ))}
               </select>
             </Field>
 
-            <Field label="Tipo de Tarjeta">
-              <select
-                value={tipoTarjeta}
-                onChange={(e) => setTipoTarjeta(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 p-2.5 text-sm bg-white"
-              >
-                <option value="virtual">Virtual (Digital / App)</option>
-                <option value="fisica">Física (Plástico / Contactless)</option>
-              </select>
-            </Field>
-
-            <Field label="Procesador Externo">
-              <select
-                value={procesador}
-                onChange={(e) => setProcesador(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 p-2.5 text-sm bg-white"
-              >
-                <option value="Visa Direct">Visa Direct</option>
-                <option value="Mastercard Processing">Mastercard Processing</option>
-                <option value="Marqeta Card Gateway">Marqeta Card Gateway</option>
-              </select>
+            <Field label="Motivo de Seguridad">
+              <input
+                type="text"
+                value={motivoBloqueo}
+                onChange={(e) => setMotivoBloqueo(e.target.value)}
+                placeholder="Ej. Sospecha de clonación / robo"
+                className="w-full rounded-lg border border-slate-300 p-2.5 text-sm"
+              />
             </Field>
 
             <button
               type="submit"
-              className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-indigo-700 transition"
+              className="w-full rounded-lg bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-rose-700 transition flex items-center justify-center gap-2"
             >
-              Emitir Tarjeta
+              <Lock size={16} /> Bloquear Tarjeta
             </button>
           </form>
         </Card>
@@ -269,7 +244,7 @@ export default function TarjetasPage() {
                 <option value="">-- Selecciona tarjeta --</option>
                 {tarjetas.map((t) => (
                   <option key={t.id_tarjeta} value={t.id_tarjeta}>
-                    {short(t.id_tarjeta)} - {t.tipo_tarjeta} [{t.estado}]
+                    {ownerName(t.id_cuenta)} — {short(t.id_tarjeta)} [{t.estado}]
                   </option>
                 ))}
               </select>
@@ -304,51 +279,12 @@ export default function TarjetasPage() {
             </button>
           </form>
         </Card>
-
-        {/* 3. Bloqueo de Seguridad */}
-        <Card title="Control de Bloqueos" subtitle="Restricción o reactivación inmediata de tarjetas">
-          <form onSubmit={handleBloquearTarjeta} className="space-y-4">
-            <Field label="Tarjeta a Bloquear">
-              <select
-                value={bloqueoCardId}
-                onChange={(e) => setBloqueoCardId(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 p-2.5 text-sm bg-white"
-              >
-                <option value="">-- Selecciona tarjeta activa --</option>
-                {tarjetas
-                  .filter((t) => t.estado === "activa")
-                  .map((t) => (
-                    <option key={t.id_tarjeta} value={t.id_tarjeta}>
-                      {short(t.id_tarjeta)} ({t.tipo_tarjeta})
-                    </option>
-                  ))}
-              </select>
-            </Field>
-
-            <Field label="Motivo de Seguridad">
-              <input
-                type="text"
-                value={motivoBloqueo}
-                onChange={(e) => setMotivoBloqueo(e.target.value)}
-                placeholder="Ej. Sospecha de clonación / robo"
-                className="w-full rounded-lg border border-slate-300 p-2.5 text-sm"
-              />
-            </Field>
-
-            <button
-              type="submit"
-              className="w-full rounded-lg bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-rose-700 transition flex items-center justify-center gap-2"
-            >
-              <Lock size={16} /> Bloquear Tarjeta
-            </button>
-          </form>
-        </Card>
       </div>
 
       {/* Grid Tarjetas Visuales & Listado */}
-      <Card title="Inventario de Tarjetas Emitidas" subtitle="Tarjetas registradas en base de datos independiente (3FN)">
+      <Card title="Inventario de Tarjetas" subtitle="Tarjetas registradas — puede bloquear, desbloquear o eliminar">
         {tarjetas.length === 0 ? (
-          <div className="p-8 text-center text-slate-400">No hay tarjetas emitidas en el sistema aún.</div>
+          <div className="p-8 text-center text-slate-400">No hay tarjetas en el sistema aún.</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {tarjetas.map((t) => (
@@ -364,25 +300,13 @@ export default function TarjetasPage() {
                   <StatusPill value={t.estado} />
                 </div>
 
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-8 rounded bg-amber-400/80 border border-amber-300/60 flex items-center justify-center text-[10px] text-slate-900 font-mono font-bold">
-                      CHIP
-                    </div>
-                    <span className="text-xs text-slate-300 font-mono tracking-wider">
-                      {showFullNumber[t.id_tarjeta]
-                        ? `4532 ${t.id_tarjeta.replace(/-/g, "").slice(0, 4).toUpperCase()} ${t.id_tarjeta.replace(/-/g, "").slice(4, 8).toUpperCase()} ${t.id_tarjeta.slice(-4).toUpperCase()}`
-                        : `•••• •••• •••• ${t.id_tarjeta.slice(-4).toUpperCase()}`}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => toggleShowNumber(t.id_tarjeta)}
-                    className="p-1 text-slate-400 hover:text-white transition rounded focus:outline-none"
-                    title={showFullNumber[t.id_tarjeta] ? "Ocultar número" : "Ver número completo"}
-                  >
-                    {showFullNumber[t.id_tarjeta] ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
+                <div className="mb-4">
+                  <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-0.5">Número</p>
+                  <p className="text-sm font-mono text-slate-200 tracking-wider">
+                    {t.numero_tarjeta
+                      ? `**** **** **** ${t.numero_tarjeta.slice(-4)}`
+                      : "Sin asignar"}
+                  </p>
                 </div>
 
                 {/* Nombre del titular */}
@@ -399,25 +323,30 @@ export default function TarjetasPage() {
                     <span className="font-mono">{short(t.id_tarjeta)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Cuenta:</span>
-                    <span className="font-mono">{short(t.id_cuenta)}</span>
-                  </div>
-                  <div className="flex justify-between">
                     <span className="text-slate-400">Procesador:</span>
                     <span>{t.procesador_externo}</span>
                   </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Emisión:</span>
+                    <span>{new Date(t.fecha_emision).toLocaleDateString()}</span>
+                  </div>
                 </div>
 
-                <div className="mt-4 pt-3 flex items-center justify-between border-t border-white/10">
-                  <span className="text-[11px] text-slate-400">
-                    {new Date(t.fecha_emision).toLocaleDateString()}
-                  </span>
+                <div className="mt-4 pt-3 flex items-center justify-between gap-2 border-t border-white/10">
                   {t.estado === "bloqueada" && (
                     <button
                       onClick={() => handleDesbloquear(t.id_tarjeta)}
-                      className="px-3 py-1 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 rounded-lg text-xs font-semibold flex items-center gap-1 border border-emerald-500/30 transition"
+                      className="flex-1 px-3 py-1.5 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 border border-emerald-500/30 transition"
                     >
                       <Unlock size={12} /> Reactivar
+                    </button>
+                  )}
+                  {t.estado !== "vencida" && (
+                    <button
+                      onClick={() => handleEliminar(t.id_tarjeta)}
+                      className="flex-1 px-3 py-1.5 bg-red-500/20 text-red-300 hover:bg-red-500/30 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 border border-red-500/30 transition"
+                    >
+                      <Trash2 size={12} /> Eliminar
                     </button>
                   )}
                 </div>
@@ -441,7 +370,7 @@ export default function TarjetasPage() {
                   <th className="p-3">Comercio</th>
                   <th className="p-3 text-right">Monto</th>
                   <th className="p-3 text-center">Resultado</th>
-                  <th className="p-3">Fecha & Hora</th>
+                  <th className="p-3">Fecha &amp; Hora</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">

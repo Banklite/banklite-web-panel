@@ -1,13 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
 import { obtenerSesion, Sesion, guardarSesion } from "@/lib/auth";
-import { User, Mail, Phone, MapPin, Calendar, CheckCircle, Clock, AlertTriangle, Save } from "lucide-react";
-import { updateUsuario } from "@/lib/api";
+import { User, Mail, Phone, MapPin, Calendar, CheckCircle, Clock, AlertTriangle, Save, CreditCard } from "lucide-react";
+import { updateUsuario, listAccounts, Cuenta } from "@/lib/api";
 
 export default function ClientePerfilPage() {
   const [sesion, setSesion] = useState<Sesion | null>(null);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [cuenta, setCuenta] = useState<Cuenta | null>(null);
   
   // Form fields
   const [cedula, setCedula] = useState("");
@@ -25,6 +26,12 @@ export default function ClientePerfilPage() {
       setFechaVenc(s.usuario.fecha_vencimiento || "");
       setPaisExp(s.usuario.pais_expedicion || "CO");
       setFechaNac(s.usuario.fecha_nacimiento || "");
+      
+      // Consultamos la cuenta para traer el numero oficial desde account-service
+      listAccounts().then((accs) => {
+        const miCuenta = accs.find(c => c.id_usuario === s.usuario.id_usuario && c.estado === "activa");
+        if (miCuenta) setCuenta(miCuenta);
+      }).catch(err => console.error("Error al obtener cuenta:", err));
     }
   }, []);
 
@@ -40,7 +47,9 @@ export default function ClientePerfilPage() {
     { label: "Telefono", value: u.telefono, icon: Phone },
     { label: "Pais de residencia", value: u.pais_residencia, icon: MapPin },
     { label: "Fecha de nacimiento", value: u.fecha_nacimiento ?? "No registrada", icon: Calendar },
-    { label: "Servicio solicitado", value: u.servicio_solicitado ?? "No especificado", icon: User },
+    { label: "Número de cuenta", value: cuenta?.numero_cuenta ?? "No asignada", icon: CreditCard },
+    { label: "Tipo de cuenta", value: cuenta ? (cuenta.tipo_cuenta.charAt(0).toUpperCase() + cuenta.tipo_cuenta.slice(1)) : "No asignada", icon: CreditCard },
+    { label: "Estado de cuenta", value: cuenta?.estado.toUpperCase() ?? "INACTIVA", icon: verificado ? CheckCircle : AlertTriangle },
   ];
 
   async function handleUpdate(e: React.FormEvent) {

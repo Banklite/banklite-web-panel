@@ -486,7 +486,7 @@ function TransferenciasTable({ transferencias, cuentas, usuarios, beneficiarios 
         <tbody>
           {transferencias.map((t) => (
             <tr key={t.id_transferencia} className="border-b border-slate-50">
-              <td className="py-1 pr-2">{getOwnerName(cuentas.find((c) => c.id_cuenta === t.id_cuenta_origen) ?? { id_cuenta: "", id_usuario: "", tipo_cuenta: "", moneda: "", estado: "", fecha_apertura: "", fecha_cierre: null }, usuarios)}</td>
+              <td className="py-1 pr-2">{getOwnerName(cuentas.find((c) => c.id_cuenta === t.id_cuenta_origen) ?? { id_cuenta: "", numero_cuenta: null, id_usuario: "", tipo_cuenta: "", moneda: "", estado: "", fecha_apertura: "", fecha_cierre: null }, usuarios)}</td>
               <td className="py-1 pr-2 font-mono text-xs">{short(t.id_cuenta_origen)}</td>
               <td className="py-1 pr-2">{getBeneficiarioName(t.id_beneficiario, beneficiarios)}</td>
               <td className="py-1 pr-2">{t.monto}</td>
@@ -523,7 +523,7 @@ function TransferenciasRecibidasTable({ rows, cuentas, usuarios }: { rows: Trans
         <tbody>
           {rows.map((r) => (
             <tr key={r.id_transferencia} className="border-b border-slate-50">
-              <td className="py-1 pr-2">{getOwnerName(cuentas.find((c) => c.id_cuenta === r.id_cuenta_origen) ?? { id_cuenta: "", id_usuario: "", tipo_cuenta: "", moneda: "", estado: "", fecha_apertura: "", fecha_cierre: null }, usuarios)}</td>
+              <td className="py-1 pr-2">{getOwnerName(cuentas.find((c) => c.id_cuenta === r.id_cuenta_origen) ?? { id_cuenta: "", numero_cuenta: null, id_usuario: "", tipo_cuenta: "", moneda: "", estado: "", fecha_apertura: "", fecha_cierre: null }, usuarios)}</td>
               <td className="py-1 pr-2">{r.monto}</td>
               <td className="py-1 pr-2">
                 <StatusPill value={r.estado} />
