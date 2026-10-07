@@ -100,7 +100,7 @@ export default function ClientePerfilPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1">Cédula</label>
-                <input required type="text" value={cedula} onChange={e=>setCedula(e.target.value)} className="w-full border-2 rounded-xl p-2.5 focus:border-indigo-600 outline-none" />
+                <input required type="text" inputMode="numeric" minLength={6} maxLength={10} pattern="[0-9]{6,10}" title="Solo números, entre 6 y 10 dígitos" value={cedula} onChange={e=>setCedula(e.target.value.replace(/\D/g, "").slice(0, 10))} className="w-full border-2 rounded-xl p-2.5 focus:border-indigo-600 outline-none" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1">País Expedición</label>

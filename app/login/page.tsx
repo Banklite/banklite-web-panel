@@ -43,11 +43,24 @@ export default function LoginPage() {
   const [paisResidencia, setPaisResidencia] = useState("CO");
   const [servicioSolicitado, setServicioSolicitado] = useState("Cuenta de Ahorros Digital");
   const [cedula, setCedula] = useState("");
+  const [representanteNombre, setRepresentanteNombre] = useState("");
+  const [representanteDocumento, setRepresentanteDocumento] = useState("");
   const [fechaExpedicion, setFechaExpedicion] = useState("");
   const [fechaVencimiento, setFechaVencimiento] = useState("");
   const [paisExpedicion, setPaisExpedicion] = useState("CO");
   const [regEmail, setRegEmail] = useState("");
   const [regPassword, setRegPassword] = useState("");
+
+  const esMenor = (() => {
+    if (!fechaNacimiento) return false;
+    const fn = new Date(fechaNacimiento);
+    if (isNaN(fn.getTime())) return false;
+    const hoy = new Date();
+    let edad = hoy.getFullYear() - fn.getFullYear();
+    const m = hoy.getMonth() - fn.getMonth();
+    if (m < 0 || (m === 0 && hoy.getDate() < fn.getDate())) edad--;
+    return edad < 18;
+  })();
 
   async function entrarConSesion(correo: string, clave: string, portalEsAdmin: boolean) {
     const result = await loginRequest(correo, clave);
@@ -92,6 +105,10 @@ export default function LoginPage() {
   async function handleRegistro(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (esMenor && (!representanteNombre.trim() || representanteDocumento.length < 6)) {
+      setError("Para menores de 18 años debes ingresar el nombre y el documento del representante legal.");
+      return;
+    }
     setCargando(true);
     try {
       await createUsuario({
@@ -107,6 +124,12 @@ export default function LoginPage() {
           fecha_expedicion: fechaExpedicion,
           fecha_vencimiento: fechaVencimiento,
           pais_expedicion: paisExpedicion,
+          ...(esMenor
+            ? {
+                representante_nombre: representanteNombre.trim(),
+                representante_documento: representanteDocumento,
+              }
+            : {}),
       });
       // Entra directo al sistema tras el registro (nunca como admin)
       await entrarConSesion(regEmail, regPassword, false);
@@ -272,7 +295,7 @@ export default function LoginPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label="Fecha de Nacimiento" hint="Formulario accesible para mayores de edad.">
+              <Field label="Fecha de Nacimiento" hint="Si eres menor de 18 años se pedirán los datos de tu representante.">
                 <div className="relative">
                   <input
                     type="date"
@@ -338,7 +361,7 @@ export default function LoginPage() {
             </Field>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="Número de Documento" hint="Cédula o Pasaporte">
-                <input type="text" required placeholder="Ej: 10101010" value={cedula} onChange={(e) => setCedula(e.target.value)} className="w-full border-2 border-slate-200 rounded-xl px-4 py-2.5 text-base focus:border-indigo-600 focus:outline-none" />
+                <input type="text" inputMode="numeric" required minLength={6} maxLength={10} pattern="[0-9]{6,10}" title="Solo números, entre 6 y 10 dígitos" placeholder="Ej: 10101010" value={cedula} onChange={(e) => setCedula(e.target.value.replace(/\D/g, "").slice(0, 10))} className="w-full border-2 border-slate-200 rounded-xl px-4 py-2.5 text-base focus:border-indigo-600 focus:outline-none" />
               </Field>
               <Field label="País Expedición">
                 <select value={paisExpedicion} onChange={(e) => setPaisExpedicion(e.target.value)} className="w-full border-2 border-slate-200 rounded-xl px-4 py-2.5 text-base focus:border-indigo-600 focus:outline-none bg-white">
@@ -354,6 +377,41 @@ export default function LoginPage() {
                 <input type="date" value={fechaVencimiento} onChange={(e) => setFechaVencimiento(e.target.value)} className="w-full border-2 border-slate-200 rounded-xl px-4 py-2.5 text-base focus:border-indigo-600 focus:outline-none" />
               </Field>
             </div>
+
+            {esMenor && (
+              <div className="rounded-2xl border-2 border-amber-300 bg-amber-50 p-4 space-y-3">
+                <p className="text-sm font-bold text-amber-800">
+                  Eres menor de 18 años: se requieren los datos de tu representante legal (padre, madre o tutor).
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Field label="Nombre del representante">
+                    <input
+                      type="text"
+                      required
+                      placeholder="Nombre completo"
+                      value={representanteNombre}
+                      onChange={(e) => setRepresentanteNombre(e.target.value)}
+                      className="w-full border-2 border-slate-200 rounded-xl px-4 py-2.5 text-base focus:border-indigo-600 focus:outline-none bg-white"
+                    />
+                  </Field>
+                  <Field label="Documento del representante" hint="Solo números, 6 a 10 dígitos">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      required
+                      minLength={6}
+                      maxLength={10}
+                      pattern="[0-9]{6,10}"
+                      title="Solo números, entre 6 y 10 dígitos"
+                      placeholder="Ej: 10101010"
+                      value={representanteDocumento}
+                      onChange={(e) => setRepresentanteDocumento(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                      className="w-full border-2 border-slate-200 rounded-xl px-4 py-2.5 text-base focus:border-indigo-600 focus:outline-none bg-white"
+                    />
+                  </Field>
+                </div>
+              </div>
+            )}
 
             <Field label="Correo electrónico" hint="Donde te enviaremos notificaciones de tu cuenta.">
               <input
