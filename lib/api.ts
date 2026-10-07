@@ -56,6 +56,8 @@ export type Usuario = {
   fecha_vencimiento?: string | null;
   pais_expedicion?: string | null;
   estado_kyc?: string | null;
+  representante_nombre?: string | null;
+  representante_documento?: string | null;
   role: "admin" | "cliente";
 };
 
@@ -72,6 +74,8 @@ export function createUsuario(data: {
   fecha_expedicion?: string;
   fecha_vencimiento?: string;
   pais_expedicion?: string;
+  representante_nombre?: string;
+  representante_documento?: string;
 }) {
   return request<Usuario>(`${IDENTITY_URL}/users`, {
     method: "POST",
@@ -140,6 +144,7 @@ export function verificarKyc(data: {
 
 export type Cuenta = {
   id_cuenta: string;
+  numero_cuenta: string | null;
   id_usuario: string;
   tipo_cuenta: string;
   moneda: string;
@@ -344,6 +349,7 @@ export type Bloqueo = {
 
 export type Tarjeta = {
   id_tarjeta: string;
+  numero_tarjeta: string | null;
   id_cuenta: string;
   tipo_tarjeta: string;
   procesador_externo: string;

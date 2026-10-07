@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -49,8 +49,14 @@ export default function LoginPage() {
   const [regEmail, setRegEmail] = useState("");
   const [regPassword, setRegPassword] = useState("");
 
-  async function entrarConSesion(correo: string, clave: string) {
+  async function entrarConSesion(correo: string, clave: string, portalEsAdmin: boolean) {
     const result = await loginRequest(correo, clave);
+    const usuarioRole = result.usuario.role;
+
+    if (portalEsAdmin && usuarioRole !== "admin") {
+      throw new Error("Estas credenciales no tienen permisos de administrador.");
+    }
+
     guardarSesion(result.access_token, result.usuario);
     router.replace("/");
   }
@@ -60,10 +66,12 @@ export default function LoginPage() {
     setError(null);
     setCargando(true);
     try {
-      await entrarConSesion(email, password);
+      await entrarConSesion(email, password, rolPortal === "admin");
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.status === 401 ? "Email o contraseña incorrectos." : err.message);
+      } else if (err instanceof Error) {
+        setError(err.message);
       } else {
         setError("No se pudo conectar con identity-service. ¿Está corriendo?");
       }
@@ -91,8 +99,8 @@ export default function LoginPage() {
           fecha_vencimiento: fechaVencimiento,
           pais_expedicion: paisExpedicion,
       });
-      // Entra directo al sistema tras el registro
-      await entrarConSesion(regEmail, regPassword);
+      // Entra directo al sistema tras el registro (nunca como admin)
+      await entrarConSesion(regEmail, regPassword, false);
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message);
