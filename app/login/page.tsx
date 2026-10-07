@@ -45,6 +45,11 @@ export default function LoginPage() {
   const [cedula, setCedula] = useState("");
   const [representanteNombre, setRepresentanteNombre] = useState("");
   const [representanteDocumento, setRepresentanteDocumento] = useState("");
+  const [representanteTipoDoc, setRepresentanteTipoDoc] = useState("cedula");
+  const [representanteParentesco, setRepresentanteParentesco] = useState("madre");
+  const [representanteTelefono, setRepresentanteTelefono] = useState("");
+  const [representanteEmail, setRepresentanteEmail] = useState("");
+  const [tipoDocumento, setTipoDocumento] = useState("cedula");
   const [fechaExpedicion, setFechaExpedicion] = useState("");
   const [fechaVencimiento, setFechaVencimiento] = useState("");
   const [paisExpedicion, setPaisExpedicion] = useState("CO");
@@ -105,8 +110,8 @@ export default function LoginPage() {
   async function handleRegistro(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (esMenor && (!representanteNombre.trim() || representanteDocumento.length < 6)) {
-      setError("Para menores de 18 años debes ingresar el nombre y el documento del representante legal.");
+    if (esMenor && (!representanteNombre.trim() || representanteDocumento.length < 6 || representanteTelefono.length < 7)) {
+      setError("Para menores de 18 años debes ingresar nombre, documento y teléfono del representante legal.");
       return;
     }
     setCargando(true);
@@ -121,6 +126,7 @@ export default function LoginPage() {
         fecha_nacimiento: fechaNacimiento,
                   servicio_solicitado: servicioSolicitado,
           cedula,
+          tipo_documento: tipoDocumento,
           fecha_expedicion: fechaExpedicion,
           fecha_vencimiento: fechaVencimiento,
           pais_expedicion: paisExpedicion,
@@ -128,6 +134,10 @@ export default function LoginPage() {
             ? {
                 representante_nombre: representanteNombre.trim(),
                 representante_documento: representanteDocumento,
+                representante_tipo_documento: representanteTipoDoc,
+                representante_parentesco: representanteParentesco,
+                representante_telefono: "+57" + representanteTelefono,
+                ...(representanteEmail ? { representante_email: representanteEmail } : {}),
               }
             : {}),
       });
@@ -346,7 +356,7 @@ export default function LoginPage() {
               </div>
             </Field>
 
-            <Field label="Servicio Bancario Solicitado" hint="Selecciona el producto que deseas solicitar.">
+            <Field label="Producto de interés" hint="Solo informativo: un asesor lo usará para contactarte. Luego abres tu cuenta y tarjeta desde tu portal.">
               <select
                 value={servicioSolicitado}
                 onChange={(e) => setServicioSolicitado(e.target.value)}
@@ -360,8 +370,20 @@ export default function LoginPage() {
               </select>
             </Field>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label="Número de Documento" hint="Cédula o Pasaporte">
-                <input type="text" inputMode="numeric" required minLength={6} maxLength={10} pattern="[0-9]{6,10}" title="Solo números, entre 6 y 10 dígitos" placeholder="Ej: 10101010" value={cedula} onChange={(e) => setCedula(e.target.value.replace(/\D/g, "").slice(0, 10))} className="w-full border-2 border-slate-200 rounded-xl px-4 py-2.5 text-base focus:border-indigo-600 focus:outline-none" />
+              <Field label="Tipo de documento">
+                <select
+                  value={tipoDocumento}
+                  onChange={(e) => { setTipoDocumento(e.target.value); setCedula(""); }}
+                  className="w-full border-2 border-slate-200 rounded-xl px-4 py-2.5 text-base focus:border-indigo-600 focus:outline-none bg-white"
+                >
+                  <option value="cedula">Cédula de ciudadanía</option>
+                  <option value="tarjeta_identidad">Tarjeta de identidad</option>
+                  <option value="cedula_extranjeria">Cédula de extranjería</option>
+                  <option value="pasaporte">Pasaporte</option>
+                </select>
+              </Field>
+              <Field label="Número de Documento" hint={tipoDocumento === "pasaporte" ? "Letras y números, 6 a 12" : "Solo números, 6 a 10 dígitos"}>
+                <input type="text" inputMode={tipoDocumento === "pasaporte" ? "text" : "numeric"} required minLength={6} maxLength={tipoDocumento === "pasaporte" ? 12 : 10} pattern={tipoDocumento === "pasaporte" ? "[A-Za-z0-9]{6,12}" : "[0-9]{6,10}"} title={tipoDocumento === "pasaporte" ? "Letras y números, entre 6 y 12" : "Solo números, entre 6 y 10 dígitos"} placeholder={tipoDocumento === "pasaporte" ? "Ej: AB123456" : "Ej: 10101010"} value={cedula} onChange={(e) => setCedula(tipoDocumento === "pasaporte" ? e.target.value.replace(/[^A-Za-z0-9]/g, "").slice(0, 12) : e.target.value.replace(/\D/g, "").slice(0, 10))} className="w-full border-2 border-slate-200 rounded-xl px-4 py-2.5 text-base focus:border-indigo-600 focus:outline-none" />
               </Field>
               <Field label="País Expedición">
                 <select value={paisExpedicion} onChange={(e) => setPaisExpedicion(e.target.value)} className="w-full border-2 border-slate-200 rounded-xl px-4 py-2.5 text-base focus:border-indigo-600 focus:outline-none bg-white">
@@ -391,6 +413,50 @@ export default function LoginPage() {
                       placeholder="Nombre completo"
                       value={representanteNombre}
                       onChange={(e) => setRepresentanteNombre(e.target.value)}
+                      className="w-full border-2 border-slate-200 rounded-xl px-4 py-2.5 text-base focus:border-indigo-600 focus:outline-none bg-white"
+                    />
+                  </Field>
+                  <Field label="Parentesco">
+                    <select
+                      value={representanteParentesco}
+                      onChange={(e) => setRepresentanteParentesco(e.target.value)}
+                      className="w-full border-2 border-slate-200 rounded-xl px-4 py-2.5 text-base focus:border-indigo-600 focus:outline-none bg-white"
+                    >
+                      <option value="madre">Madre</option>
+                      <option value="padre">Padre</option>
+                      <option value="tutor">Tutor legal</option>
+                      <option value="otro">Otro</option>
+                    </select>
+                  </Field>
+                  <Field label="Tipo de documento del representante">
+                    <select
+                      value={representanteTipoDoc}
+                      onChange={(e) => setRepresentanteTipoDoc(e.target.value)}
+                      className="w-full border-2 border-slate-200 rounded-xl px-4 py-2.5 text-base focus:border-indigo-600 focus:outline-none bg-white"
+                    >
+                      <option value="cedula">Cédula de ciudadanía</option>
+                      <option value="cedula_extranjeria">Cédula de extranjería</option>
+                    </select>
+                  </Field>
+                  <Field label="Teléfono del representante" hint="Solo números">
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      required
+                      minLength={7}
+                      maxLength={10}
+                      placeholder="3001234567"
+                      value={representanteTelefono}
+                      onChange={(e) => setRepresentanteTelefono(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                      className="w-full border-2 border-slate-200 rounded-xl px-4 py-2.5 text-base focus:border-indigo-600 focus:outline-none bg-white"
+                    />
+                  </Field>
+                  <Field label="Correo del representante" hint="Opcional">
+                    <input
+                      type="email"
+                      placeholder="correo@ejemplo.com"
+                      value={representanteEmail}
+                      onChange={(e) => setRepresentanteEmail(e.target.value)}
                       className="w-full border-2 border-slate-200 rounded-xl px-4 py-2.5 text-base focus:border-indigo-600 focus:outline-none bg-white"
                     />
                   </Field>

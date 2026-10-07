@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/Card";
 import { Banner } from "@/components/Banner";
-import { ApiError, Usuario, listUsuarios } from "@/lib/api";
+import { ApiError, Usuario, listUsuarios, reverificarUsuario } from "@/lib/api";
 import { CheckCircle, Clock, XCircle, AlertCircle } from "lucide-react";
 
 type Feedback = { kind: "success" | "error"; text: string } | null;
@@ -62,6 +62,20 @@ export default function UsuariosPage() {
     refresh();
   }, []);
 
+  async function onReverificar(id: string) {
+    setFeedback(null);
+    try {
+      const u = await reverificarUsuario(id);
+      setFeedback({
+        kind: u.estado === "verificado" ? "success" : "error",
+        text: `Resultado de la verificación: ${u.estado}`,
+      });
+      await refresh();
+    } catch (err) {
+      setFeedback({ kind: "error", text: err instanceof Error ? err.message : "No se pudo verificar." });
+    }
+  }
+
   const verificados = usuarios.filter((u) => u.estado === "verificado").length;
   const pendientes = usuarios.filter((u) => u.estado !== "verificado" && u.estado !== "rechazado").length;
   const rechazados = usuarios.filter((u) => u.estado === "rechazado").length;
@@ -76,7 +90,7 @@ export default function UsuariosPage() {
             <p className="font-bold text-indigo-800 text-sm">Verificación automática activa</p>
             <p className="text-indigo-700 text-sm mt-1">
               Cuando un usuario se registra y provee su cédula, el sistema invoca automáticamente
-              la API de verificación (Reqres.in/KYC). No se requiere aprobación manual
+              el motor de verificación KYC (proveedor simulado en la demo). No se requiere aprobación manual
               del administrador.
             </p>
           </div>
@@ -102,13 +116,13 @@ export default function UsuariosPage() {
       </div>
 
       <Card title="Usuarios registrados (Clientes)" subtitle="La verificación KYC es automática al registro">
-        <UsuariosTable usuarios={usuarios} onRefresh={refresh} />
+        <UsuariosTable usuarios={usuarios} onReverificar={onReverificar} />
       </Card>
     </div>
   );
 }
 
-function UsuariosTable({ usuarios, onRefresh }: { usuarios: Usuario[]; onRefresh: () => void }) {
+function UsuariosTable({ usuarios, onReverificar }: { usuarios: Usuario[]; onReverificar: (id: string) => void }) {
   if (usuarios.length === 0)
     return (
       <p className="text-sm text-slate-400 text-center py-8">
@@ -125,8 +139,10 @@ function UsuariosTable({ usuarios, onRefresh }: { usuarios: Usuario[]; onRefresh
             <th className="py-2 pr-3">Email</th>
             <th className="py-2 pr-3">Cédula</th>
             <th className="py-2 pr-3">País</th>
+            <th className="py-2 pr-3">Producto de interés</th>
             <th className="py-2 pr-3">Estado KYC</th>
             <th className="py-2 pr-3">Fecha registro</th>
+            <th className="py-2 pr-3">Acción</th>
           </tr>
         </thead>
         <tbody>
@@ -138,11 +154,23 @@ function UsuariosTable({ usuarios, onRefresh }: { usuarios: Usuario[]; onRefresh
               <td className="py-2 pr-3 text-slate-500">{u.email}</td>
               <td className="py-2 pr-3 font-mono text-xs">{u.cedula || "—"}</td>
               <td className="py-2 pr-3">{u.pais_residencia}</td>
+              <td className="py-2 pr-3 text-xs text-slate-600">{u.servicio_solicitado || "—"}</td>
               <td className="py-2 pr-3">
                 <EstadoPill estado={u.estado} estado_kyc={u.estado_kyc} />
               </td>
               <td className="py-2 pr-3 text-xs text-slate-400">
                 {new Date(u.fecha_registro).toLocaleDateString("es-CO")}
+              </td>
+              <td className="py-2 pr-3">
+                {u.estado === "pendiente_verificacion" && u.cedula && (
+                  <button
+                    type="button"
+                    onClick={() => onReverificar(u.id_usuario)}
+                    className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 underline"
+                  >
+                    Verificar ahora
+                  </button>
+                )}
               </td>
             </tr>
           ))}

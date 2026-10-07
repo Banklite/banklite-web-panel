@@ -58,6 +58,11 @@ export type Usuario = {
   estado_kyc?: string | null;
   representante_nombre?: string | null;
   representante_documento?: string | null;
+  tipo_documento?: string | null;
+  representante_tipo_documento?: string | null;
+  representante_parentesco?: string | null;
+  representante_telefono?: string | null;
+  representante_email?: string | null;
   role: "admin" | "cliente";
 };
 
@@ -74,13 +79,23 @@ export function createUsuario(data: {
   fecha_expedicion?: string;
   fecha_vencimiento?: string;
   pais_expedicion?: string;
+  tipo_documento?: string;
   representante_nombre?: string;
   representante_documento?: string;
+  representante_tipo_documento?: string;
+  representante_parentesco?: string;
+  representante_telefono?: string;
+  representante_email?: string;
 }) {
   return request<Usuario>(`${IDENTITY_URL}/users`, {
     method: "POST",
     body: JSON.stringify(data),
   });
+}
+
+/** Admin: reintenta la verificación KYC de un usuario pendiente o con error. */
+export function reverificarUsuario(id_usuario: string) {
+  return request<Usuario>(`${IDENTITY_URL}/users/${id_usuario}/reverificar`, { method: "POST" });
 }
 
 
