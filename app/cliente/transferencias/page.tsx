@@ -162,6 +162,12 @@ export default function ClienteTransferenciasPage() {
         idempotency_key: crypto.randomUUID(),
       });
 
+      if (res.transferencia.estado !== "completada") {
+        throw new Error(
+          `La transferencia no se completó (estado: ${res.transferencia.estado}). No se descontó dinero de su cuenta.`
+        );
+      }
+
       const fechaHora = new Date().toLocaleString("es-CO", {
         dateStyle: "long",
         timeStyle: "short",
