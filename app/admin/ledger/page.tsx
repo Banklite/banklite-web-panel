@@ -9,15 +9,24 @@ import {
   ApiError,
   Cuenta,
   CuentaContable,
+  Usuario,
   depositar,
   getLedgerBalance,
   listAccounts,
+  listUsuarios,
 } from "@/lib/api";
 
 type Feedback = { kind: "success" | "error"; text: string } | null;
 
+function cuentaLabel(c: Cuenta, usuarios: Usuario[]): string {
+  const u = usuarios.find((x) => x.id_usuario === c.id_usuario);
+  const nombre = u ? `${u.nombre} ${u.apellido ?? ""}`.trim() : "";
+  return `${c.moneda} ${c.tipo_cuenta}${nombre ? ` — ${nombre}` : ""}`;
+}
+
 export default function LedgerPage() {
   const [cuentas, setCuentas] = useState<Cuenta[]>([]);
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [feedback, setFeedback] = useState<Feedback>(null);
 
   const [saldoCuentaId, setSaldoCuentaId] = useState("");

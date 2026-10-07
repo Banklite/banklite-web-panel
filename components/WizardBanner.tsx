@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UserPlus, Wallet, CreditCard, ShieldAlert, ChevronRight } from "lucide-react";
+import { UserPlus, Wallet, CreditCard, BookOpen, ArrowRightLeft, ShieldAlert, ChevronRight } from "lucide-react";
 
 const STEPS = [
   {
@@ -28,7 +28,21 @@ const STEPS = [
   },
   {
     step: 4,
-    title: "4. Fraude",
+    title: "4. Ledger",
+    subtitle: "Contabilidad",
+    href: "/ledger",
+    icon: BookOpen,
+  },
+  {
+    step: 5,
+    title: "5. Transferencias",
+    subtitle: "Envíos & Rieles",
+    href: "/transferencias",
+    icon: ArrowRightLeft,
+  },
+  {
+    step: 6,
+    title: "6. Fraude",
     subtitle: "Alertas & Riesgo",
     href: "/fraude",
     icon: ShieldAlert,
@@ -50,7 +64,7 @@ export function WizardBanner() {
         <p className="text-xs text-slate-400">Haz clic en cada paso en orden para probar el sistema fácilmente</p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
         {STEPS.map((s, idx) => {
           const isActive = pathname === s.href;
           const Icon = s.icon;

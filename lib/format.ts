@@ -1,8 +1,8 @@
-/** Helpers de formato compartidos entre las p?ginas del panel. */
+/** Helpers de formato compartidos entre las páginas del panel. */
 
 export function short(id: string) {
   if (!id) return "";
-  return id.slice(0, 8) + "?";
+  return id.slice(0, 8) + "…";
 }
 
 export const STATUS_STYLES: Record<string, string> = {
