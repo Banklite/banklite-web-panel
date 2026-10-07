@@ -95,7 +95,11 @@ export function createUsuario(data: {
 
 /** Admin: reintenta la verificación KYC de un usuario pendiente o con error. */
 export function reverificarUsuario(id_usuario: string) {
-  return request<Usuario>(`${IDENTITY_URL}/users/${id_usuario}/reverificar`, { method: "POST" });
+  const sesion = obtenerSesion();
+  return request<Usuario>(`${IDENTITY_URL}/users/${id_usuario}/reverificar`, {
+    method: "POST",
+    headers: sesion ? { Authorization: `Bearer ${sesion.token}` } : {},
+  });
 }
 
 
