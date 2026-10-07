@@ -305,6 +305,8 @@ export type Beneficiario = {
   nombre: string | null;
   cuenta_destino: string;
   banco_destino: string | null;
+  favorito?: boolean;
+  alias?: string | null;
 };
 
 export function createBeneficiary(data: {
@@ -312,6 +314,8 @@ export function createBeneficiary(data: {
   nombre?: string;
   cuenta_destino: string;
   banco_destino?: string;
+  favorito?: boolean;
+  alias?: string;
 }) {
   return request<Beneficiario>(`${TRANSFER_URL}/beneficiaries`, {
     method: "POST",
@@ -319,8 +323,21 @@ export function createBeneficiary(data: {
   });
 }
 
-export function listBeneficiaries() {
-  return request<Beneficiario[]>(`${TRANSFER_URL}/beneficiaries`);
+export function listBeneficiaries(id_usuario?: string) {
+  const q = id_usuario ? `?id_usuario=${id_usuario}` : "";
+  return request<Beneficiario[]>(`${TRANSFER_URL}/beneficiaries${q}`);
+}
+
+export function updateBeneficiary(id: string, data: { favorito?: boolean; alias?: string; nombre?: string }) {
+  return request<Beneficiario>(`${TRANSFER_URL}/beneficiaries/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteBeneficiary(id: string): Promise<void> {
+  const res = await fetch(`${TRANSFER_URL}/beneficiaries/${id}`, { method: "DELETE" });
+  if (!res.ok) throw new ApiError(`Error HTTP ${res.status}`, res.status);
 }
 
 export type Transferencia = {
@@ -360,6 +377,35 @@ const CARD_URL =
   process.env.NEXT_PUBLIC_CARD_API_URL ?? "http://localhost:8005";
 const FRAUD_URL =
   process.env.NEXT_PUBLIC_FRAUD_API_URL ?? "http://localhost:8006";
+
+const NOTIFICATION_URL =
+  process.env.NEXT_PUBLIC_NOTIFICATION_API_URL ?? "http://localhost:8007";
+
+// ---------- Notification Service (tabla: notificacion) ----------
+
+export type Notificacion = {
+  id_notificacion: string;
+  id_usuario: string;
+  tipo: string;
+  titulo: string;
+  mensaje: string;
+  leida: boolean;
+  correo_enviado: boolean;
+  fecha: string;
+};
+
+export function listNotificaciones(idUsuario: string) {
+  return request<Notificacion[]>(`${NOTIFICATION_URL}/notifications?id_usuario=${idUsuario}`);
+}
+
+export function marcarNotificacionLeida(id: string) {
+  return request<Notificacion>(`${NOTIFICATION_URL}/notifications/${id}/read`, { method: "PATCH" });
+}
+
+export async function marcarTodasLeidas(idUsuario: string): Promise<void> {
+  const res = await fetch(`${NOTIFICATION_URL}/notifications/read-all?id_usuario=${idUsuario}`, { method: "POST" });
+  if (!res.ok) throw new ApiError(`Error HTTP ${res.status}`, res.status);
+}
 
 // ---------- Card Service (tablas: tarjeta, autorizacion, bloqueo) ----------
 
@@ -479,6 +525,8 @@ export type AlertaFraude = {
   estado: string;
   prioridad: "baja" | "media" | "alta";
   fecha_generacion: string;
+  motivo?: string | null;
+  monto?: number | null;
 };
 
 export type EvaluacionFraude = {
@@ -553,6 +601,10 @@ export type DestinatarioPublico = {
   moneda: string;
   nombre_titular: string;
 };
+
+export function getCuentaPublica(idCuenta: string) {
+  return request<DestinatarioPublico>(`${ACCOUNT_URL}/accounts/${idCuenta}/public`);
+}
 
 export async function buscarCuentaPorNumero(numeroCuenta: string): Promise<DestinatarioPublico | null> {
   try {

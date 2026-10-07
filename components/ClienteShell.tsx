@@ -1,10 +1,11 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { LogOut, Home, CreditCard, ArrowRightLeft, FileText, User, Building2 } from "lucide-react";
 import Link from "next/link";
 import { Sesion, cerrarSesion, obtenerSesion } from "@/lib/auth";
+import { NotificationBell } from "@/components/NotificationBell";
 
 const CLIENTE_LINKS = [
   { href: "/cliente", label: "Inicio", icon: Home, color: "text-blue-600" },
@@ -73,6 +74,7 @@ export function ClienteShell({ children }: { children: React.ReactNode }) {
               <p className="text-lg font-bold text-slate-800">Hola, {sesion.usuario.nombre}!</p>
               <p className="text-sm text-slate-500">{sesion.usuario.email}</p>
             </div>
+            <NotificationBell idUsuario={sesion.usuario.id_usuario} />
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-700 font-bold px-4 py-2 rounded-xl border-2 border-red-200 transition-colors text-sm"

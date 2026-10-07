@@ -257,6 +257,13 @@ export default function FraudePage() {
                   <StatusPill value={a.prioridad} />
                 </div>
 
+                {(a.motivo || a.monto != null) && (
+                  <div className="text-sm text-slate-800">
+                    {a.monto != null && <p className="font-bold">${Number(a.monto).toLocaleString("es-CO")}</p>}
+                    {a.motivo && <p>{a.motivo}</p>}
+                  </div>
+                )}
+
                 <div className="text-xs space-y-1 text-slate-600">
                   <div className="flex justify-between">
                     <span>Evaluación:</span>

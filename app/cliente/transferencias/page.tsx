@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import { obtenerSesion } from "@/lib/auth";
 import {
   listAccounts, listRails, createBeneficiary, createTransfer,
-  getLedgerBalance, buscarCuentaPorNumero,
-  Cuenta, RielPago, CuentaContable, DestinatarioPublico,
+  getLedgerBalance, buscarCuentaPorNumero, listBeneficiaries, updateBeneficiary, getCuentaPublica,
+  Cuenta, RielPago, CuentaContable, DestinatarioPublico, Beneficiario,
 } from "@/lib/api";
 import {
   ArrowRightLeft, CheckCircle, AlertCircle, Send,
-  ChevronRight, ChevronLeft, Loader2, RefreshCw, Search, User,
+  ChevronRight, ChevronLeft, Loader2, RefreshCw, Search, User, Star,
 } from "lucide-react";
 
 const RIEL_INTERNO_ID = "00000000-0000-0000-0000-000000000101";
@@ -56,6 +56,9 @@ export default function ClienteTransferenciasPage() {
   const [buscando, setBuscando] = useState(false);
   const [destinatario, setDestinatario] = useState<DestinatarioPublico | null>(null);
   const [errorBusqueda, setErrorBusqueda] = useState<string | null>(null);
+  const [favoritos, setFavoritos] = useState<Beneficiario[]>([]);
+  const [idBeneficiarioUsado, setIdBeneficiarioUsado] = useState<string | null>(null);
+  const [esFavorito, setEsFavorito] = useState(false);
 
   // Paso 3
   const [monto, setMonto] = useState("");
@@ -96,6 +99,10 @@ export default function ClienteTransferenciasPage() {
           })
         );
         setLedgers(ledgerMap);
+        if (sesion) {
+          const bs = await listBeneficiaries(sesion.usuario.id_usuario).catch(() => [] as Beneficiario[]);
+          setFavoritos(bs.filter((b) => b.favorito));
+        }
       } catch {
         setError("No pudimos cargar su información. Intente nuevamente.");
       } finally {
@@ -137,6 +144,35 @@ export default function ClienteTransferenciasPage() {
     }
   }
 
+  async function elegirFavorito(b: Beneficiario) {
+    setBuscando(true);
+    setErrorBusqueda(null);
+    try {
+      const dest = await getCuentaPublica(b.cuenta_destino);
+      setDestinatario(dest);
+      setNumeroCuentaDest("");
+    } catch {
+      setDestinatario(null);
+      setErrorBusqueda("Esta cuenta favorita ya no está disponible.");
+    } finally {
+      setBuscando(false);
+    }
+  }
+
+  async function alternarFavorito() {
+    if (!idBeneficiarioUsado) return;
+    const nuevo = !esFavorito;
+    try {
+      const b = await updateBeneficiary(idBeneficiarioUsado, { favorito: nuevo });
+      setEsFavorito(nuevo);
+      setFavoritos((prev) =>
+        nuevo ? [b, ...prev.filter((x) => x.id_beneficiario !== b.id_beneficiario)] : prev.filter((x) => x.id_beneficiario !== b.id_beneficiario)
+      );
+    } catch {
+      /* el aviso no es crítico */
+    }
+  }
+
   async function handleTransferir() {
     if (!destinatario) return;
     setEnviando(true);
@@ -152,6 +188,9 @@ export default function ClienteTransferenciasPage() {
         cuenta_destino: destinatario.id_cuenta, // UUID interno
         banco_destino: "BankLite",
       });
+
+      setIdBeneficiarioUsado(beneficiario.id_beneficiario);
+      setEsFavorito(!!beneficiario.favorito);
 
       const res = await createTransfer({
         id_cuenta_origen: cuentaOrigen,
@@ -198,6 +237,8 @@ export default function ClienteTransferenciasPage() {
     setErrorBusqueda(null);
     setError(null);
     setResultado(null);
+    setIdBeneficiarioUsado(null);
+    setEsFavorito(false);
   }
 
   if (loading)
@@ -288,6 +329,17 @@ export default function ClienteTransferenciasPage() {
               </div>
             ))}
           </div>
+          <button
+            onClick={alternarFavorito}
+            className={`w-full flex items-center justify-center gap-2 font-bold px-6 py-3 rounded-2xl border-2 transition-colors ${
+              esFavorito
+                ? "bg-amber-50 border-amber-300 text-amber-700"
+                : "bg-white border-slate-300 text-slate-700 hover:border-amber-300"
+            }`}
+          >
+            <Star size={20} className={esFavorito ? "fill-amber-400 text-amber-500" : ""} />
+            {esFavorito ? "Cuenta guardada en favoritas" : "Guardar esta cuenta como favorita"}
+          </button>
           <button
             onClick={reiniciar}
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xl font-bold px-8 py-4 rounded-2xl shadow-lg transition-colors"
@@ -388,6 +440,25 @@ export default function ClienteTransferenciasPage() {
           </p>
 
           <div className="space-y-4">
+            {favoritos.length > 0 && (
+              <div>
+                <p className="text-sm font-bold text-slate-600 mb-2 flex items-center gap-1">
+                  <Star size={16} className="fill-amber-400 text-amber-500" /> Tus cuentas favoritas
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {favoritos.map((f) => (
+                    <button
+                      key={f.id_beneficiario}
+                      type="button"
+                      onClick={() => elegirFavorito(f)}
+                      className="px-4 py-2 rounded-full border-2 border-amber-200 bg-amber-50 text-amber-800 font-semibold hover:border-amber-400 transition-colors"
+                    >
+                      {f.alias || f.nombre || "Cuenta favorita"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="flex gap-3">
               <input
                 type="text"
