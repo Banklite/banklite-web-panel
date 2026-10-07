@@ -54,11 +54,20 @@ export default function LoginPage() {
     const usuarioRole = result.usuario.role;
 
     if (portalEsAdmin && usuarioRole !== "admin") {
-      throw new Error("Estas credenciales no tienen permisos de administrador.");
+      throw new Error("Estas credenciales no tienen permisos de administrador. Usa el Portal Clientes para acceder con tu cuenta personal.");
+    }
+
+    if (!portalEsAdmin && usuarioRole === "admin") {
+      throw new Error("Esta cuenta de administrador no puede acceder por el Portal Clientes. Cambia a 'Acceso Admin' para iniciar sesión.");
     }
 
     guardarSesion(result.access_token, result.usuario);
-    router.replace("/");
+    // Redirigir directamente al portal del rol, sin pasar por /
+    if (usuarioRole === "admin") {
+      router.replace("/admin");
+    } else {
+      router.replace("/cliente");
+    }
   }
 
   async function handleLogin(e: React.FormEvent) {

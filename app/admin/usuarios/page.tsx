@@ -1,32 +1,60 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { Card } from "@/components/Card";
 import { Banner } from "@/components/Banner";
-import { Field } from "@/components/Field";
-import { FlowBanner } from "@/components/FlowBanner";
-import { ApiError, Usuario, listUsuarios, verificarKyc } from "@/lib/api";
-
-const PAISES = ["CO", "MX", "US", "ES", "PE"];
+import { ApiError, Usuario, listUsuarios } from "@/lib/api";
+import { CheckCircle, Clock, XCircle, AlertCircle } from "lucide-react";
 
 type Feedback = { kind: "success" | "error"; text: string } | null;
 
-export default function IdentidadPage() {
+function EstadoPill({ estado, estado_kyc }: { estado: string; estado_kyc?: string | null }) {
+  const kyc = estado_kyc || "";
+  if (estado === "verificado")
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+        <CheckCircle size={12} /> Verificado
+      </span>
+    );
+  if (estado === "rechazado")
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-semibold text-red-700 bg-red-100 px-2 py-0.5 rounded-full">
+        <XCircle size={12} /> Rechazado
+      </span>
+    );
+  if (kyc === "VERIFICANDO")
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full animate-pulse">
+        <Clock size={12} /> Verificando…
+      </span>
+    );
+  if (kyc === "ERROR_VERIFICACION")
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+        <AlertCircle size={12} /> Error verificación
+      </span>
+    );
+  return (
+    <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+      <Clock size={12} /> Pendiente
+    </span>
+  );
+}
+
+export default function UsuariosPage() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [feedback, setFeedback] = useState<Feedback>(null);
-
-  const [kycUsuarioId, setKycUsuarioId] = useState("");
-  const [tipoDocumento, setTipoDocumento] = useState("cedula");
-  const [numeroDocumento, setNumeroDocumento] = useState("");
-  const [paisEmision, setPaisEmision] = useState("CO");
-  const [fechaExpiracion, setFechaExpiracion] = useState("2030-01-01");
 
   async function refresh() {
     try {
       const users = await listUsuarios();
-      setUsuarios(users.filter(u => u.role !== "admin"));
+      setUsuarios(users.filter((u) => u.role !== "admin"));
     } catch (err) {
-      showError(err);
+      if (err instanceof ApiError) {
+        setFeedback({ kind: "error", text: `(${err.status}) ${err.message}` });
+      } else if (err instanceof Error) {
+        setFeedback({ kind: "error", text: err.message });
+      }
     }
   }
 
@@ -34,166 +62,92 @@ export default function IdentidadPage() {
     refresh();
   }, []);
 
-  function handleUserSelect(userId: string) {
-    setKycUsuarioId(userId);
-    const u = usuarios.find(x => x.id_usuario === userId);
-    if (u) {
-      setNumeroDocumento(u.cedula || "1029384756");
-      setPaisEmision(u.pais_residencia || "CO");
-    }
-  }
-
-  function showError(err: unknown) {
-    if (err instanceof ApiError) {
-      setFeedback({ kind: "error", text: `(${err.status}) ${err.message}` });
-    } else if (err instanceof Error) {
-      setFeedback({
-        kind: "error",
-        text: err.message,
-      });
-    }
-  }
-
-  async function handleKyc(e: React.FormEvent) {
-    e.preventDefault();
-    setFeedback(null);
-    if (!kycUsuarioId) {
-      setFeedback({ kind: "error", text: "Selecciona un usuario." });
-      return;
-    }
-    try {
-      const res = await verificarKyc({
-        id_usuario: kycUsuarioId,
-        tipo_documento: tipoDocumento as any,
-        numero_documento: numeroDocumento,
-        pais_emision: paisEmision,
-        fecha_expiracion: fechaExpiracion,
-      });
-      setFeedback({
-        kind: "success",
-        text: `Verificación ${res.verificacion.resultado}. Evento identity.verified publicado.`,
-      });
-      await refresh();
-    } catch (err) {
-      showError(err);
-    }
-  }
+  const verificados = usuarios.filter((u) => u.estado === "verificado").length;
+  const pendientes = usuarios.filter((u) => u.estado !== "verificado" && u.estado !== "rechazado").length;
+  const rechazados = usuarios.filter((u) => u.estado === "rechazado").length;
 
   return (
     <div className="space-y-8 animate-fade-in">
-      <FlowBanner
-        steps={[
-          "1. El usuario se registra en la página principal.",
-          "2. Verifica su KYC simulando la revisión de su cédula.",
-        ]}
-      />
+      {/* Info panel: la verificación es automática */}
+      <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-5">
+        <div className="flex items-start gap-3">
+          <CheckCircle className="text-indigo-500 flex-shrink-0 mt-0.5" size={22} />
+          <div>
+            <p className="font-bold text-indigo-800 text-sm">Verificación automática activa</p>
+            <p className="text-indigo-700 text-sm mt-1">
+              Cuando un usuario se registra y provee su cédula, el sistema invoca automáticamente
+              la API de verificación (Reqres.in/KYC). No se requiere aprobación manual
+              del administrador.
+            </p>
+          </div>
+        </div>
+      </div>
 
       {feedback && <Banner kind={feedback.kind} text={feedback.text} />}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card title="Verificación KYC" subtitle="POST /kyc/verify">
-          <form onSubmit={handleKyc} className="space-y-3">
-            <Field label="Usuario" hint="El usuario que se va a verificar.">
-        <select
-                 value={kycUsuarioId}
-                 onChange={(e) => handleUserSelect(e.target.value)}
-                 className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
-               >
-                 <option value="">Selecciona un usuario...</option>
-                 {usuarios.map((u) => (
-                   <option key={u.id_usuario} value={u.id_usuario}>
-                     {u.nombre} - {u.email}
-                   </option>
-                 ))}
-               </select>
-            </Field>
-            <Field label="Tipo de documento">
-              <select
-                value={tipoDocumento}
-                onChange={(e) => setTipoDocumento(e.target.value)}
-                className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
-              >
-                <option value="cedula">Cédula</option>
-                <option value="pasaporte">Pasaporte</option>
-                <option value="licencia">Licencia</option>
-              </select>
-            </Field>
-            <Field
-              label="Número de documento"
-              hint="Truco de la simulación: si termina en 0000, la verificación se rechaza a propósito."
-            >
-              <input
-                type="text"
-                required
-                placeholder="Ej: 1029384756"
-                value={numeroDocumento}
-                onChange={(e) => setNumeroDocumento(e.target.value)}
-                className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm font-mono"
-              />
-            </Field>
-            <div className="flex gap-2">
-              <Field label="País de emisión">
-                <select
-                  value={paisEmision}
-                  onChange={(e) => setPaisEmision(e.target.value)}
-                  className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
-                >
-                  {PAISES.map((p) => (
-                    <option key={p} value={p}>
-                      {p}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="Fecha de expiración">
-                <input
-                  type="date"
-                  value={fechaExpiracion}
-                  onChange={(e) => setFechaExpiracion(e.target.value)}
-                  className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
-                />
-              </Field>
-            </div>
-            <button
-              type="submit"
-              className="bg-brand-600 hover:bg-brand-700 text-white rounded-md px-4 py-2 text-sm font-medium"
-            >
-              Enviar a verificación
-            </button>
-          </form>
-        </Card>
+      {/* Resumen */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+          <p className="text-3xl font-black text-green-700">{verificados}</p>
+          <p className="text-sm text-green-600 font-semibold mt-1">Verificados</p>
+        </div>
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+          <p className="text-3xl font-black text-amber-700">{pendientes}</p>
+          <p className="text-sm text-amber-600 font-semibold mt-1">Pendientes</p>
+        </div>
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+          <p className="text-3xl font-black text-red-700">{rechazados}</p>
+          <p className="text-sm text-red-600 font-semibold mt-1">Rechazados</p>
+        </div>
       </div>
 
-      <Card title="Usuarios registrados (Clientes)" subtitle="GET /users">
-        <UsuariosTable usuarios={usuarios} />
+      <Card title="Usuarios registrados (Clientes)" subtitle="La verificación KYC es automática al registro">
+        <UsuariosTable usuarios={usuarios} onRefresh={refresh} />
       </Card>
     </div>
   );
 }
 
-function UsuariosTable({ usuarios }: { usuarios: Usuario[] }) {
-  if (usuarios.length === 0) return <p className="text-sm text-slate-400">Aún no hay usuarios.</p>;
+function UsuariosTable({ usuarios, onRefresh }: { usuarios: Usuario[]; onRefresh: () => void }) {
+  if (usuarios.length === 0)
+    return (
+      <p className="text-sm text-slate-400 text-center py-8">
+        Aún no hay usuarios clientes registrados.
+      </p>
+    );
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-           <tr className="text-left text-slate-400 border-b border-slate-100">
-             <th className="py-1 pr-2">Cédula</th>
-             <th className="py-1 pr-2">Nombre</th>
-             <th className="py-1 pr-2">Email</th>
-           </tr>
+          <tr className="text-left text-slate-400 border-b border-slate-100">
+            <th className="py-2 pr-3">Nombre</th>
+            <th className="py-2 pr-3">Email</th>
+            <th className="py-2 pr-3">Cédula</th>
+            <th className="py-2 pr-3">País</th>
+            <th className="py-2 pr-3">Estado KYC</th>
+            <th className="py-2 pr-3">Fecha registro</th>
+          </tr>
         </thead>
         <tbody>
-{usuarios.map((u) => (
-             <tr key={u.id_usuario} className="border-b border-slate-50">
-               <td className="py-1 pr-2 font-mono">{u.cedula || "N/A"}</td>
-               <td className="py-1 pr-2">{u.nombre}</td>
-               <td className="py-1 pr-2">{u.email}</td>
-             </tr>
-           ))}
+          {usuarios.map((u) => (
+            <tr key={u.id_usuario} className="border-b border-slate-50 hover:bg-slate-50/80">
+              <td className="py-2 pr-3 font-medium text-slate-800">
+                {u.nombre} {u.apellido ?? ""}
+              </td>
+              <td className="py-2 pr-3 text-slate-500">{u.email}</td>
+              <td className="py-2 pr-3 font-mono text-xs">{u.cedula || "—"}</td>
+              <td className="py-2 pr-3">{u.pais_residencia}</td>
+              <td className="py-2 pr-3">
+                <EstadoPill estado={u.estado} estado_kyc={u.estado_kyc} />
+              </td>
+              <td className="py-2 pr-3 text-xs text-slate-400">
+                {new Date(u.fecha_registro).toLocaleDateString("es-CO")}
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
   );
 }
-

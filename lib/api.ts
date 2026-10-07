@@ -97,8 +97,13 @@ export function updateUsuario(id_usuario: string, data: {
   });
 }
 
+import { obtenerSesion } from "./auth";
+
 export function listUsuarios() {
-  return request<Usuario[]>(`${IDENTITY_URL}/users`);
+  const sesion = obtenerSesion();
+  return request<Usuario[]>(`${IDENTITY_URL}/users`, {
+    headers: sesion ? { Authorization: `Bearer ${sesion.token}` } : {},
+  });
 }
 
 // ---------- Autenticación (POST /auth/login en identity-service) ----------
@@ -420,6 +425,25 @@ export function listAllAuthorizations() {
   return request<Autorizacion[]>(`${CARD_URL}/cards/all/autorizaciones`);
 }
 
+/** Revela el número completo de tarjeta al propietario autenticado.
+ * El backend valida que el id_usuario es el dueño de la tarjeta. */
+export async function revelarNumeroTarjeta(
+  idTarjeta: string,
+  idUsuario: string
+): Promise<{ id_tarjeta: string; numero_tarjeta: string; numero_formateado: string }> {
+  return request(`${CARD_URL}/cards/${idTarjeta}/numero?id_usuario=${encodeURIComponent(idUsuario)}`);
+}
+
+/** El administrador puede eliminar (marcar como vencida) una tarjeta. */
+export async function eliminarTarjeta(idTarjeta: string): Promise<void> {
+  const res = await fetch(`${CARD_URL}/cards/${idTarjeta}`, { method: "DELETE" });
+  if (!res.ok) {
+    const isJson = res.headers.get("content-type")?.includes("application/json");
+    const body = isJson ? await res.json() : null;
+    throw new ApiError(body?.detail ?? `Error ${res.status}`, res.status);
+  }
+}
+
 // ---------- Fraud Service (tablas: regla_fraude, evaluacion_fraude, alerta_fraude) ----------
 
 export type ReglaFraude = {
@@ -488,6 +512,34 @@ export function resolveFraudAlert(idAlerta: string) {
   });
 }
 
+// ---------- Self-service: El usuario solicita su propia tarjeta (POST /cards/solicitar) ----------
 
+export function solicitarTarjetaCliente(data: {
+  id_usuario: string;
+  id_cuenta: string;
+  tipo_tarjeta?: "virtual" | "fisica";
+}) {
+  return request<Tarjeta>(`${CARD_URL}/cards/solicitar`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
 
+// ---------- Buscar cuenta por número para transferencias ----------
 
+export type DestinatarioPublico = {
+  id_cuenta: string;
+  numero_cuenta_enmascarado: string;
+  tipo_cuenta: string;
+  moneda: string;
+  nombre_titular: string;
+};
+
+export async function buscarCuentaPorNumero(numeroCuenta: string): Promise<DestinatarioPublico | null> {
+  try {
+    return await request<DestinatarioPublico>(`${ACCOUNT_URL}/accounts/by-numero/${numeroCuenta}`);
+  } catch (err) {
+    if (err instanceof ApiError && (err.status === 404 || err.status === 409)) return null;
+    throw err;
+  }
+}

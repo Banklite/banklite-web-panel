@@ -22,6 +22,11 @@ function maskNumeroCuenta(nc: string | null | undefined): string {
   return "****" + nc.slice(-4);
 }
 
+function formatNumeroCuenta(nc: string | null | undefined): string {
+  // Muestra el número completo en grupos de 2-3 dígitos para legibilidad
+  if (!nc) return "Sin asignar";
+  return nc.replace(/(\d{4})(\d{3})(\d{3})/, "$1 $2 $3") || nc;
+}
 function maskNumeroTarjeta(nt: string | null | undefined): string {
   if (!nt) return "•••• •••• •••• ••••";
   const c = nt.replace(/\s/g, "");
@@ -166,6 +171,39 @@ export default function ClienteDashboard() {
         </div>
       </div>
 
+      {/* SECCIÓN MI CUENTA — número de cuenta visible */}
+      {cuenta && (
+        <div className="rounded-2xl bg-white border-2 border-slate-100 shadow-md p-6">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="h-10 w-10 rounded-xl bg-indigo-100 flex items-center justify-center">
+              <User size={22} className="text-indigo-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-black text-slate-800">Mi Cuenta</h2>
+              <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">{cuenta.estado.toUpperCase()}</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-slate-50 rounded-2xl p-4">
+              <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">Tipo</p>
+              <p className="text-base font-bold text-slate-800">
+                {cuenta.tipo_cuenta.charAt(0).toUpperCase() + cuenta.tipo_cuenta.slice(1)}
+              </p>
+            </div>
+            <div className="bg-slate-50 rounded-2xl p-4">
+              <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">Moneda</p>
+              <p className="text-base font-bold text-slate-800">{cuenta.moneda}</p>
+            </div>
+            <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 col-span-2">
+              <p className="text-xs text-indigo-600 font-bold uppercase tracking-wider mb-1">Número de Cuenta</p>
+              <p className="text-2xl font-black text-indigo-800 font-mono tracking-widest">
+                {formatNumeroCuenta(cuenta.numero_cuenta)}
+              </p>
+              <p className="text-xs text-indigo-500 mt-1">Use este número para recibir transferencias</p>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Tarjeta asociada */}
       {tarjeta && (
         <div className="rounded-2xl bg-white border-2 border-slate-100 shadow-md p-6 flex items-center gap-5">
