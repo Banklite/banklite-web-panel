@@ -2,23 +2,36 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Home, CreditCard, ArrowRightLeft, FileText, User, Building2 } from "lucide-react";
+import {
+  LogOut,
+  Home,
+  CreditCard,
+  ArrowRightLeft,
+  FileText,
+  User,
+  Building2,
+  HelpCircle,
+  Menu,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { Sesion, cerrarSesion, obtenerSesion } from "@/lib/auth";
 import { NotificationBell } from "@/components/NotificationBell";
 
 const CLIENTE_LINKS = [
-  { href: "/cliente", label: "Inicio", icon: Home, color: "text-blue-600" },
-  { href: "/cliente/tarjetas", label: "Mis Tarjetas", icon: CreditCard, color: "text-purple-600" },
-  { href: "/cliente/transferencias", label: "Transferir Dinero", icon: ArrowRightLeft, color: "text-green-600" },
-  { href: "/cliente/movimientos", label: "Mis Movimientos", icon: FileText, color: "text-amber-600" },
-  { href: "/cliente/perfil", label: "Mi Perfil", icon: User, color: "text-indigo-600" },
+  { href: "/cliente", label: "Inicio", icon: Home },
+  { href: "/cliente/transferencias", label: "Transferir", icon: ArrowRightLeft },
+  { href: "/cliente/tarjetas", label: "Mis Tarjetas", icon: CreditCard },
+  { href: "/cliente/movimientos", label: "Movimientos", icon: FileText },
+  { href: "/cliente/perfil", label: "Mi Perfil", icon: User },
+  { href: "/cliente/ayuda", label: "Ayuda", icon: HelpCircle },
 ];
 
 export function ClienteShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [sesion, setSesion] = useState<Sesion | null | "cargando">("cargando");
+  const [menuAbierto, setMenuAbierto] = useState(false);
 
   useEffect(() => {
     const actual = obtenerSesion();
@@ -33,10 +46,15 @@ export function ClienteShell({ children }: { children: React.ReactNode }) {
     setSesion(actual);
   }, [pathname, router]);
 
+  // Cierra el menú móvil al navegar
+  useEffect(() => {
+    setMenuAbierto(false);
+  }, [pathname]);
+
   if (sesion === "cargando") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-blue-50">
-        <p className="text-2xl text-blue-700 font-semibold animate-pulse">Cargando su banco...</p>
+      <div className="min-h-screen flex items-center justify-center bg-brand-50">
+        <p className="text-2xl text-brand-700 font-semibold animate-pulse">Cargando su banco...</p>
       </div>
     );
   }
@@ -52,54 +70,59 @@ export function ClienteShell({ children }: { children: React.ReactNode }) {
     router.replace("/login");
   }
 
+  const ayudaActiva = pathname.startsWith("/cliente/ayuda");
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 font-sans">
-      {/* Header accesible */}
-      <header className="bg-white border-b-4 border-blue-600 shadow-md sticky top-0 z-20">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white shadow-md">
-              <Building2 size={28} />
+    <div className="flex min-h-screen bg-gray-50 font-sans">
+      {/* Overlay móvil */}
+      {menuAbierto && (
+        <div
+          className="fixed inset-0 bg-black/40 z-20 lg:hidden"
+          onClick={() => setMenuAbierto(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`w-64 bg-white border-r border-gray-200 flex flex-col fixed h-full z-30 transition-transform duration-200 lg:translate-x-0 ${
+          menuAbierto ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Logo */}
+        <div className="px-5 py-5 flex items-center justify-between border-b border-gray-100">
+          <Link href="/cliente" className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white shadow-md shadow-brand-500/30">
+              <Building2 size={22} />
             </div>
             <div>
-              <h1 className="text-xl font-black text-blue-900 leading-none">BankLite</h1>
-              <p className="text-xs text-blue-500 font-semibold">Mi Banco Personal</p>
+              <h1 className="text-lg font-black text-brand-900 leading-none">BankLite</h1>
+              <p className="text-xs text-brand-500 font-semibold mt-0.5">Mi Banco Personal</p>
             </div>
-          </div>
-
-          {/* Usuario y logout */}
-          <div className="flex items-center gap-4">
-            <div className="text-right hidden sm:block">
-              <p className="text-lg font-bold text-slate-800">Hola, {sesion.usuario.nombre}!</p>
-              <p className="text-sm text-slate-500">{sesion.usuario.email}</p>
-            </div>
-            <NotificationBell idUsuario={sesion.usuario.id_usuario} />
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-700 font-bold px-4 py-2 rounded-xl border-2 border-red-200 transition-colors text-sm"
-            >
-              <LogOut size={18} />
-              <span className="hidden sm:inline">Salir</span>
-            </button>
-          </div>
+          </Link>
+          <button
+            className="lg:hidden text-gray-500 hover:text-gray-700"
+            onClick={() => setMenuAbierto(false)}
+            aria-label="Cerrar menú"
+          >
+            <X size={22} />
+          </button>
         </div>
-      </header>
 
-      {/* Navegacion principal — botones grandes y claros */}
-      <nav className="bg-white border-b border-slate-200 shadow-sm">
-        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center gap-2 overflow-x-auto">
+        {/* Navegación */}
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
           {CLIENTE_LINKS.map((link) => {
-            const isActive = pathname === link.href || (link.href !== "/cliente" && pathname.startsWith(link.href));
+            const isActive =
+              pathname === link.href ||
+              (link.href !== "/cliente" && pathname.startsWith(link.href));
             const Icon = link.icon;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-base whitespace-nowrap transition-all duration-200 min-w-fit ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-colors ${
                   isActive
-                    ? "bg-blue-600 text-white shadow-lg shadow-blue-200"
-                    : `bg-slate-50 text-slate-600 hover:bg-blue-50 hover:text-blue-700 border-2 border-transparent hover:border-blue-200`
+                    ? "bg-brand-500 text-white shadow-md shadow-brand-500/30"
+                    : "text-gray-600 hover:bg-brand-50 hover:text-brand-600"
                 }`}
               >
                 <Icon size={20} />
@@ -107,19 +130,59 @@ export function ClienteShell({ children }: { children: React.ReactNode }) {
               </Link>
             );
           })}
+        </nav>
+
+        {/* Parte inferior */}
+        <div className="px-3 py-4 border-t border-gray-100 space-y-1">
+          <Link
+            href="/cliente/ayuda"
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${
+              ayudaActiva
+                ? "bg-brand-50 text-brand-700"
+                : "text-gray-600 hover:bg-brand-50 hover:text-brand-600"
+            }`}
+          >
+            <HelpCircle size={20} />
+            Centro de ayuda
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <LogOut size={20} />
+            Cerrar sesión
+          </button>
         </div>
-      </nav>
+      </aside>
 
-      {/* Contenido principal */}
-      <main className="max-w-5xl mx-auto px-6 py-8">
-        {children}
-      </main>
+      {/* Contenido */}
+      <div className="flex-1 lg:ml-64 min-w-0 flex flex-col">
+        <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+          <div className="px-4 sm:px-6 py-3 flex items-center justify-between">
+            <button
+              className="lg:hidden h-10 w-10 rounded-xl border border-gray-200 text-brand-700 hover:bg-brand-50 flex items-center justify-center"
+              onClick={() => setMenuAbierto(true)}
+              aria-label="Abrir menú"
+            >
+              <Menu size={22} />
+            </button>
+            <div className="hidden lg:block" />
 
-      {/* Footer */}
-      <footer className="text-center py-6 text-slate-400 text-sm border-t border-slate-100 mt-8">
-        <p>BankLite — Tu dinero seguro <span className="text-blue-400 font-bold">siempre</span></p>
-        <p className="mt-1">Si tiene dudas, llame al <span className="font-bold text-slate-600">01 800 BANKLITE</span></p>
-      </footer>
+            <div className="flex items-center gap-4">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-bold text-gray-800">{nombreCompleto || sesion.usuario.nombre}</p>
+                <p className="text-xs text-gray-500">{sesion.usuario.email}</p>
+              </div>
+              <NotificationBell idUsuario={sesion.usuario.id_usuario} />
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-white font-black flex items-center justify-center">
+                {sesion.usuario.nombre.charAt(0).toUpperCase()}
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main className="p-4 sm:p-6 flex-1">{children}</main>
+      </div>
     </div>
   );
 }

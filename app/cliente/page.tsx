@@ -1,7 +1,16 @@
 "use client";
 import { useEffect, useState } from "react";
 import { obtenerSesion } from "@/lib/auth";
-import { getLedgerBalance, listAccounts, listCards, Cuenta, Tarjeta, CuentaContable } from "@/lib/api";
+import {
+  getLedgerBalance,
+  listAccounts,
+  listCards,
+  listTransfers,
+  Cuenta,
+  Tarjeta,
+  CuentaContable,
+  Transferencia,
+} from "@/lib/api";
 import { CreditCard, ArrowRightLeft, FileText, User, Phone, Shield, Eye, EyeOff, Plus } from "lucide-react";
 import Link from "next/link";
 
@@ -39,32 +48,32 @@ const ACCIONES = [
     label: "Mis Tarjetas",
     desc: "Vea sus tarjetas y solicite nuevas",
     icon: CreditCard,
-    bg: "from-purple-600 to-purple-800",
-    shadow: "shadow-purple-500/30",
+    bg: "from-brand-500 to-brand-700",
+    shadow: "shadow-brand-500/30",
   },
   {
     href: "/cliente/transferencias",
     label: "Transferir Dinero",
     desc: "Envíe dinero de forma rápida y segura",
     icon: ArrowRightLeft,
-    bg: "from-emerald-600 to-emerald-800",
-    shadow: "shadow-emerald-500/30",
+    bg: "from-brand-600 to-brand-900",
+    shadow: "shadow-brand-600/30",
   },
   {
     href: "/cliente/movimientos",
     label: "Mis Movimientos",
     desc: "Vea el historial de transacciones",
     icon: FileText,
-    bg: "from-amber-500 to-amber-700",
-    shadow: "shadow-amber-500/30",
+    bg: "from-brand-500 to-brand-600",
+    shadow: "shadow-brand-500/30",
   },
   {
     href: "/cliente/perfil",
     label: "Mi Perfil",
     desc: "Actualice sus datos personales",
     icon: User,
-    bg: "from-blue-600 to-blue-800",
-    shadow: "shadow-blue-500/30",
+    bg: "from-brand-700 to-brand-900",
+    shadow: "shadow-brand-700/30",
   },
 ];
 
@@ -73,6 +82,7 @@ export default function ClienteDashboard() {
   const [cuenta, setCuenta] = useState<Cuenta | null>(null);
   const [tarjeta, setTarjeta] = useState<Tarjeta | null>(null);
   const [ledger, setLedger] = useState<CuentaContable | null>(null);
+  const [movimientos, setMovimientos] = useState<Transferencia[]>([]);
   const [mostrarSaldo, setMostrarSaldo] = useState(true);
   const [cargando, setCargando] = useState(true);
 
@@ -89,12 +99,22 @@ export default function ClienteDashboard() {
         );
         if (miCuenta) {
           setCuenta(miCuenta);
-          const [bal, tarjetas] = await Promise.all([
+          const [bal, tarjetas, transferencias] = await Promise.all([
             getLedgerBalance(miCuenta.id_cuenta),
             listCards(miCuenta.id_cuenta),
+            listTransfers().catch(() => [] as Transferencia[]),
           ]);
           setLedger(bal);
           if (tarjetas.length > 0) setTarjeta(tarjetas[0]);
+          setMovimientos(
+            transferencias
+              .filter((t) => t.id_cuenta_origen === miCuenta.id_cuenta)
+              .sort(
+                (a, b) =>
+                  new Date(b.fecha_solicitud).getTime() - new Date(a.fecha_solicitud).getTime()
+              )
+              .slice(0, 5)
+          );
         }
       } catch {
         // silencioso — solo no se muestra el saldo
@@ -109,7 +129,7 @@ export default function ClienteDashboard() {
     <div className="space-y-8 max-w-2xl mx-auto pb-10">
       {/* Bienvenida */}
       <div className="flex items-center gap-4 pt-2">
-        <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-indigo-600 to-blue-700 flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-indigo-500/30 flex-shrink-0">
+        <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-brand-500/30 flex-shrink-0">
           {nombre.charAt(0).toUpperCase()}
         </div>
         <div>
@@ -119,7 +139,7 @@ export default function ClienteDashboard() {
       </div>
 
       {/* TARJETA DE SALDO — protagonista */}
-      <div className="rounded-3xl bg-gradient-to-br from-indigo-700 via-indigo-800 to-slate-900 text-white p-8 shadow-2xl shadow-indigo-900/40 relative overflow-hidden">
+      <div className="rounded-3xl bg-gradient-to-br from-brand-600 to-brand-900 text-white p-8 shadow-2xl shadow-brand-900/40 relative overflow-hidden">
         {/* Decoración de fondo */}
         <div className="absolute top-0 right-0 w-56 h-56 bg-white/5 rounded-full -translate-y-1/3 translate-x-1/4 pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/5 rounded-full translate-y-1/3 -translate-x-1/4 pointer-events-none" />
@@ -127,10 +147,10 @@ export default function ClienteDashboard() {
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <p className="text-indigo-300 text-base font-semibold uppercase tracking-widest">
+              <p className="text-brand-100 text-base font-semibold uppercase tracking-widest">
                 Mi Saldo Disponible
               </p>
-              <p className="text-indigo-200 text-sm mt-0.5">
+              <p className="text-brand-100/80 text-sm mt-0.5">
                 {cuenta
                   ? `${cuenta.tipo_cuenta.charAt(0).toUpperCase() + cuenta.tipo_cuenta.slice(1)} · ${maskNumeroCuenta(cuenta.numero_cuenta)}`
                   : "Sin cuenta activa"}
@@ -153,18 +173,18 @@ export default function ClienteDashboard() {
             </p>
           ) : (
             <div className="text-center py-2">
-              <p className="text-2xl font-bold text-indigo-300">No tiene cuenta activa</p>
-              <p className="text-indigo-400 text-sm mt-1">Contacte al banco para abrir su cuenta.</p>
+              <p className="text-2xl font-bold text-brand-100">No tiene cuenta activa</p>
+              <p className="text-brand-100/70 text-sm mt-1">Contacte al banco para abrir su cuenta.</p>
             </div>
           )}
 
           {cuenta && (
-            <p className="mt-3 text-indigo-300 font-semibold text-base">
+            <p className="mt-3 text-brand-100 font-semibold text-base">
               {cuenta.moneda}
             </p>
           )}
 
-          <div className="mt-6 pt-6 border-t border-white/20 flex items-center gap-2 text-indigo-200 text-sm font-semibold">
+          <div className="mt-6 pt-6 border-t border-white/20 flex items-center gap-2 text-brand-100 text-sm font-semibold">
             <Shield size={16} />
             <span>Su dinero está protegido y asegurado por BankLite</span>
           </div>
@@ -175,8 +195,8 @@ export default function ClienteDashboard() {
       {cuenta && (
         <div className="rounded-2xl bg-white border-2 border-slate-100 shadow-md p-6">
           <div className="flex items-center gap-3 mb-5">
-            <div className="h-10 w-10 rounded-xl bg-indigo-100 flex items-center justify-center">
-              <User size={22} className="text-indigo-600" />
+            <div className="h-10 w-10 rounded-xl bg-brand-100 flex items-center justify-center">
+              <User size={22} className="text-brand-600" />
             </div>
             <div>
               <h2 className="text-lg font-black text-slate-800">Mi Cuenta</h2>
@@ -194,12 +214,12 @@ export default function ClienteDashboard() {
               <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">Moneda</p>
               <p className="text-base font-bold text-slate-800">{cuenta.moneda}</p>
             </div>
-            <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 col-span-2">
-              <p className="text-xs text-indigo-600 font-bold uppercase tracking-wider mb-1">Número de Cuenta</p>
-              <p className="text-2xl font-black text-indigo-800 font-mono tracking-widest">
+            <div className="bg-brand-50 border border-brand-100 rounded-2xl p-4 col-span-2">
+              <p className="text-xs text-brand-600 font-bold uppercase tracking-wider mb-1">Número de Cuenta</p>
+              <p className="text-2xl font-black text-brand-700 font-mono tracking-widest">
                 {formatNumeroCuenta(cuenta.numero_cuenta)}
               </p>
-              <p className="text-xs text-indigo-500 mt-1">Use este número para recibir transferencias</p>
+              <p className="text-xs text-brand-500 mt-1">Use este número para recibir transferencias</p>
             </div>
           </div>
         </div>
@@ -207,7 +227,7 @@ export default function ClienteDashboard() {
       {/* Tarjeta asociada */}
       {tarjeta && (
         <div className="rounded-2xl bg-white border-2 border-slate-100 shadow-md p-6 flex items-center gap-5">
-          <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/30">
+          <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center flex-shrink-0 shadow-lg shadow-brand-500/30">
             <CreditCard size={28} className="text-white" />
           </div>
           <div className="flex-1">
@@ -218,7 +238,7 @@ export default function ClienteDashboard() {
             <p className="text-slate-500 text-sm mt-1">
               {tarjeta.tipo_tarjeta.charAt(0).toUpperCase() + tarjeta.tipo_tarjeta.slice(1)} ·{" "}
               <span
-                className={`font-bold ${tarjeta.estado === "activa" ? "text-green-600" : "text-red-600"}`}
+                className={`font-bold ${tarjeta.estado === "activa" ? "text-brand-600" : "text-red-600"}`}
               >
                 {tarjeta.estado.charAt(0).toUpperCase() + tarjeta.estado.slice(1)}
               </span>
@@ -226,7 +246,7 @@ export default function ClienteDashboard() {
           </div>
           <Link
             href="/cliente/tarjetas"
-            className="text-indigo-600 font-bold text-sm hover:underline flex-shrink-0"
+            className="text-brand-600 font-bold text-sm hover:underline flex-shrink-0"
           >
             Ver más →
           </Link>
@@ -236,14 +256,14 @@ export default function ClienteDashboard() {
       {!tarjeta && !cargando && cuenta && (
         <Link
           href="/cliente/tarjetas"
-          className="flex items-center gap-4 rounded-2xl border-2 border-dashed border-purple-300 bg-purple-50 p-6 hover:border-purple-500 hover:bg-purple-100 transition group"
+          className="flex items-center gap-4 rounded-2xl border-2 border-dashed border-brand-500/40 bg-brand-50 p-6 hover:border-brand-500 hover:bg-brand-100 transition group"
         >
-          <div className="h-12 w-12 rounded-xl bg-purple-100 group-hover:bg-purple-200 flex items-center justify-center flex-shrink-0 transition">
-            <Plus size={24} className="text-purple-600" />
+          <div className="h-12 w-12 rounded-xl bg-brand-100 group-hover:bg-brand-500/20 flex items-center justify-center flex-shrink-0 transition">
+            <Plus size={24} className="text-brand-600" />
           </div>
           <div>
-            <p className="text-purple-800 font-black text-lg">Solicitar mi tarjeta</p>
-            <p className="text-purple-600 text-sm">No tiene tarjetas aún. Solicite una ahora.</p>
+            <p className="text-brand-900 font-black text-lg">Solicitar mi tarjeta</p>
+            <p className="text-brand-600 text-sm">No tiene tarjetas aún. Solicite una ahora.</p>
           </div>
         </Link>
       )}
@@ -270,16 +290,50 @@ export default function ClienteDashboard() {
         </div>
       </div>
 
+      {/* Últimos movimientos */}
+      {cuenta && (
+        <div className="rounded-2xl bg-white border-2 border-slate-100 shadow-md p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-black text-slate-800">Últimos movimientos</h2>
+            <Link href="/cliente/movimientos" className="text-brand-600 font-bold text-sm hover:underline">
+              Ver todos →
+            </Link>
+          </div>
+          {movimientos.length === 0 ? (
+            <p className="text-slate-500 text-sm py-4 text-center">Aún no tiene movimientos.</p>
+          ) : (
+            <ul className="divide-y divide-slate-100">
+              {movimientos.map((m) => (
+                <li key={m.id_transferencia} className="py-3 flex items-center gap-4">
+                  <div className="h-10 w-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0">
+                    <ArrowRightLeft size={20} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-slate-800 truncate">
+                      {m.concepto || "Transferencia enviada"}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {new Date(m.fecha_solicitud).toLocaleDateString("es-CO")} · {m.estado}
+                    </p>
+                  </div>
+                  <p className="text-sm font-black text-slate-800">-{formatCOP(m.monto)}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
       {/* Aviso de ayuda */}
-      <div className="rounded-2xl bg-blue-50 border-2 border-blue-200 p-6 flex items-start gap-4">
-        <Phone size={28} className="text-blue-600 flex-shrink-0 mt-1" />
+      <div className="rounded-2xl bg-brand-50 border-2 border-brand-100 p-6 flex items-start gap-4">
+        <Phone size={28} className="text-brand-600 flex-shrink-0 mt-1" />
         <div>
-          <h3 className="text-lg font-bold text-blue-900">¿Necesita ayuda?</h3>
-          <p className="text-blue-700 mt-1 text-base">
+          <h3 className="text-lg font-bold text-brand-900">¿Necesita ayuda?</h3>
+          <p className="text-brand-700 mt-1 text-base">
             Si tiene problemas con su cuenta, llame a nuestro centro de atención:
           </p>
-          <p className="text-3xl font-black text-blue-800 mt-2">01 800 BANKLITE</p>
-          <p className="text-sm text-blue-500 mt-1">Disponible de lunes a viernes, 8am – 6pm</p>
+          <p className="text-3xl font-black text-brand-700 mt-2">01 800 BANKLITE</p>
+          <p className="text-sm text-brand-600 mt-1">Disponible de lunes a viernes, 8am – 6pm</p>
         </div>
       </div>
     </div>

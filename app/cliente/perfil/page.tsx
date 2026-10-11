@@ -1,14 +1,22 @@
 "use client";
 import { useEffect, useState } from "react";
 import { obtenerSesion, Sesion, guardarSesion } from "@/lib/auth";
-import { User, Mail, Phone, MapPin, Calendar, CheckCircle, Clock, AlertTriangle, Save, CreditCard } from "lucide-react";
-import { updateUsuario, listAccounts, Cuenta } from "@/lib/api";
+import { User, Mail, Phone, MapPin, Calendar, CheckCircle, Clock, AlertTriangle, Save, CreditCard, Lock } from "lucide-react";
+import { updateUsuario, listAccounts, cambiarClave, Cuenta } from "@/lib/api";
 
 export default function ClientePerfilPage() {
   const [sesion, setSesion] = useState<Sesion | null>(null);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [cuenta, setCuenta] = useState<Cuenta | null>(null);
+
+  // Cambio de contraseña
+  const [claveActual, setClaveActual] = useState("");
+  const [claveNueva, setClaveNueva] = useState("");
+  const [claveConfirm, setClaveConfirm] = useState("");
+  const [cambiando, setCambiando] = useState(false);
+  const [claveOk, setClaveOk] = useState<string | null>(null);
+  const [claveError, setClaveError] = useState<string | null>(null);
   
   // Form fields
   const [cedula, setCedula] = useState("");
@@ -73,6 +81,32 @@ export default function ClientePerfilPage() {
     }
   }
 
+  async function handleCambiarClave(e: React.FormEvent) {
+    e.preventDefault();
+    setClaveOk(null);
+    setClaveError(null);
+    if (claveNueva.length < 6) {
+      setClaveError("La nueva contraseña debe tener al menos 6 caracteres.");
+      return;
+    }
+    if (claveNueva !== claveConfirm) {
+      setClaveError("La nueva contraseña y su confirmación no coinciden.");
+      return;
+    }
+    setCambiando(true);
+    try {
+      const res = await cambiarClave(u.id_usuario, claveActual, claveNueva);
+      setClaveOk(res?.mensaje ?? "Contraseña actualizada correctamente.");
+      setClaveActual("");
+      setClaveNueva("");
+      setClaveConfirm("");
+    } catch (err: unknown) {
+      setClaveError(err instanceof Error ? err.message : "No fue posible cambiar la contraseña.");
+    } finally {
+      setCambiando(false);
+    }
+  }
+
   return (
     <div className="space-y-6 max-w-3xl">
       <h1 className="text-3xl font-black text-slate-800">Mi Perfil</h1>
@@ -100,28 +134,28 @@ export default function ClientePerfilPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1">Cédula</label>
-                <input required type="text" inputMode="numeric" minLength={6} maxLength={10} pattern="[0-9]{6,10}" title="Solo números, entre 6 y 10 dígitos" value={cedula} onChange={e=>setCedula(e.target.value.replace(/\D/g, "").slice(0, 10))} className="w-full border-2 rounded-xl p-2.5 focus:border-indigo-600 outline-none" />
+                <input required type="text" inputMode="numeric" minLength={6} maxLength={10} pattern="[0-9]{6,10}" title="Solo números, entre 6 y 10 dígitos" value={cedula} onChange={e=>setCedula(e.target.value.replace(/\D/g, "").slice(0, 10))} className="w-full border-2 rounded-xl p-2.5 focus:border-brand-500 outline-none" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1">País Expedición</label>
-                <input required type="text" value={paisExp} onChange={e=>setPaisExp(e.target.value)} className="w-full border-2 rounded-xl p-2.5 focus:border-indigo-600 outline-none" />
+                <input required type="text" value={paisExp} onChange={e=>setPaisExp(e.target.value)} className="w-full border-2 rounded-xl p-2.5 focus:border-brand-500 outline-none" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1">Fecha Expedición</label>
-                <input required type="date" value={fechaExp} onChange={e=>setFechaExp(e.target.value)} className="w-full border-2 rounded-xl p-2.5 focus:border-indigo-600 outline-none" />
+                <input required type="date" value={fechaExp} onChange={e=>setFechaExp(e.target.value)} className="w-full border-2 rounded-xl p-2.5 focus:border-brand-500 outline-none" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1">Fecha Vencimiento</label>
-                <input required type="date" value={fechaVenc} onChange={e=>setFechaVenc(e.target.value)} className="w-full border-2 rounded-xl p-2.5 focus:border-indigo-600 outline-none" />
+                <input required type="date" value={fechaVenc} onChange={e=>setFechaVenc(e.target.value)} className="w-full border-2 rounded-xl p-2.5 focus:border-brand-500 outline-none" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1">Fecha Nacimiento</label>
-                <input required type="date" value={fechaNac} onChange={e=>setFechaNac(e.target.value)} className="w-full border-2 rounded-xl p-2.5 focus:border-indigo-600 outline-none" />
+                <input required type="date" value={fechaNac} onChange={e=>setFechaNac(e.target.value)} className="w-full border-2 rounded-xl p-2.5 focus:border-brand-500 outline-none" />
               </div>
             </div>
             <div className="flex justify-end gap-3 pt-4">
               <button type="button" onClick={()=>setEditing(false)} className="px-6 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-100">Cancelar</button>
-              <button type="submit" disabled={loading} className="px-6 py-2.5 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 flex items-center gap-2">
+              <button type="submit" disabled={loading} className="px-6 py-2.5 rounded-xl font-bold bg-brand-500 text-white hover:bg-brand-600 flex items-center gap-2">
                 <Save size={18}/> {loading ? 'Guardando...' : 'Guardar Datos'}
               </button>
             </div>
@@ -143,7 +177,7 @@ export default function ClientePerfilPage() {
             </div>
           </div>
           <div className="bg-white rounded-3xl shadow-md border border-slate-100 overflow-hidden">
-            <div className="bg-blue-600 text-white px-6 py-4 flex justify-between items-center">
+            <div className="bg-brand-600 text-white px-6 py-4 flex justify-between items-center">
               <h2 className="text-lg font-bold">Datos Personales</h2>
               {!incomplete && (
                 <button onClick={() => setEditing(true)} className="text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded font-semibold transition">
@@ -167,6 +201,43 @@ export default function ClientePerfilPage() {
           </div>
         </>
       )}
+
+      {/* Cambiar contraseña */}
+      <div className="bg-white rounded-3xl shadow-md border border-slate-100 overflow-hidden">
+        <div className="bg-brand-600 text-white px-6 py-4 flex items-center gap-2">
+          <Lock size={20} />
+          <h2 className="text-lg font-bold">Cambiar contraseña</h2>
+        </div>
+        <form onSubmit={handleCambiarClave} className="p-6 space-y-4">
+          {claveOk && (
+            <div className="bg-brand-50 border-2 border-brand-100 text-brand-700 rounded-2xl p-4 flex gap-2 items-center font-semibold">
+              <CheckCircle size={20} className="flex-shrink-0" /> {claveOk}
+            </div>
+          )}
+          {claveError && (
+            <div className="bg-red-50 border-2 border-red-200 text-red-800 rounded-2xl p-4 flex gap-2 items-center font-semibold">
+              <AlertTriangle size={20} className="flex-shrink-0" /> {claveError}
+            </div>
+          )}
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-1">Contraseña actual</label>
+            <input required type="password" autoComplete="current-password" value={claveActual} onChange={e=>setClaveActual(e.target.value)} className="w-full border-2 rounded-xl p-2.5 focus:border-brand-500 outline-none" />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-1">Nueva contraseña</label>
+            <input required type="password" minLength={6} autoComplete="new-password" value={claveNueva} onChange={e=>setClaveNueva(e.target.value)} className="w-full border-2 rounded-xl p-2.5 focus:border-brand-500 outline-none" />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-1">Confirmar nueva contraseña</label>
+            <input required type="password" minLength={6} autoComplete="new-password" value={claveConfirm} onChange={e=>setClaveConfirm(e.target.value)} className="w-full border-2 rounded-xl p-2.5 focus:border-brand-500 outline-none" />
+          </div>
+          <div className="flex justify-end">
+            <button type="submit" disabled={cambiando} className="px-6 py-2.5 rounded-xl font-bold bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white flex items-center gap-2 transition">
+              <Save size={18}/> {cambiando ? "Actualizando..." : "Cambiar contraseña"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

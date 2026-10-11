@@ -116,6 +116,13 @@ export function updateUsuario(id_usuario: string, data: {
   });
 }
 
+export function cambiarClave(idUsuario: string, claveActual: string, claveNueva: string) {
+  return request<{mensaje: string}>(`${IDENTITY_URL}/users/${idUsuario}/cambiar-clave`, {
+    method: "PUT",
+    body: JSON.stringify({ clave_actual: claveActual, clave_nueva: claveNueva }),
+  });
+}
+
 import { obtenerSesion } from "./auth";
 
 export function listUsuarios() {
@@ -423,7 +430,7 @@ export type Tarjeta = {
   id_cuenta: string;
   tipo_tarjeta: string;
   procesador_externo: string;
-  estado: "activa" | "bloqueada" | "vencida";
+  estado: "activa" | "bloqueada" | "vencida" | "congelada";
   fecha_emision: string;
   bloqueos?: Bloqueo[];
 };
@@ -441,7 +448,7 @@ export function createCard(data: {
   id_cuenta: string;
   tipo_tarjeta?: string;
   procesador_externo?: string;
-  estado?: "activa" | "bloqueada" | "vencida";
+  estado?: "activa" | "bloqueada" | "vencida" | "congelada";
 }) {
   return request<Tarjeta>(`${CARD_URL}/cards`, {
     method: "POST",
@@ -497,6 +504,10 @@ export async function revelarNumeroTarjeta(
   idUsuario: string
 ): Promise<{ id_tarjeta: string; numero_tarjeta: string; numero_formateado: string }> {
   return request(`${CARD_URL}/cards/${idTarjeta}/numero?id_usuario=${encodeURIComponent(idUsuario)}`);
+}
+
+export function toggleFreezeCard(idTarjeta: string) {
+  return request<Tarjeta>(`${CARD_URL}/cards/${idTarjeta}/toggle-freeze`, { method: "PATCH" });
 }
 
 /** El administrador puede eliminar (marcar como vencida) una tarjeta. */
@@ -613,4 +624,18 @@ export async function buscarCuentaPorNumero(numeroCuenta: string): Promise<Desti
     if (err instanceof ApiError && (err.status === 404 || err.status === 409)) return null;
     throw err;
   }
+}
+
+export function solicitarReset(email: string) {
+  return request<{mensaje: string; codigo_debug?: string}>(`${IDENTITY_URL}/auth/solicitar-reset`, {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export function resetClave(email: string, codigo: string, nueva_clave: string) {
+  return request<{mensaje: string}>(`${IDENTITY_URL}/auth/reset-clave`, {
+    method: "POST",
+    body: JSON.stringify({ email, codigo, nueva_clave }),
+  });
 }

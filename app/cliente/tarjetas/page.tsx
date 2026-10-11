@@ -3,16 +3,23 @@ import { useEffect, useState } from "react";
 import { obtenerSesion } from "@/lib/auth";
 import {
   listCards, listAccounts, solicitarTarjetaCliente, revelarNumeroTarjeta,
-  Tarjeta, Cuenta,
+  toggleFreezeCard, Tarjeta, Cuenta,
 } from "@/lib/api";
 import {
   CreditCard, Eye, EyeOff, Lock, CheckCircle, AlertCircle,
-  Loader2, Plus, ShieldCheck, ShieldX,
+  Loader2, Plus, ShieldCheck, ShieldX, Snowflake, Sun,
 } from "lucide-react";
 
 function maskNumeroTarjeta(nt: string | null | undefined) {
   if (!nt) return "**** **** **** ****";
   return `**** **** **** ${nt.slice(-4)}`;
+}
+
+function tipoLabel(t: string) {
+  const l = t.toLowerCase();
+  if (l === "debito" || l === "débito") return "Débito";
+  if (l === "credito" || l === "crédito") return "Crédito";
+  return t.charAt(0).toUpperCase() + t.slice(1);
 }
 
 function maskNumeroCuenta(nc: string | null | undefined) {
@@ -31,6 +38,8 @@ export default function ClienteTarjetasPage() {
   const [cargandoNumero, setCargandoNumero] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [congelando, setCongelando] = useState<Record<string, boolean>>({});
+  const [errorCongelar, setErrorCongelar] = useState<string | null>(null);
 
   // Flujo de emisión
   const [emitiendo, setEmitiendo] = useState(false);
@@ -41,6 +50,9 @@ export default function ClienteTarjetasPage() {
   const [tipoSeleccionado, setTipoSeleccionado] = useState<"virtual" | "fisica">("virtual");
 
   const sesion = obtenerSesion();
+  const titular = sesion
+    ? [sesion.usuario.nombre, sesion.usuario.apellido].filter(Boolean).join(" ").toUpperCase()
+    : "";
 
   useEffect(() => {
     async function cargar() {
@@ -117,6 +129,22 @@ export default function ClienteTarjetasPage() {
     }
   }
 
+  async function handleToggleFreeze(tarjetaId: string) {
+    if (congelando[tarjetaId]) return;
+    setCongelando((prev) => ({ ...prev, [tarjetaId]: true }));
+    setErrorCongelar(null);
+    try {
+      const actualizada = await toggleFreezeCard(tarjetaId);
+      setTarjetas((prev) =>
+        prev.map((t) => (t.id_tarjeta === tarjetaId ? { ...t, ...actualizada, numero_tarjeta: actualizada.numero_tarjeta ?? t.numero_tarjeta } : t))
+      );
+    } catch (err: unknown) {
+      setErrorCongelar(err instanceof Error ? err.message : "No fue posible cambiar el estado de la tarjeta");
+    } finally {
+      setCongelando((prev) => ({ ...prev, [tarjetaId]: false }));
+    }
+  }
+
   async function handleSolicitarTarjeta() {
     if (!sesion || !cuentaSeleccionada || solicitando) return;
     setSolicitando(true);
@@ -144,7 +172,7 @@ export default function ClienteTarjetasPage() {
   if (loading)
     return (
       <div className="flex items-center justify-center py-24 gap-4">
-        <Loader2 size={40} className="text-indigo-500 animate-spin" />
+        <Loader2 size={40} className="text-brand-500 animate-spin" />
         <p className="text-xl text-slate-500 font-semibold">Cargando tarjetas…</p>
       </div>
     );
@@ -165,7 +193,7 @@ export default function ClienteTarjetasPage() {
       {/* Encabezado */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-4">
-          <div className="bg-indigo-100 p-3 rounded-2xl text-indigo-600">
+          <div className="bg-brand-100 p-3 rounded-2xl text-brand-600">
             <CreditCard size={28} strokeWidth={2.5} />
           </div>
           <div>
@@ -176,7 +204,7 @@ export default function ClienteTarjetasPage() {
         {!emitiendo && (
           <button
             onClick={() => { setEmitiendo(true); setResultadoEmision(null); setErrorEmision(null); }}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-3 rounded-2xl shadow-lg transition-colors text-base"
+            className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-bold px-5 py-3 rounded-2xl shadow-lg transition-colors text-base"
           >
             <Plus size={20} /> Solicitar Tarjeta
           </button>
@@ -230,7 +258,7 @@ export default function ClienteTarjetasPage() {
                 <select
                   value={cuentaSeleccionada}
                   onChange={(e) => setCuentaSeleccionada(e.target.value)}
-                  className="w-full border-2 border-slate-200 rounded-xl px-4 py-3 text-base focus:border-indigo-600 focus:outline-none"
+                  className="w-full border-2 border-slate-200 rounded-xl px-4 py-3 text-base focus:border-brand-600 focus:outline-none"
                 >
                   {cuentasActivas.map((c) => (
                     <option key={c.id_cuenta} value={c.id_cuenta}>
@@ -253,8 +281,8 @@ export default function ClienteTarjetasPage() {
                       onClick={() => setTipoSeleccionado(tipo)}
                       className={`p-4 rounded-2xl border-2 text-left transition-all ${
                         tipoSeleccionado === tipo
-                          ? "border-indigo-600 bg-indigo-50"
-                          : "border-slate-200 hover:border-indigo-300"
+                          ? "border-brand-600 bg-brand-50"
+                          : "border-slate-200 hover:border-brand-500"
                       }`}
                     >
                       <p className="font-bold text-slate-800 capitalize">{tipo}</p>
@@ -285,7 +313,7 @@ export default function ClienteTarjetasPage() {
                 <button
                   onClick={handleSolicitarTarjeta}
                   disabled={solicitando || !cuentaSeleccionada}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-black py-3 rounded-2xl flex items-center justify-center gap-2 text-lg shadow-lg transition-colors"
+                  className="flex-1 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white font-black py-3 rounded-2xl flex items-center justify-center gap-2 text-lg shadow-lg transition-colors"
                 >
                   {solicitando ? <Loader2 size={22} className="animate-spin" /> : <Plus size={22} />}
                   {solicitando ? "Emitiendo…" : "Emitir Tarjeta"}
@@ -328,7 +356,7 @@ export default function ClienteTarjetasPage() {
               </p>
               <button
                 onClick={() => setEmitiendo(false)}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl text-lg"
+                className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-4 rounded-2xl text-lg"
               >
                 Ver mis tarjetas
               </button>
@@ -340,6 +368,12 @@ export default function ClienteTarjetasPage() {
       {/* Lista de tarjetas */}
       {!emitiendo && (
         <>
+          {errorCongelar && (
+            <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-4 flex gap-3 text-red-800">
+              <AlertCircle size={22} className="flex-shrink-0" />
+              <p className="font-semibold">{errorCongelar}</p>
+            </div>
+          )}
           {tarjetas.length === 0 ? (
             <div className="text-center py-16">
               <CreditCard size={64} className="mx-auto text-slate-300 mb-4" />
@@ -355,14 +389,23 @@ export default function ClienteTarjetasPage() {
                 const verNumero = mostrarNumero[tarjeta.id_tarjeta];
                 const numeroCargando = cargandoNumero[tarjeta.id_tarjeta];
                 const numeroCompleto = numerosRevelados[tarjeta.id_tarjeta];
+                const congelada = tarjeta.estado === "congelada";
 
                 return (
                   <div key={tarjeta.id_tarjeta} className="rounded-3xl overflow-hidden shadow-xl">
-                    <div className="bg-gradient-to-br from-blue-600 to-purple-700 text-white p-7 relative">
+                    <div
+                      className={`relative text-white p-7 rounded-2xl bg-gradient-to-br ${
+                        congelada
+                          ? "from-gray-400 to-gray-600"
+                          : tarjeta.estado === "activa"
+                            ? "from-brand-500 via-brand-600 to-brand-900"
+                            : "from-gray-500 to-gray-700"
+                      }`}
+                    >
                       <div className="flex justify-between items-start mb-8">
                         <div>
-                          <p className="text-blue-200 text-sm font-semibold uppercase tracking-widest">BankLite</p>
-                          <p className="text-xs text-blue-300 mt-1">{tarjeta.tipo_tarjeta}</p>
+                          <p className="text-white/80 text-sm font-semibold uppercase tracking-widest">BankLite</p>
+                          <p className="text-xs text-white/60 mt-1 capitalize">{tarjeta.tipo_tarjeta}</p>
                         </div>
                         <CreditCard size={36} className="text-white/60" />
                       </div>
@@ -388,49 +431,70 @@ export default function ClienteTarjetasPage() {
                       </div>
                       <div className="flex justify-between items-end">
                         <div>
-                          <p className="text-blue-300 text-xs">Vence</p>
-                          <p className="font-bold">
-                            {tarjeta.fecha_emision
-                              ? new Date(
-                                  new Date(tarjeta.fecha_emision).setFullYear(
-                                    new Date(tarjeta.fecha_emision).getFullYear() + 4
-                                  )
-                                )
-                                  .toISOString()
-                                  .slice(0, 7)
-                                  .replace("-", "/")
-                              : "12/28"}
+                          <p className="font-bold uppercase tracking-wide">{titular || "TITULAR"}</p>
+                          <p className="text-white/80 text-sm mt-1">
+                            Estado: {congelada ? "Congelada" : tarjeta.estado.charAt(0).toUpperCase() + tarjeta.estado.slice(1)}
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-blue-300 text-xs">Cuenta</p>
-                          <p className="font-bold">{maskNumeroCuenta(cuenta?.numero_cuenta)}</p>
+                          <p className="font-bold uppercase">{tipoLabel(tarjeta.tipo_tarjeta)}</p>
+                          <p className="text-white/70 text-xs mt-1">
+                            Cuenta {maskNumeroCuenta(cuenta?.numero_cuenta)}
+                          </p>
                         </div>
                       </div>
+                      {congelada && (
+                        <div className="absolute inset-0 rounded-2xl bg-black/35 flex flex-col items-center justify-center gap-2">
+                          <Lock size={48} className="text-white" />
+                          <p className="font-bold text-white">Tarjeta congelada</p>
+                        </div>
+                      )}
                     </div>
-                    <div className="bg-white p-5 border border-slate-100 rounded-b-3xl">
+                    <div className="bg-white p-5 border border-slate-100 rounded-b-3xl space-y-3">
                       <div className="flex items-center gap-2">
                         {tarjeta.estado === "activa" ? (
-                          <CheckCircle size={22} className="text-green-500" />
+                          <CheckCircle size={22} className="text-brand-500" />
                         ) : (
                           <Lock size={22} className="text-red-400" />
                         )}
                         <span
                           className={`text-lg font-bold ${
-                            tarjeta.estado === "activa" ? "text-green-700" : "text-red-600"
+                            tarjeta.estado === "activa" ? "text-brand-700" : "text-red-600"
                           }`}
                         >
                           {tarjeta.estado === "activa"
-                            ? "✅ Tarjeta Activa"
-                            : "❌ Tarjeta " + tarjeta.estado}
+                            ? "Tarjeta Activa"
+                            : congelada
+                              ? "Tarjeta Congelada"
+                              : "Tarjeta " + tarjeta.estado}
                         </span>
                       </div>
-                      <p className="text-slate-500 text-sm mt-2">
+                      <p className="text-slate-500 text-sm">
                         Procesador: <span className="font-bold text-slate-700">{tarjeta.procesador_externo}</span>
                       </p>
+                      {tarjeta.estado !== "vencida" && (
+                        <button
+                          onClick={() => handleToggleFreeze(tarjeta.id_tarjeta)}
+                          disabled={congelando[tarjeta.id_tarjeta]}
+                          className={`w-full flex items-center justify-center gap-2 font-bold py-2.5 rounded-xl transition-colors disabled:opacity-50 ${
+                            congelada
+                              ? "bg-brand-600 hover:bg-brand-700 text-white"
+                              : "border-2 border-brand-500 text-brand-700 hover:bg-brand-50"
+                          }`}
+                        >
+                          {congelando[tarjeta.id_tarjeta] ? (
+                            <Loader2 size={18} className="animate-spin" />
+                          ) : congelada ? (
+                            <Sun size={18} />
+                          ) : (
+                            <Snowflake size={18} />
+                          )}
+                          {congelada ? "Descongelar tarjeta" : "Congelar tarjeta"}
+                        </button>
+                      )}
                       {verNumero && (
-                        <p className="text-xs text-amber-600 font-semibold mt-2 flex items-center gap-1">
-                          🔓 Número visible — pulsa el ojo para ocultar
+                        <p className="text-xs text-amber-600 font-semibold flex items-center gap-1">
+                          Número visible — pulsa el ojo para ocultar
                         </p>
                       )}
                     </div>
