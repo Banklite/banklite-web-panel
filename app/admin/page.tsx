@@ -13,11 +13,11 @@ const MODULOS = [
   },
   {
     href: "/admin/cuentas", title: "Cuentas Bancarias", desc: "Abrir cuentas, gestionar estados y ver limites operativos",
-    icon: Wallet, color: "bg-blue-500", ring: "ring-blue-200",
+    icon: Wallet, color: "bg-brand-500", ring: "ring-brand-100",
   },
   {
     href: "/admin/tarjetas", title: "Tarjetas & Pagos", desc: "Emitir tarjetas, bloqueos y autorizaciones",
-    icon: CreditCard, color: "bg-purple-500", ring: "ring-purple-200",
+    icon: CreditCard, color: "bg-brand-700", ring: "ring-brand-100",
   },
   {
     href: "/admin/fraude", title: "Monitoreo Fraude", desc: "Reglas antifraude, scoring y centro de alertas",
@@ -43,13 +43,13 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-8 animate-fade-in-up">
       {/* Bienvenida */}
-      <div className="rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-700 text-white p-8 shadow-xl">
+      <div className="rounded-2xl bg-gradient-to-r from-brand-600 to-brand-700 text-white p-8 shadow-xl">
         <div className="flex items-center gap-3 mb-3">
           <Activity size={28} className="opacity-80" />
-          <span className="text-indigo-200 text-sm font-bold uppercase tracking-widest">Centro de Operaciones</span>
+          <span className="text-brand-100 text-sm font-bold uppercase tracking-widest">Centro de Operaciones</span>
         </div>
         <h1 className="text-3xl font-black tracking-tight">Bienvenido, {nombre}</h1>
-        <p className="text-indigo-200 mt-2 text-lg">
+        <p className="text-brand-100 mt-2 text-lg">
           Tienes acceso completo a todos los modulos de BankLite Core Banking.
         </p>
       </div>
@@ -58,8 +58,8 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         {[
           { label: "Microservicios", value: "6", sub: "Todos activos", icon: TrendingUp, color: "text-emerald-600" },
-          { label: "Event Bus", value: "RabbitMQ", sub: "Conectado", icon: Activity, color: "text-blue-600" },
-          { label: "Portal", value: "Admin", sub: "Acceso total", icon: ShieldAlert, color: "text-indigo-600" },
+          { label: "Event Bus", value: "RabbitMQ", sub: "Conectado", icon: Activity, color: "text-brand-600" },
+          { label: "Portal", value: "Admin", sub: "Acceso total", icon: ShieldAlert, color: "text-brand-600" },
         ].map((kpi) => (
           <div key={kpi.label} className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
             <kpi.icon size={28} className={kpi.color} />

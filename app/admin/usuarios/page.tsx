@@ -24,7 +24,7 @@ function EstadoPill({ estado, estado_kyc }: { estado: string; estado_kyc?: strin
     );
   if (kyc === "VERIFICANDO")
     return (
-      <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full animate-pulse">
+      <span className="inline-flex items-center gap-1 text-xs font-semibold text-brand-700 bg-brand-100 px-2 py-0.5 rounded-full animate-pulse">
         <Clock size={12} /> Verificando…
       </span>
     );
@@ -83,12 +83,12 @@ export default function UsuariosPage() {
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Info panel: la verificación es automática */}
-      <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-5">
+      <div className="bg-brand-50 border border-brand-100 rounded-2xl p-5">
         <div className="flex items-start gap-3">
-          <CheckCircle className="text-indigo-500 flex-shrink-0 mt-0.5" size={22} />
+          <CheckCircle className="text-brand-500 flex-shrink-0 mt-0.5" size={22} />
           <div>
-            <p className="font-bold text-indigo-800 text-sm">Verificación automática activa</p>
-            <p className="text-indigo-700 text-sm mt-1">
+            <p className="font-bold text-brand-700 text-sm">Verificación automática activa</p>
+            <p className="text-brand-700 text-sm mt-1">
               Cuando un usuario se registra y provee su cédula, el sistema invoca automáticamente
               el motor de verificación KYC (proveedor simulado en la demo). No se requiere aprobación manual
               del administrador.
@@ -166,7 +166,7 @@ function UsuariosTable({ usuarios, onReverificar }: { usuarios: Usuario[]; onRev
                   <button
                     type="button"
                     onClick={() => onReverificar(u.id_usuario)}
-                    className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 underline"
+                    className="text-xs font-semibold text-brand-600 hover:text-brand-700 underline"
                   >
                     Verificar ahora
                   </button>

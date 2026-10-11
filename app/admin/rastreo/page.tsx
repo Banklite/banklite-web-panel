@@ -102,7 +102,7 @@ export default function RastreoPage() {
         </div>
         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
           <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Monto total</p>
-          <p className="text-3xl font-bold text-indigo-700 mt-1">
+          <p className="text-3xl font-bold text-brand-700 mt-1">
             ${totalMonto.toLocaleString("es-CO", { minimumFractionDigits: 2 })}
           </p>
         </div>
@@ -128,7 +128,7 @@ export default function RastreoPage() {
                 placeholder="ID, cuenta origen, beneficiario, monto..."
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+                className="w-full pl-9 pr-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono"
               />
             </div>
           </div>
@@ -137,7 +137,7 @@ export default function RastreoPage() {
             <select
               value={filtroEstado}
               onChange={(e) => setFiltroEstado(e.target.value)}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
               <option value="todos">Todos</option>
               <option value="completada">Completada</option>
@@ -146,7 +146,7 @@ export default function RastreoPage() {
             </select>
           </div>
           <div className="flex items-end">
-            <button onClick={refresh} className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors">
+            <button onClick={refresh} className="w-full flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors">
               <RefreshCw size={15} /> Actualizar
             </button>
           </div>
@@ -194,9 +194,9 @@ export default function RastreoPage() {
               </thead>
               <tbody>
                 {filtradas.map((t) => (
-                  <tr key={t.id_transferencia} className="border-b border-slate-50 hover:bg-indigo-50/30 transition-colors">
+                  <tr key={t.id_transferencia} className="border-b border-slate-50 hover:bg-brand-50/30 transition-colors">
                     <td className="py-2.5 pr-3">
-                      <span className="font-mono text-xs text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded" title={t.id_transferencia}>
+                      <span className="font-mono text-xs text-brand-700 bg-brand-50 px-2 py-0.5 rounded" title={t.id_transferencia}>
                         {t.id_transferencia.slice(0, 8)}...
                       </span>
                     </td>

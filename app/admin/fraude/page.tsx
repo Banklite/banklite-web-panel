@@ -187,7 +187,7 @@ export default function FraudePage() {
 
             <button
               type="submit"
-              className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-indigo-700 transition flex items-center justify-center gap-2"
+              className="w-full rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-brand-700 transition flex items-center justify-center gap-2"
             >
               <Sliders size={16} /> Guardar Regla
             </button>
@@ -313,7 +313,7 @@ export default function FraudePage() {
               <tbody className="divide-y divide-slate-100">
                 {evaluaciones.map((ev) => (
                   <tr key={ev.id_evaluacion} className="hover:bg-slate-50/80 transition">
-                    <td className="p-3 font-mono text-xs text-indigo-600">{short(ev.id_evaluacion)}</td>
+                    <td className="p-3 font-mono text-xs text-brand-600">{short(ev.id_evaluacion)}</td>
                     <td className="p-3 font-mono text-xs text-slate-700">{short(ev.id_transaccion)}</td>
                     <td className="p-3 font-mono text-xs text-slate-500">{short(ev.id_regla)}</td>
                     <td className="p-3 text-center font-bold">

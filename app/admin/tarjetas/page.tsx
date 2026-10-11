@@ -183,9 +183,9 @@ export default function TarjetasPage() {
       {feedback && <Banner kind={feedback.kind} text={feedback.text} />}
 
       {/* Nota: La emisión de tarjetas es exclusiva del portal del cliente */}
-      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-start gap-3">
-        <Shield size={20} className="text-blue-600 flex-shrink-0 mt-0.5" />
-        <p className="text-blue-700 text-sm font-semibold">
+      <div className="bg-brand-50 border border-brand-100 rounded-2xl p-4 flex items-start gap-3">
+        <Shield size={20} className="text-brand-600 flex-shrink-0 mt-0.5" />
+        <p className="text-brand-700 text-sm font-semibold">
           La emisión de tarjetas es responsabilidad del propio usuario desde su portal de cliente.
           Aquí solo puede bloquear, desbloquear y eliminar tarjetas existentes.
         </p>
@@ -239,7 +239,7 @@ export default function TarjetasPage() {
               <select
                 value={authCardId}
                 onChange={(e) => setAuthCardId(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 p-2.5 text-sm bg-white focus:ring-2 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-slate-300 p-2.5 text-sm bg-white focus:ring-2 focus:ring-brand-500"
               >
                 <option value="">-- Selecciona tarjeta --</option>
                 {tarjetas.map((t) => (
@@ -290,13 +290,13 @@ export default function TarjetasPage() {
             {tarjetas.map((t) => (
               <div
                 key={t.id_tarjeta}
-                className="relative p-6 rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white shadow-xl overflow-hidden border border-slate-700"
+                className="relative p-6 rounded-2xl bg-gradient-to-br from-slate-900 via-brand-900 to-slate-900 text-white shadow-xl overflow-hidden border border-slate-700"
               >
                 {/* Glow decorativo */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 blur-2xl pointer-events-none"></div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-brand-500/20 blur-2xl pointer-events-none"></div>
 
                 <div className="flex justify-between items-center mb-6">
-                  <span className="text-xs uppercase tracking-widest text-indigo-300 font-bold">BankLite {t.tipo_tarjeta}</span>
+                  <span className="text-xs uppercase tracking-widest text-brand-500 font-bold">BankLite {t.tipo_tarjeta}</span>
                   <StatusPill value={t.estado} />
                 </div>
 
@@ -376,7 +376,7 @@ export default function TarjetasPage() {
               <tbody className="divide-y divide-slate-100">
                 {autorizaciones.map((a) => (
                   <tr key={a.id_autorizacion} className="hover:bg-slate-50/80 transition">
-                    <td className="p-3 font-mono text-xs text-indigo-600">{short(a.id_autorizacion)}</td>
+                    <td className="p-3 font-mono text-xs text-brand-600">{short(a.id_autorizacion)}</td>
                     <td className="p-3 font-mono text-xs">{short(a.id_tarjeta)}</td>
                     <td className="p-3 font-medium text-slate-800">{a.comercio}</td>
                     <td className="p-3 text-right font-mono font-semibold">${a.monto.toFixed(2)}</td>

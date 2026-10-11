@@ -28,6 +28,24 @@ const ADMIN_LINKS = [
   { href: "/admin/rastreo", label: "Rastreo Transacciones", icon: ArrowRightLeft, hint: "Buscar & Auditar" },
 ];
 
+const PAGE_TITLES: Record<string, string> = {
+  "/admin": "Centro de Operaciones",
+  "/admin/usuarios": "Identidad & KYC",
+  "/admin/cuentas": "Cuentas Bancarias",
+  "/admin/tarjetas": "Tarjetas & Pagos",
+  "/admin/fraude": "Monitoreo de Fraude",
+  "/admin/ledger": "Ledger Contable",
+  "/admin/rastreo": "Rastreo de Transacciones",
+};
+
+function tituloPagina(pathname: string): string {
+  if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname];
+  const match = Object.keys(PAGE_TITLES)
+    .filter((k) => k !== "/admin" && pathname.startsWith(k))
+    .sort((a, b) => b.length - a.length)[0];
+  return match ? PAGE_TITLES[match] : PAGE_TITLES["/admin"];
+}
+
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -71,22 +89,22 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-slate-50/50 text-slate-800 flex flex-col md:flex-row font-sans">
       {/* Sidebar Admin */}
       <aside className="w-full md:w-72 bg-corporate-gradient text-slate-300 md:min-h-screen flex flex-col shadow-2xl z-20 relative overflow-hidden">
-        <div className="absolute top-0 -left-1/2 w-full h-64 bg-indigo-500/10 blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-0 -right-1/2 w-full h-64 bg-fuchsia-500/10 blur-[100px] pointer-events-none" />
+        <div className="absolute top-0 -left-1/2 w-full h-64 bg-brand-500/10 blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-0 -right-1/2 w-full h-64 bg-brand-500/10 blur-[100px] pointer-events-none" />
 
         <div className="p-8 flex items-center gap-4 relative z-10">
-          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/40">
+          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white shadow-lg shadow-brand-500/40">
             <Building2 size={26} strokeWidth={1.5} />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-white tracking-tight leading-none">BankLite</h1>
-            <p className="text-[10px] text-indigo-300 font-bold tracking-[0.2em] uppercase mt-1">Panel Admin</p>
+            <p className="text-[10px] text-brand-500 font-bold tracking-[0.2em] uppercase mt-1">Panel Admin</p>
           </div>
         </div>
 
         <div className="flex-1 px-5 py-4 overflow-y-auto relative z-10 space-y-6">
           <div>
-            <p className="text-[11px] font-bold text-indigo-300 uppercase tracking-wider px-3 mb-2">
+            <p className="text-[11px] font-bold text-brand-500 uppercase tracking-wider px-3 mb-2">
               Modulos del Sistema
             </p>
             <nav className="flex flex-col gap-1">
@@ -99,16 +117,16 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                     href={link.href}
                     className={`flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 group ${
                       isActive
-                        ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg shadow-indigo-900/30 border border-indigo-500/30"
+                        ? "bg-gradient-to-r from-brand-600 to-brand-700 text-white shadow-lg shadow-brand-900/30 border border-brand-500/30"
                         : "text-slate-400 hover:bg-slate-800/70 hover:text-slate-100"
                     }`}
                   >
-                    <div className={`p-1.5 rounded-lg ${isActive ? "bg-white/20 text-white" : "bg-slate-800 text-slate-400 group-hover:text-indigo-400"}`}>
+                    <div className={`p-1.5 rounded-lg ${isActive ? "bg-white/20 text-white" : "bg-slate-800 text-slate-400 group-hover:text-brand-500"}`}>
                       <Icon size={15} />
                     </div>
                     <div>
                       <div className="text-xs font-semibold tracking-tight">{link.label}</div>
-                      <p className={`text-[10px] ${isActive ? "text-indigo-200" : "text-slate-500"}`}>{link.hint}</p>
+                      <p className={`text-[10px] ${isActive ? "text-brand-100" : "text-slate-500"}`}>{link.hint}</p>
                     </div>
                   </Link>
                 );
@@ -131,7 +149,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               <div className="flex items-center justify-between text-xs">
                 <span className="text-slate-300">Event Bus</span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400" /> RabbitMQ
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" /> REST sync
                 </span>
               </div>
             </div>
@@ -143,20 +161,20 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <p className="font-semibold text-slate-300 flex items-center gap-1">
               <Globe size={12} /> Global Network
             </p>
-            <p className="mt-0.5">Enterprise v1.0.0</p>
+            <p className="mt-0.5">BankLite v2.0</p>
           </div>
         </div>
       </aside>
 
       <main className="flex-1 flex flex-col min-w-0 relative">
         <header className="h-[72px] bg-white/80 backdrop-blur-md border-b border-slate-200/80 flex items-center justify-between px-10 shadow-sm z-10 sticky top-0">
-          <h2 className="text-lg font-bold text-slate-800 tracking-tight">Centro de Operaciones</h2>
+          <h2 className="text-lg font-bold text-slate-800 tracking-tight">{tituloPagina(pathname)}</h2>
           <div className="flex items-center gap-4">
             <div className="flex flex-col text-right">
               <span className="text-sm font-bold text-slate-900">{nombreCompleto || sesion.usuario.email}</span>
-              <span className="text-xs text-indigo-600 font-semibold uppercase tracking-wider">Administrador</span>
+              <span className="text-xs text-brand-600 font-semibold uppercase tracking-wider">Administrador</span>
             </div>
-            <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center border-2 border-white shadow-sm text-indigo-700 font-bold uppercase">
+            <div className="h-10 w-10 rounded-full bg-brand-50 flex items-center justify-center border-2 border-brand-100 shadow-sm text-brand-700 font-bold uppercase">
               {iniciales || "A"}
             </div>
             <button
