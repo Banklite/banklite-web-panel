@@ -626,6 +626,34 @@ export async function buscarCuentaPorNumero(numeroCuenta: string): Promise<Desti
   }
 }
 
+// ---------- Admin Stats (GET /stats de cada servicio) ----------
+
+export type AdminStats = {
+  identity: { total_usuarios: number; usuarios_aprobados: number; usuarios_pendientes: number };
+  account: { total_cuentas: number; cuentas_activas: number };
+  transfer: { total_transferencias: number; transferencias_hoy: number };
+  fraud: { total_alertas: number; alertas_pendientes: number };
+  card: { total_tarjetas: number; tarjetas_activas: number };
+  ledger: { total_transacciones: number };
+  notification: { total_notificaciones: number };
+};
+
+export async function fetchAdminStats(): Promise<AdminStats> {
+  const safe = async <T>(url: string, fallback: T): Promise<T> => {
+    try { return await request<T>(`${url}/stats`); } catch { return fallback; }
+  };
+  const [identity, account, transfer, fraud, card, ledger, notification] = await Promise.all([
+    safe(IDENTITY_URL, { total_usuarios: 0, usuarios_aprobados: 0, usuarios_pendientes: 0 }),
+    safe(ACCOUNT_URL, { total_cuentas: 0, cuentas_activas: 0 }),
+    safe(TRANSFER_URL, { total_transferencias: 0, transferencias_hoy: 0 }),
+    safe(FRAUD_URL, { total_alertas: 0, alertas_pendientes: 0 }),
+    safe(CARD_URL, { total_tarjetas: 0, tarjetas_activas: 0 }),
+    safe(LEDGER_URL, { total_transacciones: 0 }),
+    safe(NOTIFICATION_URL, { total_notificaciones: 0 }),
+  ]);
+  return { identity, account, transfer, fraud, card, ledger, notification };
+}
+
 export function solicitarReset(email: string) {
   return request<{mensaje: string; codigo_debug?: string}>(`${IDENTITY_URL}/auth/solicitar-reset`, {
     method: "POST",

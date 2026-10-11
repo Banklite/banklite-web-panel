@@ -530,7 +530,13 @@ export default function ClienteTransferenciasPage() {
       )}
 
       {/* PASO 3: MONTO Y CONCEPTO */}
-      {paso === "detalles" && (
+      {paso === "detalles" && (() => {
+        const saldoRaw = cuentaSelect ? ledgers[cuentaSelect.id_cuenta]?.saldo_actual : null;
+        const saldoDisponible = saldoRaw != null ? parseFloat(String(saldoRaw)) : null;
+        const montoNum = monto ? Number(monto) : 0;
+        const excedeSaldo = saldoDisponible != null && montoNum > saldoDisponible;
+
+        return (
         <div className="bg-white rounded-3xl shadow-md border border-slate-100 p-8">
           <button
             onClick={() => setPaso("buscar_destinatario")}
@@ -543,6 +549,14 @@ export default function ClienteTransferenciasPage() {
           <div className="space-y-6">
             <div>
               <label className="text-lg font-bold text-slate-700 block mb-2">Monto a enviar</label>
+              {cuentaSelect && saldoDisponible != null && (
+                <p className="text-sm text-slate-600 mb-3">
+                  Saldo disponible:{" "}
+                  <span className="font-bold text-brand-700">
+                    {formatCOP(saldoDisponible)}
+                  </span>
+                </p>
+              )}
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-slate-400">
                   $
@@ -554,16 +568,18 @@ export default function ClienteTransferenciasPage() {
                   placeholder="0"
                   value={monto}
                   onChange={(e) => setMonto(e.target.value)}
-                  className="w-full border-2 border-slate-300 rounded-xl pl-10 pr-4 py-5 text-2xl font-bold focus:border-brand-600 focus:outline-none"
+                  className={`w-full border-2 rounded-xl pl-10 pr-4 py-5 text-2xl font-bold focus:outline-none ${
+                    excedeSaldo
+                      ? "border-red-400 focus:border-red-500"
+                      : "border-slate-300 focus:border-brand-600"
+                  }`}
                 />
               </div>
-              {cuentaSelect && ledgers[cuentaSelect.id_cuenta] && (
-                <p className="text-sm text-slate-500 mt-2">
-                  Saldo disponible:{" "}
-                  <span className="font-bold text-brand-700">
-                    {formatCOP(ledgers[cuentaSelect.id_cuenta]?.saldo_actual)}
-                  </span>
-                </p>
+              {excedeSaldo && (
+                <div className="flex items-center gap-2 mt-2 text-red-600">
+                  <AlertCircle size={18} className="flex-shrink-0" />
+                  <p className="text-sm font-semibold">El monto supera tu saldo disponible</p>
+                </div>
               )}
             </div>
             <div>
@@ -580,7 +596,7 @@ export default function ClienteTransferenciasPage() {
 
           <div className="mt-8 flex justify-end">
             <button
-              disabled={!monto || Number(monto) <= 0}
+              disabled={!monto || Number(monto) <= 0 || excedeSaldo}
               onClick={() => setPaso("confirmar")}
               className="bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white font-bold px-7 py-3.5 rounded-xl flex items-center gap-2 text-lg"
             >
@@ -588,7 +604,8 @@ export default function ClienteTransferenciasPage() {
             </button>
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* PASO 4: CONFIRMAR */}
       {paso === "confirmar" && destinatario && (

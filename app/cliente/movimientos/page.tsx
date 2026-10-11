@@ -183,7 +183,36 @@ export default function ClienteMovimientosPage() {
     });
   }, [transferencias, desde, hasta]);
 
-  if (loading) return <div className="text-center py-16 text-2xl text-slate-400 animate-pulse">Consultando sus cuentas...</div>;
+  if (loading) return (
+    <div className="space-y-8">
+      {/* Title skeleton */}
+      <div className="animate-pulse space-y-2">
+        <div className="h-8 bg-slate-200 rounded w-1/3" />
+        <div className="h-5 bg-slate-200 rounded w-1/2" />
+      </div>
+      {/* Account card skeleton */}
+      <div className="animate-pulse bg-slate-200 rounded-3xl h-44" />
+      {/* Table skeleton */}
+      <div className="bg-white rounded-3xl shadow-md border border-slate-100 overflow-hidden">
+        <div className="animate-pulse p-6 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+          <div className="h-6 bg-slate-200 rounded w-1/4" />
+          <div className="h-10 bg-slate-200 rounded-xl w-40" />
+        </div>
+        <div className="divide-y divide-slate-100">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="animate-pulse p-6 flex items-center gap-4">
+              <div className="h-12 w-12 bg-slate-200 rounded-2xl flex-shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-slate-200 rounded w-2/3" />
+                <div className="h-3 bg-slate-200 rounded w-1/3" />
+              </div>
+              <div className="h-6 bg-slate-200 rounded w-24" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
   if (error) return (
     <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-8 flex items-center gap-4">
       <AlertCircle size={32} className="text-red-500 flex-shrink-0" />

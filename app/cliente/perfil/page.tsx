@@ -43,7 +43,32 @@ export default function ClientePerfilPage() {
     }
   }, []);
 
-  if (!sesion) return null;
+  if (!sesion) return (
+    <div className="space-y-6 max-w-3xl">
+      {/* Title skeleton */}
+      <div className="animate-pulse space-y-2">
+        <div className="h-8 bg-slate-200 rounded w-1/4" />
+        <div className="h-5 bg-slate-200 rounded w-2/5" />
+      </div>
+      {/* Status badge skeleton */}
+      <div className="animate-pulse h-20 bg-slate-200 rounded-2xl" />
+      {/* Profile card skeleton */}
+      <div className="bg-white rounded-3xl shadow-md border border-slate-100 overflow-hidden">
+        <div className="animate-pulse bg-slate-200 h-14" />
+        <div className="divide-y divide-slate-100">
+          {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+            <div key={i} className="animate-pulse px-6 py-5 flex items-center gap-4">
+              <div className="h-11 w-11 bg-slate-200 rounded-2xl flex-shrink-0" />
+              <div className="space-y-2 flex-1">
+                <div className="h-3 bg-slate-200 rounded w-1/4" />
+                <div className="h-4 bg-slate-200 rounded w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
   const u = sesion.usuario;
   const verificado = u.estado === "verificado";
   const incomplete = !u.cedula || !u.fecha_expedicion || !u.fecha_vencimiento || !u.pais_expedicion || !u.fecha_nacimiento;

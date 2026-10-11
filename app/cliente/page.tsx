@@ -166,7 +166,10 @@ export default function ClienteDashboard() {
           </div>
 
           {cargando ? (
-            <p className="text-5xl font-black animate-pulse">Cargando…</p>
+            <div className="animate-pulse space-y-3">
+              <div className="h-12 bg-white/20 rounded-xl w-3/4" />
+              <div className="h-4 bg-white/15 rounded w-1/3" />
+            </div>
           ) : cuenta ? (
             <p className="text-5xl sm:text-6xl font-black tracking-tight leading-none">
               {mostrarSaldo ? formatCOP(ledger?.saldo_actual) : "$ ••••••"}
