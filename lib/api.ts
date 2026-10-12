@@ -125,9 +125,13 @@ export function cambiarClave(idUsuario: string, claveActual: string, claveNueva:
 
 import { obtenerSesion } from "./auth";
 
-export function listUsuarios() {
+export function listUsuarios(limit?: number, offset?: number) {
   const sesion = obtenerSesion();
-  return request<Usuario[]>(`${IDENTITY_URL}/users`, {
+  const params = new URLSearchParams();
+  if (limit != null) params.set("limit", String(limit));
+  if (offset != null) params.set("offset", String(offset));
+  const qs = params.toString();
+  return request<Usuario[]>(`${IDENTITY_URL}/users${qs ? `?${qs}` : ""}`, {
     headers: sesion ? { Authorization: `Bearer ${sesion.token}` } : {},
   });
 }
@@ -208,8 +212,12 @@ export function openAccount(data: { id_usuario: string; moneda?: string }) {
   }>(`${ACCOUNT_URL}/accounts`, { method: "POST", body: JSON.stringify(data) });
 }
 
-export function listAccounts() {
-  return request<Cuenta[]>(`${ACCOUNT_URL}/accounts`);
+export function listAccounts(limit?: number, offset?: number) {
+  const params = new URLSearchParams();
+  if (limit != null) params.set("limit", String(limit));
+  if (offset != null) params.set("offset", String(offset));
+  const qs = params.toString();
+  return request<Cuenta[]>(`${ACCOUNT_URL}/accounts${qs ? `?${qs}` : ""}`);
 }
 
 export function getAccountLimits(idCuenta: string) {
@@ -375,8 +383,12 @@ export function createTransfer(data: {
   }>(`${TRANSFER_URL}/transfers`, { method: "POST", body: JSON.stringify(data) });
 }
 
-export function listTransfers() {
-  return request<Transferencia[]>(`${TRANSFER_URL}/transfers`);
+export function listTransfers(limit?: number, offset?: number) {
+  const params = new URLSearchParams();
+  if (limit != null) params.set("limit", String(limit));
+  if (offset != null) params.set("offset", String(offset));
+  const qs = params.toString();
+  return request<Transferencia[]>(`${TRANSFER_URL}/transfers${qs ? `?${qs}` : ""}`);
 }
 
 
@@ -384,6 +396,8 @@ const CARD_URL =
   process.env.NEXT_PUBLIC_CARD_API_URL ?? "http://localhost:8005";
 const FRAUD_URL =
   process.env.NEXT_PUBLIC_FRAUD_API_URL ?? "http://localhost:8006";
+const COMPLIANCE_URL =
+  process.env.NEXT_PUBLIC_COMPLIANCE_API_URL ?? "http://localhost:8008";
 
 const NOTIFICATION_URL =
   process.env.NEXT_PUBLIC_NOTIFICATION_API_URL ?? "http://localhost:8007";
@@ -580,8 +594,12 @@ export function listFraudEvaluations() {
   return request<EvaluacionFraude[]>(`${FRAUD_URL}/fraud/evaluations`);
 }
 
-export function listFraudAlerts() {
-  return request<AlertaFraude[]>(`${FRAUD_URL}/fraud/alerts`);
+export function listFraudAlerts(limit?: number, offset?: number) {
+  const params = new URLSearchParams();
+  if (limit != null) params.set("limit", String(limit));
+  if (offset != null) params.set("offset", String(offset));
+  const qs = params.toString();
+  return request<AlertaFraude[]>(`${FRAUD_URL}/fraud/alerts${qs ? `?${qs}` : ""}`);
 }
 
 export function resolveFraudAlert(idAlerta: string) {
@@ -636,13 +654,14 @@ export type AdminStats = {
   card: { total_tarjetas: number; tarjetas_activas: number };
   ledger: { total_transacciones: number };
   notification: { total_notificaciones: number };
+  compliance: { total_reportes: number; total_sospechosas: number; sospechosas_pendientes: number; total_auditorias: number };
 };
 
 export async function fetchAdminStats(): Promise<AdminStats> {
   const safe = async <T>(url: string, fallback: T): Promise<T> => {
     try { return await request<T>(`${url}/stats`); } catch { return fallback; }
   };
-  const [identity, account, transfer, fraud, card, ledger, notification] = await Promise.all([
+  const [identity, account, transfer, fraud, card, ledger, notification, compliance] = await Promise.all([
     safe(IDENTITY_URL, { total_usuarios: 0, usuarios_aprobados: 0, usuarios_pendientes: 0 }),
     safe(ACCOUNT_URL, { total_cuentas: 0, cuentas_activas: 0 }),
     safe(TRANSFER_URL, { total_transferencias: 0, transferencias_hoy: 0 }),
@@ -650,8 +669,9 @@ export async function fetchAdminStats(): Promise<AdminStats> {
     safe(CARD_URL, { total_tarjetas: 0, tarjetas_activas: 0 }),
     safe(LEDGER_URL, { total_transacciones: 0 }),
     safe(NOTIFICATION_URL, { total_notificaciones: 0 }),
+    safe(COMPLIANCE_URL, { total_reportes: 0, total_sospechosas: 0, sospechosas_pendientes: 0, total_auditorias: 0 }),
   ]);
-  return { identity, account, transfer, fraud, card, ledger, notification };
+  return { identity, account, transfer, fraud, card, ledger, notification, compliance };
 }
 
 export function solicitarReset(email: string) {
@@ -665,5 +685,102 @@ export function resetClave(email: string, codigo: string, nueva_clave: string) {
   return request<{mensaje: string}>(`${IDENTITY_URL}/auth/reset-clave`, {
     method: "POST",
     body: JSON.stringify({ email, codigo, nueva_clave }),
+  });
+}
+
+// ---------- Compliance & Analytics Service ----------
+
+export type ReporteRegulatorio = {
+  id_reporte: string;
+  tipo_reporte: string;
+  periodo: string;
+  fecha_generacion: string;
+  estado: string;
+  contenido: string | null;
+  generado_por: string | null;
+};
+
+export type TransaccionSospechosa = {
+  id_sospecha: string;
+  id_transferencia: string;
+  id_cuenta_origen: string;
+  id_usuario: string;
+  motivo: string;
+  nivel_riesgo: string;
+  monto: number | null;
+  fecha_deteccion: string;
+  id_reporte: string | null;
+  estado: string;
+};
+
+export type AuditoriaCompliance = {
+  id_auditoria: string;
+  id_sospecha: string;
+  auditor: string | null;
+  resultado: string;
+  notas: string | null;
+  fecha_auditoria: string;
+};
+
+export function listReportesRegulatorios(tipo?: string, estado?: string) {
+  const params = new URLSearchParams();
+  if (tipo) params.set("tipo_reporte", tipo);
+  if (estado) params.set("estado", estado);
+  const qs = params.toString();
+  return request<ReporteRegulatorio[]>(`${COMPLIANCE_URL}/compliance/reportes${qs ? "?" + qs : ""}`);
+}
+
+export function createReporteRegulatorio(data: { tipo_reporte: string; periodo: string; contenido?: string; generado_por?: string }) {
+  return request<ReporteRegulatorio>(`${COMPLIANCE_URL}/compliance/reportes`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateReporteEstado(idReporte: string, estado: string) {
+  return request<ReporteRegulatorio>(`${COMPLIANCE_URL}/compliance/reportes/${idReporte}`, {
+    method: "PATCH",
+    body: JSON.stringify({ estado }),
+  });
+}
+
+export function listTransaccionesSospechosas(estado?: string, nivel?: string) {
+  const params = new URLSearchParams();
+  if (estado) params.set("estado", estado);
+  if (nivel) params.set("nivel_riesgo", nivel);
+  const qs = params.toString();
+  return request<TransaccionSospechosa[]>(`${COMPLIANCE_URL}/compliance/sospechosas${qs ? "?" + qs : ""}`);
+}
+
+export function flagTransaccionSospechosa(data: {
+  id_transferencia: string;
+  id_cuenta_origen: string;
+  id_usuario: string;
+  motivo: string;
+  nivel_riesgo: string;
+  monto?: number;
+}) {
+  return request<TransaccionSospechosa>(`${COMPLIANCE_URL}/compliance/sospechosas`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateSospechaEstado(idSospecha: string, estado: string) {
+  return request<TransaccionSospechosa>(`${COMPLIANCE_URL}/compliance/sospechosas/${idSospecha}`, {
+    method: "PATCH",
+    body: JSON.stringify({ estado }),
+  });
+}
+
+export function listAuditoriasCompliance(idSospecha?: string) {
+  const qs = idSospecha ? `?id_sospecha=${idSospecha}` : "";
+  return request<AuditoriaCompliance[]>(`${COMPLIANCE_URL}/compliance/auditorias${qs}`);
+}
+
+export function createAuditoriaCompliance(data: { id_sospecha: string; auditor?: string; resultado: string; notas?: string }) {
+  return request<AuditoriaCompliance>(`${COMPLIANCE_URL}/compliance/auditorias`, {
+    method: "POST",
+    body: JSON.stringify(data),
   });
 }

@@ -41,13 +41,16 @@ function EstadoPill({ estado, estado_kyc }: { estado: string; estado_kyc?: strin
   );
 }
 
+const PAGE_SIZE = 15;
+
 export default function UsuariosPage() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [feedback, setFeedback] = useState<Feedback>(null);
+  const [page, setPage] = useState(0);
 
   async function refresh() {
     try {
-      const users = await listUsuarios();
+      const users = await listUsuarios(PAGE_SIZE, page * PAGE_SIZE);
       setUsuarios(users.filter((u) => u.role !== "admin"));
     } catch (err) {
       if (err instanceof ApiError) {
@@ -60,7 +63,7 @@ export default function UsuariosPage() {
 
   useEffect(() => {
     refresh();
-  }, []);
+  }, [page]);
 
   async function onReverificar(id: string) {
     setFeedback(null);
@@ -117,6 +120,30 @@ export default function UsuariosPage() {
 
       <Card title="Usuarios registrados (Clientes)" subtitle="La verificación KYC es automática al registro">
         <UsuariosTable usuarios={usuarios} onReverificar={onReverificar} />
+        <div className="flex items-center justify-between mt-6 px-2">
+          <p className="text-sm text-slate-500">
+            Mostrando {page * PAGE_SIZE + 1} - {page * PAGE_SIZE + usuarios.length}
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPage(p => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="px-4 py-2 text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              Anterior
+            </button>
+            <span className="px-4 py-2 text-sm font-medium text-slate-600">
+              Página {page + 1}
+            </span>
+            <button
+              onClick={() => setPage(p => p + 1)}
+              disabled={usuarios.length < PAGE_SIZE}
+              className="px-4 py-2 text-sm font-medium rounded-lg border border-brand-200 bg-brand-50 text-brand-700 hover:bg-brand-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
       </Card>
     </div>
   );

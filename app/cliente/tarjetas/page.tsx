@@ -216,7 +216,7 @@ export default function ClienteTarjetasPage() {
             <CreditCard size={28} strokeWidth={2.5} />
           </div>
           <div>
-            <h1 className="text-3xl font-black text-slate-800">Mis Tarjetas</h1>
+            <h1 className="text-2xl md:text-3xl font-black text-slate-800">Mis Tarjetas</h1>
             <p className="text-lg text-slate-500">Administra tus tarjetas bancarias.</p>
           </div>
         </div>
@@ -232,8 +232,8 @@ export default function ClienteTarjetasPage() {
 
       {/* Panel de solicitud */}
       {emitiendo && (
-        <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-8 space-y-6">
-          <h2 className="text-2xl font-black text-slate-800">Solicitar Nueva Tarjeta</h2>
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-4 md:p-8 space-y-6">
+          <h2 className="text-xl md:text-2xl font-black text-slate-800">Solicitar Nueva Tarjeta</h2>
 
           {estadoUsuario !== "verificado" && (
             <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-5 flex gap-3">

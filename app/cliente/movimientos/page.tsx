@@ -52,42 +52,115 @@ function generarComprobantePDF(mov: any, nombreUsuario: string) {
   if (w) { w.document.write(html); w.document.close(); w.print(); }
 }
 
-function generarExtractoPDF(movs: any[], nombreUsuario: string, desde: string, hasta: string) {
-  const filas = movs.map((m) => `
-    <tr>
+function generarExtractoPDF(movs: any[], nombreUsuario: string, desde: string, hasta: string, numeroCuenta?: string) {
+  const filas = movs.map((m, i) => `
+    <tr style="${i % 2 === 1 ? 'background:#f8fafc;' : ''}">
       <td>${new Date(m.fecha).toLocaleDateString("es-CO")}</td>
       <td>${esc(m.tipo)}</td>
       <td>${esc(m.descripcion || "-")}</td>
-      <td>${esc(m.estado)}</td>
-      <td style="text-align:right">${m.signo}$${formatNumber(m.monto)}</td>
+      <td><span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;text-transform:uppercase;${m.estado === 'completada' ? 'background:#ecfdf5;color:#059669;' : 'background:#fef2f2;color:#dc2626;'}">${esc(m.estado)}</span></td>
+      <td style="text-align:right;font-weight:600;${m.signo === '+' ? 'color:#059669;' : 'color:#1e293b;'}">${m.signo}$${formatNumber(m.monto)}</td>
     </tr>`).join("");
-  const rango = desde || hasta ? `${desde || "inicio"} a ${hasta || "hoy"}` : "Todos los movimientos";
+
+  const totalEnviado = movs.filter(m => m.signo === "-").reduce((s, m) => s + Number(m.monto), 0);
+  const totalRecibido = movs.filter(m => m.signo === "+").reduce((s, m) => s + Number(m.monto), 0);
+  const rangoDesde = desde || "inicio";
+  const rangoHasta = hasta || new Date().toLocaleDateString("es-CO");
+  const fechaGeneracion = new Date().toLocaleString("es-CO", { dateStyle: "long", timeStyle: "short" });
+
   const html = `
     <html>
     <head><title>Extracto BankLite</title>
     <style>
-      body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
-      .header { text-align: center; border-bottom: 3px solid #0d9f7e; padding-bottom: 20px; margin-bottom: 20px; }
-      .header h1 { color: #0a5f4e; margin: 0; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 40px; color: #1e293b; line-height: 1.5; }
+      .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #0d9f7e; padding-bottom: 16px; margin-bottom: 24px; }
+      .header-left { }
+      .logo { font-size: 28px; font-weight: 900; color: #0d9f7e; letter-spacing: -0.5px; }
+      .logo-sub { font-size: 11px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-top: 2px; }
+      .header-right { text-align: right; }
+      .doc-title { font-size: 18px; font-weight: 800; color: #1e293b; }
+      .doc-meta { font-size: 13px; color: #64748b; margin-top: 4px; }
+      .info-row { display: flex; gap: 24px; margin-bottom: 24px; flex-wrap: wrap; }
+      .info-item { }
+      .info-label { font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+      .info-value { font-size: 14px; font-weight: 700; color: #1e293b; margin-top: 2px; }
+      .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+      .summary-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; }
+      .summary-card .label { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+      .summary-card .value { font-size: 22px; font-weight: 800; color: #0f172a; margin-top: 4px; }
+      .summary-card.green .value { color: #059669; }
+      .summary-card.red .value { color: #dc2626; }
       table { width: 100%; border-collapse: collapse; font-size: 13px; }
-      th { background: #ecfdf7; color: #0a5f4e; text-align: left; }
-      th, td { padding: 8px; border-bottom: 1px solid #eee; }
-      .footer { text-align: center; margin-top: 30px; color: #999; font-size: 12px; }
-      @media print { body { margin: 0; } }
+      th { background: #0d9f7e; color: white; padding: 10px 12px; text-align: left; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+      th:first-child { border-radius: 8px 0 0 0; }
+      th:last-child { border-radius: 0 8px 0 0; text-align: right; }
+      td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; }
+      .footer { margin-top: 36px; padding-top: 16px; border-top: 1px solid #e2e8f0; text-align: center; }
+      .footer p { font-size: 11px; color: #94a3b8; margin-bottom: 4px; }
+      .footer .brand { font-weight: 700; color: #0d9f7e; }
+      @media print { body { margin: 20px; } }
     </style>
     </head>
     <body>
       <div class="header">
-        <h1>BankLite</h1>
-        <p>Extracto de Movimientos</p>
-        <p>Cliente: ${esc(nombreUsuario)} &middot; Periodo: ${esc(rango)}</p>
+        <div class="header-left">
+          <div class="logo">BankLite</div>
+          <div class="logo-sub">Banca Digital Segura</div>
+        </div>
+        <div class="header-right">
+          <div class="doc-title">Extracto de Movimientos</div>
+          <div class="doc-meta">Generado el ${esc(fechaGeneracion)}</div>
+        </div>
       </div>
+
+      <div class="info-row">
+        <div class="info-item">
+          <div class="info-label">Cliente</div>
+          <div class="info-value">${esc(nombreUsuario)}</div>
+        </div>
+        ${numeroCuenta ? `<div class="info-item"><div class="info-label">Número de Cuenta</div><div class="info-value">${esc(numeroCuenta)}</div></div>` : ""}
+        <div class="info-item">
+          <div class="info-label">Desde</div>
+          <div class="info-value">${esc(rangoDesde)}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Hasta</div>
+          <div class="info-value">${esc(rangoHasta)}</div>
+        </div>
+      </div>
+
+      <div class="summary">
+        <div class="summary-card">
+          <div class="label">Total Movimientos</div>
+          <div class="value">${movs.length}</div>
+        </div>
+        <div class="summary-card green">
+          <div class="label">Total Recibido</div>
+          <div class="value">+$${formatNumber(totalRecibido)}</div>
+        </div>
+        <div class="summary-card red">
+          <div class="label">Total Enviado</div>
+          <div class="value">-$${formatNumber(totalEnviado)}</div>
+        </div>
+      </div>
+
       <table>
-        <thead><tr><th>Fecha</th><th>Tipo</th><th>Descripción</th><th>Estado</th><th style="text-align:right">Monto</th></tr></thead>
-        <tbody>${filas || '<tr><td colspan="5">Sin movimientos</td></tr>'}</tbody>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Descripción</th>
+            <th>Estado</th>
+            <th style="text-align:right">Monto</th>
+          </tr>
+        </thead>
+        <tbody>${filas || '<tr><td colspan="5" style="text-align:center;padding:24px;color:#94a3b8;">Sin movimientos en este periodo</td></tr>'}</tbody>
       </table>
+
       <div class="footer">
-        <p>Documento generado por BankLite - ${new Date().toLocaleString("es-CO")}</p>
+        <p>Este documento fue generado por <span class="brand">BankLite</span></p>
+        <p>${esc(fechaGeneracion)} &mdash; Documento informativo, no constituye título valor</p>
       </div>
     </body>
     </html>
@@ -231,8 +304,8 @@ export default function ClienteMovimientosPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-black text-slate-800">Mis Movimientos</h1>
-        <p className="text-lg text-slate-500">Consulte el saldo y movimientos de sus cuentas.</p>
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-800">Mis Movimientos</h1>
+        <p className="text-base sm:text-lg text-slate-500">Consulte el saldo y movimientos de sus cuentas.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -248,7 +321,7 @@ export default function ClienteMovimientosPage() {
                 <p className="text-sm font-mono text-brand-100 mb-4">{c.numero_cuenta ?? "Sin número asignado"}</p>
                 <p className="text-brand-50 text-sm mb-1">Saldo Disponible</p>
                 {s ? (
-                  <p className="text-4xl font-black">${Number(s.saldo_actual).toLocaleString()}</p>
+                  <p className="text-2xl sm:text-4xl font-black">${Number(s.saldo_actual).toLocaleString()}</p>
                 ) : (
                   <p className="text-2xl font-bold text-brand-100">Saldo no disponible</p>
                 )}
@@ -269,7 +342,7 @@ export default function ClienteMovimientosPage() {
             <h2 className="text-xl font-bold text-slate-800">Últimas Transferencias</h2>
           </div>
           <button
-            onClick={() => generarExtractoPDF(filtradas.map(toPdfMov), nombreUsuario, desde, hasta)}
+            onClick={() => generarExtractoPDF(filtradas.map(toPdfMov), nombreUsuario, desde, hasta, cuentas[0]?.numero_cuenta ?? undefined)}
             disabled={filtradas.length === 0}
             className="bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white font-bold px-4 py-2.5 rounded-xl flex items-center gap-2 transition-colors"
           >
@@ -329,27 +402,27 @@ export default function ClienteMovimientosPage() {
                 <div
                   key={t.id_transferencia}
                   onClick={() => setSelectedTx(t)}
-                  className="p-6 flex items-center justify-between gap-4 hover:bg-brand-50 transition-colors cursor-pointer"
+                  className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 hover:bg-brand-50 transition-colors cursor-pointer"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-2xl ${isError ? 'bg-red-100 text-red-600' : t.esIngreso ? 'bg-brand-100 text-brand-600' : 'bg-slate-100 text-slate-600'}`}>
-                      {t.esIngreso ? <ArrowDownLeft size={24} strokeWidth={2.5} /> : <ArrowUpRight size={24} strokeWidth={2.5} />}
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                    <div className={`p-2.5 sm:p-3 rounded-2xl flex-shrink-0 ${isError ? 'bg-red-100 text-red-600' : t.esIngreso ? 'bg-brand-100 text-brand-600' : 'bg-slate-100 text-slate-600'}`}>
+                      {t.esIngreso ? <ArrowDownLeft size={22} strokeWidth={2.5} /> : <ArrowUpRight size={22} strokeWidth={2.5} />}
                     </div>
-                    <div>
-                      <p className="font-bold text-slate-800 text-lg">
+                    <div className="min-w-0">
+                      <p className="font-bold text-slate-800 text-base sm:text-lg truncate">
                         {t.esIngreso ? `De: Cuenta ${short(t.id_cuenta_origen)}` : `A: ${benef ? benef.nombre : "Desconocido"}`}
                       </p>
-                      <p className="text-sm text-slate-500">
+                      <p className="text-xs sm:text-sm text-slate-500 truncate">
                         Ref: {t.referencia || short(t.id_transferencia)} • {new Date(t.fecha_solicitud).toLocaleDateString()}
                       </p>
                       {t.concepto && (
-                        <p className="text-sm font-medium text-slate-600 mt-1">"{t.concepto}"</p>
+                        <p className="text-xs sm:text-sm font-medium text-slate-600 mt-1 truncate">"{t.concepto}"</p>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className={`text-xl font-black ${isError ? 'text-slate-400 line-through' : t.esIngreso ? 'text-brand-600' : 'text-slate-800'}`}>
+                  <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 pl-11 sm:pl-0">
+                    <div className="text-left sm:text-right">
+                      <p className={`text-lg sm:text-xl font-black ${isError ? 'text-slate-400 line-through' : t.esIngreso ? 'text-brand-600' : 'text-slate-800'}`}>
                         {t.esIngreso ? '+' : '-'}${Number(t.monto).toLocaleString()}
                       </p>
                       <p className={`text-xs font-bold uppercase tracking-wider mt-1 ${isError ? 'text-red-500' : 'text-brand-600'}`}>
@@ -359,7 +432,7 @@ export default function ClienteMovimientosPage() {
                     <button
                       onClick={(e) => { e.stopPropagation(); generarComprobantePDF(toPdfMov(t), nombreUsuario); }}
                       title="Descargar comprobante"
-                      className="flex items-center gap-1.5 text-sm font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-100 px-3 py-2 rounded-xl transition-colors"
+                      className="flex items-center gap-1.5 text-sm font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-100 px-3 py-2 rounded-xl transition-colors flex-shrink-0"
                     >
                       <FileText size={16} />
                       <span className="hidden sm:inline">Descargar comprobante</span>
@@ -385,10 +458,10 @@ export default function ClienteMovimientosPage() {
               </button>
             </div>
 
-            <div className="p-8 space-y-6">
+            <div className="p-4 sm:p-8 space-y-6">
               <div className="text-center">
                 <p className="text-slate-500 text-sm font-bold uppercase tracking-widest mb-1">Valor de la transacción</p>
-                <p className={`text-4xl font-black ${selectedTx.esIngreso ? 'text-brand-600' : 'text-slate-800'}`}>
+                <p className={`text-2xl sm:text-4xl font-black ${selectedTx.esIngreso ? 'text-brand-600' : 'text-slate-800'}`}>
                   ${Number(selectedTx.monto).toLocaleString()} COP
                 </p>
               </div>

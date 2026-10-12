@@ -22,6 +22,7 @@ import {
 } from "@/lib/api";
 
 const ESTADOS_CUENTA = ["activa", "suspendida", "cerrada"];
+const PAGE_SIZE = 15;
 
 type Feedback = { kind: "success" | "error"; text: string } | null;
 
@@ -32,10 +33,11 @@ export default function CuentasPage() {
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [limitesPorCuenta, setLimitesPorCuenta] = useState<Record<string, LimiteOperativo[]>>({});
   const [accountUsuarioId, setAccountUsuarioId] = useState("");
+  const [page, setPage] = useState(0);
 
   async function refresh() {
     try {
-      const [u, c, v] = await Promise.all([listUsuarios(), listAccounts(), listVerifiedUsers()]);
+      const [u, c, v] = await Promise.all([listUsuarios(), listAccounts(PAGE_SIZE, page * PAGE_SIZE), listVerifiedUsers()]);
       setUsuarios(u);
       setCuentas(c);
       setVerificados(v);
@@ -46,7 +48,7 @@ export default function CuentasPage() {
 
   useEffect(() => {
     refresh();
-  }, []);
+  }, [page]);
 
   function showError(err: unknown) {
     if (err instanceof ApiError) {
@@ -171,6 +173,30 @@ export default function CuentasPage() {
           onStatusChange={handleStatusChange}
           onVerLimites={handleVerLimites}
         />
+        <div className="flex items-center justify-between mt-6 px-2">
+          <p className="text-sm text-slate-500">
+            Mostrando {page * PAGE_SIZE + 1} - {page * PAGE_SIZE + cuentas.length}
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPage(p => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="px-4 py-2 text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              Anterior
+            </button>
+            <span className="px-4 py-2 text-sm font-medium text-slate-600">
+              Página {page + 1}
+            </span>
+            <button
+              onClick={() => setPage(p => p + 1)}
+              disabled={cuentas.length < PAGE_SIZE}
+              className="px-4 py-2 text-sm font-medium rounded-lg border border-brand-200 bg-brand-50 text-brand-700 hover:bg-brand-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
       </Card>
 
       <Card

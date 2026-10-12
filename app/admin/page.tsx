@@ -129,7 +129,7 @@ export default function AdminDashboard() {
           <BarChart3 size={24} className="text-brand-600" />
           <div>
             <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Microservicios</p>
-            <p className="text-xl font-black text-slate-800">7</p>
+            <p className="text-xl font-black text-slate-800">8</p>
             <p className="text-xs text-slate-500">REST sync</p>
           </div>
         </div>

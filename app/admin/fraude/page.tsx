@@ -29,6 +29,13 @@ export default function FraudePage() {
   const [alertas, setAlertas] = useState<AlertaFraude[]>([]);
   const [feedback, setFeedback] = useState<Feedback>(null);
 
+  const [alertPage, setAlertPage] = useState(0);
+  const [evalPage, setEvalPage] = useState(0);
+  const PAGE_SIZE = 12;
+
+  const alertasPagina = alertas.slice(alertPage * PAGE_SIZE, (alertPage + 1) * PAGE_SIZE);
+  const evalsPagina = evaluaciones.slice(evalPage * PAGE_SIZE, (evalPage + 1) * PAGE_SIZE);
+
   // Formulario Regla
   const [nombreRegla, setNombreRegla] = useState("Límite de Riesgo Alto");
   const [tipoRegla, setTipoRegla] = useState("monto_maximo");
@@ -230,12 +237,12 @@ export default function FraudePage() {
       </div>
 
       {/* Centro de Alertas Críticas */}
-      <Card title="Centro de Alertas de Seguridad & Fraude" subtitle="Alertas generadas automáticamente por el motor de reglas y eventos de RabbitMQ">
+      <Card title="Centro de Alertas de Seguridad & Fraude" subtitle="Alertas generadas automáticamente por el motor de reglas (REST sync)">
         {alertas.length === 0 ? (
           <div className="p-8 text-center text-slate-400">No hay alertas activas de fraude. El sistema opera normalmente.</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {alertas.map((a) => (
+            {alertasPagina.map((a) => (
               <div
                 key={a.id_alerta}
                 className={`p-5 rounded-xl border ${
@@ -291,6 +298,24 @@ export default function FraudePage() {
             ))}
           </div>
         )}
+        {alertas.length > 0 && (
+          <div className="flex items-center justify-between mt-4 px-2">
+            <p className="text-sm text-slate-500">
+              Mostrando {alertPage * PAGE_SIZE + 1} - {Math.min((alertPage + 1) * PAGE_SIZE, alertas.length)} de {alertas.length}
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setAlertPage(p => Math.max(0, p - 1))} disabled={alertPage === 0}
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                Anterior
+              </button>
+              <span className="px-4 py-2 text-sm font-medium text-slate-600">Página {alertPage + 1}</span>
+              <button onClick={() => setAlertPage(p => p + 1)} disabled={(alertPage + 1) * PAGE_SIZE >= alertas.length}
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-brand-200 bg-brand-50 text-brand-700 hover:bg-brand-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                Siguiente
+              </button>
+            </div>
+          </div>
+        )}
       </Card>
 
       {/* Tabla de Evaluaciones */}
@@ -311,7 +336,7 @@ export default function FraudePage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {evaluaciones.map((ev) => (
+                {evalsPagina.map((ev) => (
                   <tr key={ev.id_evaluacion} className="hover:bg-slate-50/80 transition">
                     <td className="p-3 font-mono text-xs text-brand-600">{short(ev.id_evaluacion)}</td>
                     <td className="p-3 font-mono text-xs text-slate-700">{short(ev.id_transaccion)}</td>
@@ -339,6 +364,24 @@ export default function FraudePage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+        {evaluaciones.length > 0 && (
+          <div className="flex items-center justify-between mt-4 px-2">
+            <p className="text-sm text-slate-500">
+              Mostrando {evalPage * PAGE_SIZE + 1} - {Math.min((evalPage + 1) * PAGE_SIZE, evaluaciones.length)} de {evaluaciones.length}
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setEvalPage(p => Math.max(0, p - 1))} disabled={evalPage === 0}
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                Anterior
+              </button>
+              <span className="px-4 py-2 text-sm font-medium text-slate-600">Página {evalPage + 1}</span>
+              <button onClick={() => setEvalPage(p => p + 1)} disabled={(evalPage + 1) * PAGE_SIZE >= evaluaciones.length}
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-brand-200 bg-brand-50 text-brand-700 hover:bg-brand-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                Siguiente
+              </button>
+            </div>
           </div>
         )}
       </Card>

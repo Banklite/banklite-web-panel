@@ -26,6 +26,7 @@ const ADMIN_LINKS = [
   { href: "/admin/fraude", label: "Monitoreo Fraude", icon: ShieldAlert, hint: "Alertas & Scoring" },
   { href: "/admin/ledger", label: "Ledger Contable", icon: BookOpen, hint: "Partida Doble" },
   { href: "/admin/rastreo", label: "Rastreo Transacciones", icon: ArrowRightLeft, hint: "Buscar & Auditar" },
+  { href: "/admin/compliance", label: "Cumplimiento", icon: Globe, hint: "Reportes & Auditoría" },
 ];
 
 const PAGE_TITLES: Record<string, string> = {
@@ -36,6 +37,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/admin/fraude": "Monitoreo de Fraude",
   "/admin/ledger": "Ledger Contable",
   "/admin/rastreo": "Rastreo de Transacciones",
+  "/admin/compliance": "Cumplimiento & Analítica",
 };
 
 function tituloPagina(pathname: string): string {

@@ -260,14 +260,14 @@ export default function ClienteTransferenciasPage() {
           <ArrowRightLeft size={28} strokeWidth={2.5} />
         </div>
         <div>
-          <h1 className="text-3xl font-black text-slate-800">Transferir Dinero</h1>
+          <h1 className="text-2xl md:text-3xl font-black text-slate-800">Transferir Dinero</h1>
           <p className="text-lg text-slate-500">Envíe por número de cuenta, paso a paso.</p>
         </div>
       </div>
 
       {/* Barra de progreso */}
       {pasoIndex >= 0 && (
-        <div className="flex gap-2">
+        <div className="flex gap-1 sm:gap-2">
           {PASOS_LABELS.map((label, i) => (
             <div key={label} className="flex-1">
               <div
@@ -276,7 +276,7 @@ export default function ClienteTransferenciasPage() {
                 }`}
               />
               <p
-                className={`text-xs font-semibold mt-1.5 ${
+                className={`text-[10px] sm:text-xs font-semibold mt-1.5 ${
                   i <= pasoIndex ? "text-brand-700" : "text-slate-400"
                 }`}
               >
@@ -306,10 +306,10 @@ export default function ClienteTransferenciasPage() {
 
       {/* ÉXITO */}
       {paso === "exito" && resultado && (
-        <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-8 space-y-6">
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-4 md:p-8 space-y-6">
           <div className="text-center">
             <CheckCircle size={80} className="text-brand-500 mx-auto mb-4" />
-            <h2 className="text-3xl font-black text-brand-700">¡Transferencia Exitosa!</h2>
+            <h2 className="text-2xl md:text-3xl font-black text-brand-700">¡Transferencia Exitosa!</h2>
             <p className="text-slate-500 mt-2">Su dinero fue enviado correctamente.</p>
           </div>
           <div className="bg-brand-50 border-2 border-brand-100 rounded-2xl p-6 space-y-3">
@@ -351,7 +351,7 @@ export default function ClienteTransferenciasPage() {
 
       {/* ERROR FINAL */}
       {paso === "error_final" && (
-        <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-8 space-y-6 text-center">
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-4 md:p-8 space-y-6 text-center">
           <AlertCircle size={80} className="text-red-500 mx-auto" />
           <h2 className="text-2xl font-black text-red-700">No pudimos procesar la transferencia</h2>
           <p className="text-slate-600 text-lg">Tu dinero no fue descontado. Intenta de nuevo.</p>
@@ -374,7 +374,7 @@ export default function ClienteTransferenciasPage() {
 
       {/* PASO 1: CUENTA ORIGEN */}
       {paso === "elegir_cuenta" && (
-        <div className="bg-white rounded-3xl shadow-md border border-slate-100 p-8">
+        <div className="bg-white rounded-3xl shadow-md border border-slate-100 p-4 md:p-8">
           <h2 className="text-xl font-bold text-slate-700 mb-6">
             Paso 1: ¿De qué cuenta desea enviar el dinero?
           </h2>
@@ -425,7 +425,7 @@ export default function ClienteTransferenciasPage() {
 
       {/* PASO 2: BUSCAR DESTINATARIO POR NÚMERO DE CUENTA */}
       {paso === "buscar_destinatario" && (
-        <div className="bg-white rounded-3xl shadow-md border border-slate-100 p-8">
+        <div className="bg-white rounded-3xl shadow-md border border-slate-100 p-4 md:p-8">
           <button
             onClick={() => { setPaso("elegir_cuenta"); setDestinatario(null); setErrorBusqueda(null); }}
             className="text-brand-600 font-bold flex items-center gap-1 mb-6 hover:underline"
@@ -459,7 +459,7 @@ export default function ClienteTransferenciasPage() {
                 </div>
               </div>
             )}
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <input
                 type="text"
                 inputMode="numeric"
@@ -471,12 +471,12 @@ export default function ClienteTransferenciasPage() {
                   setDestinatario(null);
                   setErrorBusqueda(null);
                 }}
-                className="flex-1 border-2 border-slate-300 rounded-xl px-4 py-4 text-xl font-mono focus:border-brand-600 focus:outline-none"
+                className="flex-1 border-2 border-slate-300 rounded-xl px-4 py-3 sm:py-4 text-lg sm:text-xl font-mono focus:border-brand-600 focus:outline-none"
               />
               <button
                 onClick={handleBuscarDestinatario}
                 disabled={buscando || numeroCuentaDest.length < 6}
-                className="bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white font-bold px-5 rounded-xl flex items-center gap-2 transition-colors"
+                className="bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white font-bold px-5 py-3 sm:py-0 rounded-xl flex items-center justify-center gap-2 transition-colors"
               >
                 {buscando ? <Loader2 size={20} className="animate-spin" /> : <Search size={20} />}
                 {buscando ? "" : "Buscar"}
@@ -537,7 +537,7 @@ export default function ClienteTransferenciasPage() {
         const excedeSaldo = saldoDisponible != null && montoNum > saldoDisponible;
 
         return (
-        <div className="bg-white rounded-3xl shadow-md border border-slate-100 p-8">
+        <div className="bg-white rounded-3xl shadow-md border border-slate-100 p-4 md:p-8">
           <button
             onClick={() => setPaso("buscar_destinatario")}
             className="text-brand-600 font-bold flex items-center gap-1 mb-6 hover:underline"
@@ -609,7 +609,7 @@ export default function ClienteTransferenciasPage() {
 
       {/* PASO 4: CONFIRMAR */}
       {paso === "confirmar" && destinatario && (
-        <div className="bg-white rounded-3xl shadow-md border border-slate-100 p-8">
+        <div className="bg-white rounded-3xl shadow-md border border-slate-100 p-4 md:p-8">
           <button
             onClick={() => setPaso("detalles")}
             className="text-brand-600 font-bold flex items-center gap-1 mb-6 hover:underline"
@@ -632,7 +632,7 @@ export default function ClienteTransferenciasPage() {
               >
                 <span className="text-brand-700 font-semibold">{item.label}</span>
                 <span
-                  className={`font-bold text-brand-900 text-right ${item.big ? "text-2xl" : ""}`}
+                  className={`font-bold text-brand-900 text-right ${item.big ? "text-lg sm:text-2xl" : ""}`}
                 >
                   {item.value}
                 </span>
@@ -644,7 +644,7 @@ export default function ClienteTransferenciasPage() {
             ¿Está seguro de que desea realizar esta transferencia?
           </p>
 
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <button
               onClick={reiniciar}
               className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-4 rounded-xl text-lg transition"

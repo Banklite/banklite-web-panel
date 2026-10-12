@@ -139,7 +139,7 @@ export default function ClienteDashboard() {
       </div>
 
       {/* TARJETA DE SALDO — protagonista */}
-      <div className="rounded-3xl bg-gradient-to-br from-brand-600 to-brand-900 text-white p-8 shadow-2xl shadow-brand-900/40 relative overflow-hidden">
+      <div className="rounded-3xl bg-gradient-to-br from-brand-600 to-brand-900 text-white p-5 sm:p-8 shadow-2xl shadow-brand-900/40 relative overflow-hidden">
         {/* Decoración de fondo */}
         <div className="absolute top-0 right-0 w-56 h-56 bg-white/5 rounded-full -translate-y-1/3 translate-x-1/4 pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/5 rounded-full translate-y-1/3 -translate-x-1/4 pointer-events-none" />
@@ -206,7 +206,7 @@ export default function ClienteDashboard() {
               <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">{cuenta.estado.toUpperCase()}</p>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="bg-slate-50 rounded-2xl p-4">
               <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">Tipo</p>
               <p className="text-base font-bold text-slate-800">
@@ -217,9 +217,9 @@ export default function ClienteDashboard() {
               <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">Moneda</p>
               <p className="text-base font-bold text-slate-800">{cuenta.moneda}</p>
             </div>
-            <div className="bg-brand-50 border border-brand-100 rounded-2xl p-4 col-span-2">
+            <div className="bg-brand-50 border border-brand-100 rounded-2xl p-4 sm:col-span-2">
               <p className="text-xs text-brand-600 font-bold uppercase tracking-wider mb-1">Número de Cuenta</p>
-              <p className="text-2xl font-black text-brand-700 font-mono tracking-widest">
+              <p className="text-xl sm:text-2xl font-black text-brand-700 font-mono tracking-widest">
                 {formatNumeroCuenta(cuenta.numero_cuenta)}
               </p>
               <p className="text-xs text-brand-500 mt-1">Use este número para recibir transferencias</p>
@@ -335,7 +335,7 @@ export default function ClienteDashboard() {
           <p className="text-brand-700 mt-1 text-base">
             Si tiene problemas con su cuenta, llame a nuestro centro de atención:
           </p>
-          <p className="text-3xl font-black text-brand-700 mt-2">01 800 BANKLITE</p>
+          <p className="text-2xl sm:text-3xl font-black text-brand-700 mt-2">01 800 BANKLITE</p>
           <p className="text-sm text-brand-600 mt-1">Disponible de lunes a viernes, 8am – 6pm</p>
         </div>
       </div>

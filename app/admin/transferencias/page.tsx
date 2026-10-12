@@ -42,6 +42,7 @@ function nombreRiel(tipo: string) {
 }
 
 type Feedback = { kind: "success" | "error"; text: string } | null;
+const PAGE_SIZE = 15;
 
 function cuentaLabel(c: Cuenta, usuarios: Usuario[]): string {
   const u = usuarios.find((x) => x.id_usuario === c.id_usuario);
@@ -57,6 +58,7 @@ export default function TransferenciasPage() {
   const [transferencias, setTransferencias] = useState<Transferencia[]>([]);
   const [transferenciasRecibidas, setTransferenciasRecibidas] = useState<TransferenciaRecibida[]>([]);
   const [feedback, setFeedback] = useState<Feedback>(null);
+  const [page, setPage] = useState(0);
 
   const [rielTipo, setRielTipo] = useState("interno");
   const [rielPais, setRielPais] = useState("CO");
@@ -80,7 +82,7 @@ export default function TransferenciasPage() {
         listAccounts(),
         listRails(),
         listBeneficiaries(),
-        listTransfers(),
+        listTransfers(PAGE_SIZE, page * PAGE_SIZE),
         listTransfersReceived(),
       ]);
       setUsuarios(u);
@@ -96,7 +98,7 @@ export default function TransferenciasPage() {
 
   useEffect(() => {
     refresh();
-  }, []);
+  }, [page]);
 
   function showError(err: unknown) {
     if (err instanceof ApiError) {
@@ -391,6 +393,22 @@ export default function TransferenciasPage() {
       <div className="grid md:grid-cols-2 gap-6">
         <Card title="Transferencias" subtitle="GET /transfers">
           <TransferenciasTable transferencias={transferencias} cuentas={cuentas} usuarios={usuarios} beneficiarios={beneficiarios} />
+          <div className="flex items-center justify-between mt-4 px-2">
+            <p className="text-sm text-slate-500">
+              Página {page + 1} — {transferencias.length} resultados
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                Anterior
+              </button>
+              <span className="px-4 py-2 text-sm font-medium text-slate-600">Página {page + 1}</span>
+              <button onClick={() => setPage(p => p + 1)} disabled={transferencias.length < PAGE_SIZE}
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-brand-200 bg-brand-50 text-brand-700 hover:bg-brand-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                Siguiente
+              </button>
+            </div>
+          </div>
         </Card>
 
         <Card
