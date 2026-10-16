@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { obtenerSesion } from "@/lib/auth";
 import {
@@ -11,7 +12,24 @@ import {
   CuentaContable,
   Transferencia,
 } from "@/lib/api";
-import { CreditCard, ArrowRightLeft, FileText, User, Phone, Shield, Eye, EyeOff, Plus } from "lucide-react";
+import {
+  CreditCard,
+  ArrowRightLeft,
+  FileText,
+  User,
+  Phone,
+  ShieldCheck,
+  Eye,
+  EyeOff,
+  Plus,
+  Wallet,
+  QrCode,
+  Smartphone,
+  Repeat,
+  Sparkles,
+  ArrowUpRight,
+  TrendingUp,
+} from "lucide-react";
 import Link from "next/link";
 
 function formatCOP(valor: string | number | undefined | null): string {
@@ -28,62 +46,28 @@ function formatCOP(valor: string | number | undefined | null): string {
 
 function maskNumeroCuenta(nc: string | null | undefined): string {
   if (!nc) return "••••••••";
-  return "****" + nc.slice(-4);
+  return "**** " + nc.slice(-4);
 }
 
 function formatNumeroCuenta(nc: string | null | undefined): string {
-  // Muestra el número completo en grupos de 2-3 dígitos para legibilidad
   if (!nc) return "Sin asignar";
   return nc.replace(/(\d{4})(\d{3})(\d{3})/, "$1 $2 $3") || nc;
 }
+
 function maskNumeroTarjeta(nt: string | null | undefined): string {
   if (!nt) return "•••• •••• •••• ••••";
   const c = nt.replace(/\s/g, "");
-  return `**** **** **** ${c.slice(-4)}`;
+  return `4532 •••• •••• ${c.slice(-4)}`;
 }
 
-const ACCIONES = [
-  {
-    href: "/cliente/tarjetas",
-    label: "Mis Tarjetas",
-    desc: "Vea sus tarjetas y solicite nuevas",
-    icon: CreditCard,
-    bg: "from-brand-500 to-brand-700",
-    shadow: "shadow-brand-500/30",
-  },
-  {
-    href: "/cliente/transferencias",
-    label: "Transferir Dinero",
-    desc: "Envíe dinero de forma rápida y segura",
-    icon: ArrowRightLeft,
-    bg: "from-brand-600 to-brand-900",
-    shadow: "shadow-brand-600/30",
-  },
-  {
-    href: "/cliente/movimientos",
-    label: "Mis Movimientos",
-    desc: "Vea el historial de transacciones",
-    icon: FileText,
-    bg: "from-brand-500 to-brand-600",
-    shadow: "shadow-brand-500/30",
-  },
-  {
-    href: "/cliente/perfil",
-    label: "Mi Perfil",
-    desc: "Actualice sus datos personales",
-    icon: User,
-    bg: "from-brand-700 to-brand-900",
-    shadow: "shadow-brand-700/30",
-  },
-];
-
-export default function ClienteDashboard() {
+export default function ClienteAppleDashboard() {
   const [nombre, setNombre] = useState("Cliente");
   const [cuenta, setCuenta] = useState<Cuenta | null>(null);
   const [tarjeta, setTarjeta] = useState<Tarjeta | null>(null);
   const [ledger, setLedger] = useState<CuentaContable | null>(null);
   const [movimientos, setMovimientos] = useState<Transferencia[]>([]);
   const [mostrarSaldo, setMostrarSaldo] = useState(true);
+  const [cardFlipped, setCardFlipped] = useState(false);
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
@@ -117,7 +101,7 @@ export default function ClienteDashboard() {
           );
         }
       } catch {
-        // silencioso — solo no se muestra el saldo
+        // Silencioso
       } finally {
         setCargando(false);
       }
@@ -126,219 +110,336 @@ export default function ClienteDashboard() {
   }, []);
 
   return (
-    <div className="space-y-8 max-w-2xl mx-auto pb-10">
-      {/* Bienvenida */}
-      <div className="flex items-center gap-4 pt-2">
-        <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-brand-500/30 flex-shrink-0">
-          {nombre.charAt(0).toUpperCase()}
-        </div>
-        <div>
-          <p className="text-slate-500 text-base font-semibold">Bienvenido/a de vuelta</p>
-          <h1 className="text-2xl font-black text-slate-800 leading-tight">{nombre}</h1>
-        </div>
-      </div>
-
-      {/* TARJETA DE SALDO — protagonista */}
-      <div className="rounded-3xl bg-gradient-to-br from-brand-600 to-brand-900 text-white p-5 sm:p-8 shadow-2xl shadow-brand-900/40 relative overflow-hidden">
-        {/* Decoración de fondo */}
-        <div className="absolute top-0 right-0 w-56 h-56 bg-white/5 rounded-full -translate-y-1/3 translate-x-1/4 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/5 rounded-full translate-y-1/3 -translate-x-1/4 pointer-events-none" />
-
-        <div className="relative z-10">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <p className="text-brand-100 text-base font-semibold uppercase tracking-widest">
-                Mi Saldo Disponible
-              </p>
-              <p className="text-brand-100/80 text-sm mt-0.5">
-                {cuenta
-                  ? `${cuenta.tipo_cuenta.charAt(0).toUpperCase() + cuenta.tipo_cuenta.slice(1)} · ${maskNumeroCuenta(cuenta.numero_cuenta)}`
-                  : "Sin cuenta activa"}
-              </p>
-            </div>
-            <button
-              onClick={() => setMostrarSaldo(!mostrarSaldo)}
-              className="h-11 w-11 rounded-xl bg-white/15 hover:bg-white/25 flex items-center justify-center transition"
-              title={mostrarSaldo ? "Ocultar saldo" : "Mostrar saldo"}
-            >
-              {mostrarSaldo ? <EyeOff size={22} /> : <Eye size={22} />}
-            </button>
-          </div>
-
-          {cargando ? (
-            <div className="animate-pulse space-y-3">
-              <div className="h-12 bg-white/20 rounded-xl w-3/4" />
-              <div className="h-4 bg-white/15 rounded w-1/3" />
-            </div>
-          ) : cuenta ? (
-            <p className="text-5xl sm:text-6xl font-black tracking-tight leading-none">
-              {mostrarSaldo ? formatCOP(ledger?.saldo_actual) : "$ ••••••"}
-            </p>
-          ) : (
-            <div className="text-center py-2">
-              <p className="text-2xl font-bold text-brand-100">No tiene cuenta activa</p>
-              <p className="text-brand-100/70 text-sm mt-1">Contacte al banco para abrir su cuenta.</p>
-            </div>
-          )}
-
-          {cuenta && (
-            <p className="mt-3 text-brand-100 font-semibold text-base">
-              {cuenta.moneda}
-            </p>
-          )}
-
-          <div className="mt-6 pt-6 border-t border-white/20 flex items-center gap-2 text-brand-100 text-sm font-semibold">
-            <Shield size={16} />
-            <span>Su dinero está protegido y asegurado por BankLite</span>
-          </div>
-        </div>
-      </div>
-
-      {/* SECCIÓN MI CUENTA — número de cuenta visible */}
-      {cuenta && (
-        <div className="rounded-2xl bg-white border-2 border-slate-100 shadow-md p-6">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="h-10 w-10 rounded-xl bg-brand-100 flex items-center justify-center">
-              <User size={22} className="text-brand-600" />
-            </div>
-            <div>
-              <h2 className="text-lg font-black text-slate-800">Mi Cuenta</h2>
-              <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">{cuenta.estado.toUpperCase()}</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-slate-50 rounded-2xl p-4">
-              <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">Tipo</p>
-              <p className="text-base font-bold text-slate-800">
-                {cuenta.tipo_cuenta.charAt(0).toUpperCase() + cuenta.tipo_cuenta.slice(1)}
-              </p>
-            </div>
-            <div className="bg-slate-50 rounded-2xl p-4">
-              <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">Moneda</p>
-              <p className="text-base font-bold text-slate-800">{cuenta.moneda}</p>
-            </div>
-            <div className="bg-brand-50 border border-brand-100 rounded-2xl p-4 sm:col-span-2">
-              <p className="text-xs text-brand-600 font-bold uppercase tracking-wider mb-1">Número de Cuenta</p>
-              <p className="text-xl sm:text-2xl font-black text-brand-700 font-mono tracking-widest">
-                {formatNumeroCuenta(cuenta.numero_cuenta)}
-              </p>
-              <p className="text-xs text-brand-500 mt-1">Use este número para recibir transferencias</p>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Tarjeta asociada */}
-      {tarjeta && (
-        <div className="rounded-2xl bg-white border-2 border-slate-100 shadow-md p-6 flex items-center gap-5">
-          <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center flex-shrink-0 shadow-lg shadow-brand-500/30">
-            <CreditCard size={28} className="text-white" />
-          </div>
-          <div className="flex-1">
-            <p className="text-slate-500 text-sm font-semibold uppercase tracking-wider">Tarjeta Asociada</p>
-            <p className="text-slate-800 text-xl font-black mt-0.5 font-mono">
-              {maskNumeroTarjeta(tarjeta.numero_tarjeta)}
-            </p>
-            <p className="text-slate-500 text-sm mt-1">
-              {tarjeta.tipo_tarjeta.charAt(0).toUpperCase() + tarjeta.tipo_tarjeta.slice(1)} ·{" "}
-              <span
-                className={`font-bold ${tarjeta.estado === "activa" ? "text-brand-600" : "text-red-600"}`}
-              >
-                {tarjeta.estado.charAt(0).toUpperCase() + tarjeta.estado.slice(1)}
-              </span>
-            </p>
-          </div>
-          <Link
-            href="/cliente/tarjetas"
-            className="text-brand-600 font-bold text-sm hover:underline flex-shrink-0"
-          >
-            Ver más →
-          </Link>
-        </div>
-      )}
-
-      {!tarjeta && !cargando && cuenta && (
-        <Link
-          href="/cliente/tarjetas"
-          className="flex items-center gap-4 rounded-2xl border-2 border-dashed border-brand-500/40 bg-brand-50 p-6 hover:border-brand-500 hover:bg-brand-100 transition group"
-        >
-          <div className="h-12 w-12 rounded-xl bg-brand-100 group-hover:bg-brand-500/20 flex items-center justify-center flex-shrink-0 transition">
-            <Plus size={24} className="text-brand-600" />
+    <div className="space-y-8 max-w-4xl mx-auto pb-12 font-sans text-neutral-100">
+      {/* Encabezado con Estilo Apple OS */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-b border-white/[0.08] pb-6">
+        <div className="flex items-center gap-4">
+          <div className="h-14 w-14 rounded-2xl bg-gradient-to-tr from-neutral-800 to-neutral-700 border border-white/10 flex items-center justify-center text-white text-2xl font-bold shadow-xl">
+            {nombre.charAt(0).toUpperCase()}
           </div>
           <div>
-            <p className="text-brand-900 font-black text-lg">Solicitar mi tarjeta</p>
-            <p className="text-brand-600 text-sm">No tiene tarjetas aún. Solicite una ahora.</p>
+            <div className="inline-flex items-center gap-1.5 text-xs text-emerald-400 font-semibold uppercase tracking-wider">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Cuenta Verificada 2FA
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight apple-text-gradient">
+              Hola, {nombre}
+            </h1>
           </div>
-        </Link>
-      )}
+        </div>
 
-      {/* Acciones principales */}
-      <div>
-        <h2 className="text-2xl font-bold text-slate-700 mb-5">¿Qué desea hacer hoy?</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {ACCIONES.map((accion) => (
-            <Link
-              key={accion.href}
-              href={accion.href}
-              className={`bg-gradient-to-br ${accion.bg} text-white rounded-2xl p-6 shadow-xl ${accion.shadow} hover:shadow-2xl hover:-translate-y-1 transition-all duration-200 flex items-center gap-4`}
-            >
-              <div className="h-14 w-14 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                <accion.icon size={28} />
-              </div>
-              <div>
-                <h3 className="text-xl font-black">{accion.label}</h3>
-                <p className="text-white/80 text-sm mt-0.5">{accion.desc}</p>
-              </div>
-            </Link>
-          ))}
+        {/* Acciones de Perfil */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setMostrarSaldo(!mostrarSaldo)}
+            className="apple-glass px-4 py-2.5 rounded-full text-xs font-semibold text-neutral-300 hover:text-white flex items-center gap-2 transition"
+          >
+            {mostrarSaldo ? <EyeOff size={16} /> : <Eye size={16} />}
+            <span>{mostrarSaldo ? "Ocultar saldos" : "Mostrar saldos"}</span>
+          </button>
+          <Link
+            href="/cliente/perfil"
+            className="apple-glass-button px-4 py-2.5 rounded-full text-xs font-semibold text-white flex items-center gap-1.5 shadow"
+          >
+            <User size={15} />
+            <span>Mi Perfil</span>
+          </Link>
         </div>
       </div>
 
-      {/* Últimos movimientos */}
+      {/* SECCIÓN PRINCIPAL: Saldo Apple Titanium + Tarjeta 3D */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        {/* Tarjeta de Saldo Disponible (7 columnas) */}
+        <div className="lg:col-span-7 apple-glass-card rounded-3xl p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden">
+          <div className="relative z-10 space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs uppercase tracking-widest text-neutral-400 font-bold">
+                Saldo Disponible
+              </span>
+              <span className="text-xs font-mono px-3 py-1 rounded-full bg-white/10 text-neutral-300 font-semibold">
+                {cuenta ? cuenta.moneda : "COP"}
+              </span>
+            </div>
+
+            {cargando ? (
+              <div className="animate-pulse space-y-3 py-2">
+                <div className="h-14 bg-white/10 rounded-2xl w-3/4" />
+                <div className="h-4 bg-white/5 rounded w-1/3" />
+              </div>
+            ) : (
+              <div>
+                <p
+                  className={`text-4xl sm:text-5xl font-black tracking-tight leading-none text-white transition-all duration-300 ${
+                    mostrarSaldo ? "" : "blur-md select-none opacity-60"
+                  }`}
+                >
+                  {mostrarSaldo ? formatCOP(ledger?.saldo_actual) : "$ ••••••••"}
+                </p>
+                <p className="text-xs text-neutral-400 mt-2 font-mono">
+                  {cuenta
+                    ? `${cuenta.tipo_cuenta.toUpperCase()} · ${maskNumeroCuenta(cuenta.numero_cuenta)}`
+                    : "Sin cuenta activa"}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="relative z-10 pt-6 mt-6 border-t border-white/10 flex items-center justify-between text-xs text-neutral-400">
+            <div className="flex items-center gap-1.5 text-neutral-300 font-medium">
+              <ShieldCheck size={16} className="text-emerald-400" />
+              <span>Protegido por Fogafín & BankLite</span>
+            </div>
+            <Link
+              href="/cliente/transferencias"
+              className="text-white hover:text-emerald-400 font-bold flex items-center gap-1 group"
+            >
+              Transferir
+              <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Tarjeta Bancaria Interactiva Apple Titanium (5 columnas) */}
+        <div className="lg:col-span-5 flex flex-col justify-between">
+          <div className="perspective-1000 w-full h-full min-h-[220px]">
+            <div
+              onClick={() => setCardFlipped(!cardFlipped)}
+              className={`cursor-pointer w-full h-full transition-transform duration-700 transform-style-3d relative ${
+                cardFlipped ? "rotate-y-180" : ""
+              }`}
+            >
+              {/* Cara Frontal: Apple Titanium Card */}
+              <div className="w-full h-full min-h-[220px] rounded-3xl p-6 flex flex-col justify-between apple-glass-card border border-white/20 shadow-xl relative overflow-hidden select-none">
+                <div className="absolute inset-0 titanium-shimmer pointer-events-none" />
+
+                <div className="flex items-start justify-between relative z-10">
+                  <span className="font-bold tracking-tight text-white text-base">BankLite</span>
+                  <div className="flex items-center gap-2">
+                    <div className="h-6 w-8 rounded bg-gradient-to-br from-amber-300 via-amber-400 to-amber-600 shadow-inner" />
+                    <span className="text-neutral-400 text-sm font-bold">)))</span>
+                  </div>
+                </div>
+
+                <div className="space-y-3 relative z-10">
+                  <p className="font-mono text-lg sm:text-xl tracking-[0.2em] text-neutral-100 font-semibold">
+                    {tarjeta ? maskNumeroTarjeta(tarjeta.numero_tarjeta) : "4532 •••• •••• 9012"}
+                  </p>
+                  <div className="flex justify-between items-end text-[10px] text-neutral-400 uppercase tracking-widest">
+                    <span className="font-bold text-neutral-200 text-xs">{nombre}</span>
+                    <span className="font-mono text-neutral-300 text-xs">10/30</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Cara Trasera: Reverso con CVV Dinámico */}
+              <div className="w-full h-full min-h-[220px] rounded-3xl py-6 flex flex-col justify-between apple-glass-card border border-white/20 shadow-xl absolute inset-0 rotate-y-180 backface-hidden select-none">
+                <div className="w-full h-9 bg-neutral-900 border-y border-white/10 mt-1" />
+                <div className="px-6 space-y-2">
+                  <div className="flex justify-between items-center bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
+                    <span className="text-[10px] text-neutral-400 uppercase font-bold">CVV Dinámico</span>
+                    <span className="font-mono text-base font-extrabold text-emerald-400 tracking-widest">
+                      842
+                    </span>
+                  </div>
+                  <p className="text-[9px] text-neutral-500 text-center">Protección antifraude activa en compras web.</p>
+                </div>
+                <div className="px-6 text-[9px] text-neutral-400 flex justify-between">
+                  <span>BankLite Card</span>
+                  <span>Flip 3D</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="text-center mt-2">
+            <button
+              onClick={() => setCardFlipped(!cardFlipped)}
+              className="inline-flex items-center gap-1 text-[11px] text-neutral-400 hover:text-white transition"
+            >
+              <Repeat size={12} />
+              {cardFlipped ? "Ver frente" : "Girar tarjeta (ver CVV)"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* BENTO GRID: Acciones Rápidas Estilo Apple iOS */}
+      <div>
+        <h2 className="text-lg font-bold text-neutral-300 mb-4 tracking-tight">
+          Operaciones y Servicios
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+          <Link
+            href="/cliente/transferencias"
+            className="apple-glass-card rounded-2xl p-5 hover:border-white/25 active:scale-[0.98] transition-all group flex flex-col justify-between gap-4"
+          >
+            <div className="h-11 w-11 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <ArrowRightLeft size={22} />
+            </div>
+            <div>
+              <p className="font-bold text-sm text-white">Transferir</p>
+              <p className="text-xs text-neutral-400 mt-0.5">A cualquier cuenta</p>
+            </div>
+          </Link>
+
+          <Link
+            href="/cliente/tarjetas"
+            className="apple-glass-card rounded-2xl p-5 hover:border-white/25 active:scale-[0.98] transition-all group flex flex-col justify-between gap-4"
+          >
+            <div className="h-11 w-11 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <CreditCard size={22} />
+            </div>
+            <div>
+              <p className="font-bold text-sm text-white">Tarjetas</p>
+              <p className="text-xs text-neutral-400 mt-0.5">Límites y bloqueo</p>
+            </div>
+          </Link>
+
+          <Link
+            href="/cliente/movimientos"
+            className="apple-glass-card rounded-2xl p-5 hover:border-white/25 active:scale-[0.98] transition-all group flex flex-col justify-between gap-4"
+          >
+            <div className="h-11 w-11 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <FileText size={22} />
+            </div>
+            <div>
+              <p className="font-bold text-sm text-white">Extractos</p>
+              <p className="text-xs text-neutral-400 mt-0.5">Historial contable</p>
+            </div>
+          </Link>
+
+          <Link
+            href="/cliente/perfil"
+            className="apple-glass-card rounded-2xl p-5 hover:border-white/25 active:scale-[0.98] transition-all group flex flex-col justify-between gap-4"
+          >
+            <div className="h-11 w-11 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <Smartphone size={22} />
+            </div>
+            <div>
+              <p className="font-bold text-sm text-white">Seguridad 2FA</p>
+              <p className="text-xs text-neutral-400 mt-0.5">WhatsApp y Claves</p>
+            </div>
+          </Link>
+        </div>
+      </div>
+
+      {/* DETALLES DE CUENTA & ANALÍTICA DE GASTOS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Tarjeta de Cuenta con Copiar Rápido */}
+        {cuenta && (
+          <div className="apple-glass-card rounded-3xl p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-base text-white">Detalles de la Cuenta</h3>
+              <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-widest px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                {cuenta.estado}
+              </span>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1">
+              <span className="text-[10px] uppercase font-bold text-neutral-400 tracking-wider">
+                Número de Cuenta (para recibir dinero)
+              </span>
+              <p className="text-2xl font-black font-mono tracking-wider text-white">
+                {formatNumeroCuenta(cuenta.numero_cuenta)}
+              </p>
+              <p className="text-xs text-neutral-400">
+                Tipo: {cuenta.tipo_cuenta.charAt(0).toUpperCase() + cuenta.tipo_cuenta.slice(1)} • Moneda: {cuenta.moneda}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Analítica Visual de Gastos (Estilo Apple Wallet) */}
+        <div className="apple-glass-card rounded-3xl p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-base text-white">Distribución de Gastos</h3>
+            <span className="text-xs text-neutral-400">Este mes</span>
+          </div>
+
+          <div className="space-y-3">
+            <div>
+              <div className="flex justify-between text-xs mb-1">
+                <span className="text-neutral-300 font-medium">💡 Servicios Públicos (EPM/Enel)</span>
+                <span className="font-mono text-cyan-400 font-bold">45%</span>
+              </div>
+              <div className="w-full bg-neutral-800 h-2 rounded-full overflow-hidden">
+                <div className="bg-gradient-to-r from-cyan-500 to-blue-500 h-full w-[45%]" />
+              </div>
+            </div>
+
+            <div>
+              <div className="flex justify-between text-xs mb-1">
+                <span className="text-neutral-300 font-medium">🛍️ Compras con Tarjeta</span>
+                <span className="font-mono text-purple-400 font-bold">35%</span>
+              </div>
+              <div className="w-full bg-neutral-800 h-2 rounded-full overflow-hidden">
+                <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-full w-[35%]" />
+              </div>
+            </div>
+
+            <div>
+              <div className="flex justify-between text-xs mb-1">
+                <span className="text-neutral-300 font-medium">📲 Transferencias Enviadas</span>
+                <span className="font-mono text-emerald-400 font-bold">20%</span>
+              </div>
+              <div className="w-full bg-neutral-800 h-2 rounded-full overflow-hidden">
+                <div className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full w-[20%]" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ÚLTIMOS MOVIMIENTOS: Estilo Apple Transactions */}
       {cuenta && (
-        <div className="rounded-2xl bg-white border-2 border-slate-100 shadow-md p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-black text-slate-800">Últimos movimientos</h2>
-            <Link href="/cliente/movimientos" className="text-brand-600 font-bold text-sm hover:underline">
+        <div className="apple-glass-card rounded-3xl p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
+            <div>
+              <h2 className="text-lg font-bold text-white tracking-tight">Últimos Movimientos</h2>
+              <p className="text-xs text-neutral-400">Registrados en doble partida contable por Ledger</p>
+            </div>
+            <Link
+              href="/cliente/movimientos"
+              className="apple-glass-button px-4 py-2 rounded-full text-xs font-semibold text-neutral-200 hover:text-white"
+            >
               Ver todos →
             </Link>
           </div>
+
           {movimientos.length === 0 ? (
-            <p className="text-slate-500 text-sm py-4 text-center">Aún no tiene movimientos.</p>
+            <p className="text-neutral-500 text-sm py-6 text-center">
+              No hay movimientos recientes en esta cuenta.
+            </p>
           ) : (
-            <ul className="divide-y divide-slate-100">
+            <div className="divide-y divide-white/[0.06]">
               {movimientos.map((m) => (
-                <li key={m.id_transferencia} className="py-3 flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0">
-                    <ArrowRightLeft size={20} />
+                <div key={m.id_transferencia} className="py-3.5 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-white/[0.05] border border-white/10 text-neutral-300 flex items-center justify-center">
+                      <ArrowRightLeft size={18} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-white">
+                        {m.concepto || "Transferencia bancaria"}
+                      </p>
+                      <p className="text-xs text-neutral-500">
+                        {new Date(m.fecha_solicitud).toLocaleDateString("es-CO", {
+                          day: "numeric",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })} · {m.estado.toUpperCase()}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-slate-800 truncate">
-                      {m.concepto || "Transferencia enviada"}
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      {new Date(m.fecha_solicitud).toLocaleDateString("es-CO")} · {m.estado}
-                    </p>
-                  </div>
-                  <p className="text-sm font-black text-slate-800">-{formatCOP(m.monto)}</p>
-                </li>
+                  <p className="text-sm font-bold font-mono text-white">
+                    -{formatCOP(m.monto)}
+                  </p>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </div>
       )}
-
-      {/* Aviso de ayuda */}
-      <div className="rounded-2xl bg-brand-50 border-2 border-brand-100 p-6 flex items-start gap-4">
-        <Phone size={28} className="text-brand-600 flex-shrink-0 mt-1" />
-        <div>
-          <h3 className="text-lg font-bold text-brand-900">¿Necesita ayuda?</h3>
-          <p className="text-brand-700 mt-1 text-base">
-            Si tiene problemas con su cuenta, llame a nuestro centro de atención:
-          </p>
-          <p className="text-2xl sm:text-3xl font-black text-brand-700 mt-2">01 800 BANKLITE</p>
-          <p className="text-sm text-brand-600 mt-1">Disponible de lunes a viernes, 8am – 6pm</p>
-        </div>
-      </div>
     </div>
   );
 }

@@ -13,6 +13,7 @@ import {
   HelpCircle,
   Menu,
   X,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { Sesion, cerrarSesion, obtenerSesion } from "@/lib/auth";
@@ -53,8 +54,13 @@ export function ClienteShell({ children }: { children: React.ReactNode }) {
 
   if (sesion === "cargando") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-brand-50">
-        <p className="text-2xl text-brand-700 font-semibold animate-pulse">Cargando su banco...</p>
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="flex flex-col items-center gap-3 animate-pulse text-white">
+          <div className="h-14 w-14 rounded-2xl bg-white/10 flex items-center justify-center">
+            <Building2 size={28} />
+          </div>
+          <p className="text-sm font-semibold text-neutral-400">Accediendo a BankLite OS...</p>
+        </div>
       </div>
     );
   }
@@ -73,43 +79,47 @@ export function ClienteShell({ children }: { children: React.ReactNode }) {
   const ayudaActiva = pathname.startsWith("/cliente/ayuda");
 
   return (
-    <div className="flex min-h-screen bg-gray-50 font-sans">
+    <div className="flex min-h-screen bg-black text-neutral-100 font-sans selection:bg-white/20">
       {/* Overlay móvil */}
       {menuAbierto && (
         <div
-          className="fixed inset-0 bg-black/40 z-20 lg:hidden"
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-30 lg:hidden"
           onClick={() => setMenuAbierto(false)}
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar Apple Dark Titanium */}
       <aside
-        className={`w-64 bg-white border-r border-gray-200 flex flex-col fixed h-full z-30 transition-transform duration-200 lg:translate-x-0 ${
+        className={`w-64 bg-neutral-950/90 backdrop-blur-2xl border-r border-white/[0.08] flex flex-col fixed h-full z-40 transition-transform duration-300 lg:translate-x-0 ${
           menuAbierto ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Logo */}
-        <div className="px-5 py-5 flex items-center justify-between border-b border-gray-100">
-          <Link href="/cliente" className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white shadow-md shadow-brand-500/30">
+        <div className="px-6 py-6 flex items-center justify-between border-b border-white/[0.08]">
+          <Link href="/cliente" className="flex items-center gap-3 group">
+            <div className="h-10 w-10 rounded-xl bg-white text-black flex items-center justify-center shadow-lg shadow-white/10 group-hover:scale-105 transition-transform">
               <Building2 size={22} />
             </div>
             <div>
-              <h1 className="text-lg font-black text-brand-900 leading-none">BankLite</h1>
-              <p className="text-xs text-brand-500 font-semibold mt-0.5">Mi Banco Personal</p>
+              <h1 className="text-base font-extrabold tracking-tight text-white leading-none">
+                BankLite
+              </h1>
+              <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider block mt-1">
+                Cliente Personal
+              </span>
             </div>
           </Link>
           <button
-            className="lg:hidden text-gray-500 hover:text-gray-700"
+            className="lg:hidden text-neutral-400 hover:text-white"
             onClick={() => setMenuAbierto(false)}
             aria-label="Cerrar menú"
           >
-            <X size={22} />
+            <X size={20} />
           </button>
         </div>
 
-        {/* Navegación */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+        {/* Navegación Apple Fluid */}
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1.5 scrollbar-none">
           {CLIENTE_LINKS.map((link) => {
             const isActive =
               pathname === link.href ||
@@ -119,13 +129,13 @@ export function ClienteShell({ children }: { children: React.ReactNode }) {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-colors ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold text-sm transition-all duration-200 active:scale-[0.98] ${
                   isActive
-                    ? "bg-brand-500 text-white shadow-md shadow-brand-500/30"
-                    : "text-gray-600 hover:bg-brand-50 hover:text-brand-600"
+                    ? "bg-white text-black font-bold shadow-lg shadow-white/10"
+                    : "text-neutral-400 hover:text-white hover:bg-white/[0.05]"
                 }`}
               >
-                <Icon size={20} />
+                <Icon size={19} />
                 {link.label}
               </Link>
             );
@@ -133,55 +143,60 @@ export function ClienteShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Parte inferior */}
-        <div className="px-3 py-4 border-t border-gray-100 space-y-1">
+        <div className="px-3 py-4 border-t border-white/[0.08] space-y-1">
           <Link
             href="/cliente/ayuda"
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${
+            className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-semibold transition-all active:scale-[0.98] ${
               ayudaActiva
-                ? "bg-brand-50 text-brand-700"
-                : "text-gray-600 hover:bg-brand-50 hover:text-brand-600"
+                ? "bg-white/[0.08] text-white"
+                : "text-neutral-400 hover:text-white hover:bg-white/[0.05]"
             }`}
           >
-            <HelpCircle size={20} />
-            Centro de ayuda
+            <HelpCircle size={18} />
+            Centro de soporte
           </Link>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors"
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-semibold text-rose-400 hover:bg-rose-500/10 transition-all active:scale-[0.98]"
           >
-            <LogOut size={20} />
+            <LogOut size={18} />
             Cerrar sesión
           </button>
         </div>
       </aside>
 
-      {/* Contenido */}
-      <div className="flex-1 lg:ml-64 min-w-0 flex flex-col">
-        <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-          <div className="px-4 sm:px-6 py-3 flex items-center justify-between">
+      {/* Contenido Principal */}
+      <div className="flex-1 lg:ml-64 min-w-0 flex flex-col bg-black">
+        {/* Header Apple Glassmorphic */}
+        <header className="bg-black/60 backdrop-blur-2xl border-b border-white/[0.08] sticky top-0 z-20">
+          <div className="px-6 py-3.5 flex items-center justify-between">
             <button
-              className="lg:hidden h-10 w-10 rounded-xl border border-gray-200 text-brand-700 hover:bg-brand-50 flex items-center justify-center"
+              className="lg:hidden h-10 w-10 rounded-xl border border-white/10 text-neutral-300 hover:text-white hover:bg-white/10 flex items-center justify-center transition active:scale-95"
               onClick={() => setMenuAbierto(true)}
               aria-label="Abrir menú"
             >
               <Menu size={22} />
             </button>
-            <div className="hidden lg:block" />
+            <div className="hidden lg:block text-xs font-semibold tracking-wider text-neutral-400 uppercase">
+              Banca Digital Protegida
+            </div>
 
             <div className="flex items-center gap-4">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-bold text-gray-800">{nombreCompleto || sesion.usuario.nombre}</p>
-                <p className="text-xs text-gray-500">{sesion.usuario.email}</p>
+                <p className="text-sm font-bold text-white tracking-tight">
+                  {nombreCompleto || sesion.usuario.nombre}
+                </p>
+                <p className="text-xs text-neutral-400 font-mono">{sesion.usuario.email}</p>
               </div>
               <NotificationBell idUsuario={sesion.usuario.id_usuario} />
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-white font-black flex items-center justify-center">
+              <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-neutral-800 to-neutral-700 border border-white/20 text-white font-bold text-sm flex items-center justify-center shadow">
                 {sesion.usuario.nombre.charAt(0).toUpperCase()}
               </div>
             </div>
           </div>
         </header>
 
-        <main className="p-4 sm:p-6 flex-1">{children}</main>
+        <main className="p-4 sm:p-8 flex-1 bg-black">{children}</main>
       </div>
     </div>
   );
