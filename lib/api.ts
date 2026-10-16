@@ -989,3 +989,29 @@ export function validarOTP(idUsuario: string, codigo: string, operacion = "gener
   });
 }
 
+// 7. PIN de Seguridad (Nequi Style - 4 dígitos)
+export function configurarPIN(idUsuario: string, pin: string) {
+  return request<{ tiene_pin: boolean; mensaje: string }>(`${IDENTITY_URL}/auth/pin/configurar`, {
+    method: "POST",
+    body: JSON.stringify({ id_usuario: idUsuario, pin }),
+  });
+}
+
+export function obtenerStatusPIN(idUsuario: string) {
+  return request<{ tiene_pin: boolean; mensaje: string }>(`${IDENTITY_URL}/auth/pin/status/${idUsuario}`);
+}
+
+export function loginConPIN(identificador: string, pin: string) {
+  return request<LoginResponse>(`${IDENTITY_URL}/auth/pin/login`, {
+    method: "POST",
+    body: JSON.stringify({ identificador, pin }),
+  });
+}
+
+export function solicitarCodigoConPIN(identificador: string, pin: string) {
+  return request<LoginIniciarResponse>(`${IDENTITY_URL}/auth/pin/solicitar-codigo`, {
+    method: "POST",
+    body: JSON.stringify({ identificador, pin }),
+  });
+}
+

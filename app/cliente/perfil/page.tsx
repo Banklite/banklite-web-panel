@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { obtenerSesion, Sesion, guardarSesion } from "@/lib/auth";
-import { User, Mail, Phone, MapPin, Calendar, CheckCircle, Clock, AlertTriangle, Save, CreditCard, Lock, ShieldCheck } from "lucide-react";
-import { updateUsuario, listAccounts, cambiarClave, Cuenta } from "@/lib/api";
+import { User, Mail, Phone, MapPin, Calendar, CheckCircle, Clock, AlertTriangle, Save, CreditCard, Lock, ShieldCheck, KeyRound } from "lucide-react";
+import { updateUsuario, listAccounts, cambiarClave, configurarPIN, obtenerStatusPIN, Cuenta } from "@/lib/api";
 import { Loader2 } from "lucide-react";
 
 export default function ClientePerfilPage() {
@@ -24,6 +24,14 @@ export default function ClientePerfilPage() {
   const [paisExp, setPaisExp] = useState("CO");
   const [fechaNac, setFechaNac] = useState("");
 
+  // PIN de 4 dígitos (Nequi Style)
+  const [tienePin, setTienePin] = useState(false);
+  const [nuevoPin, setNuevoPin] = useState("");
+  const [confirmarPin, setConfirmarPin] = useState("");
+  const [guardandoPin, setGuardandoPin] = useState(false);
+  const [pinOk, setPinOk] = useState<string | null>(null);
+  const [pinError, setPinError] = useState<string | null>(null);
+
   useEffect(() => {
     const s = obtenerSesion();
     if (s) {
@@ -37,6 +45,10 @@ export default function ClientePerfilPage() {
         const miCuenta = accs.find(c => c.id_usuario === s.usuario.id_usuario && c.estado === "activa");
         if (miCuenta) setCuenta(miCuenta);
       }).catch(err => console.error("Error al obtener cuenta:", err));
+
+      obtenerStatusPIN(s.usuario.id_usuario)
+        .then((r) => setTienePin(r.tiene_pin))
+        .catch(() => {});
     }
   }, []);
 
@@ -87,6 +99,32 @@ export default function ClientePerfilPage() {
     } catch (err: unknown) {
       setClaveError(err instanceof Error ? err.message : "No fue posible cambiar la contraseña.");
     } finally { setCambiando(false); }
+  }
+
+  async function handleConfigurarPIN(e: React.FormEvent) {
+    e.preventDefault();
+    setPinOk(null);
+    setPinError(null);
+    if (nuevoPin.length !== 4 || !/^\d{4}$/.test(nuevoPin)) {
+      setPinError("El PIN debe tener exactamente 4 dígitos numéricos.");
+      return;
+    }
+    if (nuevoPin !== confirmarPin) {
+      setPinError("Los dos PINs ingresados no coinciden.");
+      return;
+    }
+    setGuardandoPin(true);
+    try {
+      await configurarPIN(sesion!.usuario.id_usuario, nuevoPin);
+      setTienePin(true);
+      setPinOk("PIN de 4 dígitos guardado exitosamente. Ahora puedes entrar a BankLite usando tu PIN.");
+      setNuevoPin("");
+      setConfirmarPin("");
+    } catch {
+      setPinError("No fue posible guardar el PIN. Intenta nuevamente.");
+    } finally {
+      setGuardandoPin(false);
+    }
   }
 
   const inputClass = "w-full bg-white/[0.06] border border-white/[0.12] rounded-2xl px-4 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30 transition";
@@ -198,6 +236,78 @@ export default function ClientePerfilPage() {
           </div>
         </div>
       )}
+
+      {/* PIN de Acceso Rápido (4 dígitos) - Nequi Style */}
+      <div className="apple-glass-card rounded-3xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-white/[0.08] flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-10 w-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center">
+              <KeyRound size={18} />
+            </div>
+            <div>
+              <h2 className="text-sm font-extrabold text-white">PIN de Acceso Rápido (4 Dígitos)</h2>
+              <p className="text-[11px] text-neutral-400">
+                {tienePin ? "Tienes un PIN activo para iniciar sesión." : "Configura tu PIN de 4 números para entrar rápido."}
+              </p>
+            </div>
+          </div>
+          <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${tienePin ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-amber-500/10 text-amber-400 border border-amber-500/20"}`}>
+            {tienePin ? "Activo" : "Sin configurar"}
+          </span>
+        </div>
+        <form onSubmit={handleConfigurarPIN} className="p-6 space-y-4">
+          {pinOk && (
+            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl px-4 py-3 text-sm font-semibold text-emerald-400 flex items-center gap-2">
+              <CheckCircle size={16} className="flex-shrink-0" /> {pinOk}
+            </div>
+          )}
+          {pinError && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-2xl px-4 py-3 text-sm font-semibold text-red-400 flex items-center gap-2">
+              <AlertTriangle size={16} className="flex-shrink-0" /> {pinError}
+            </div>
+          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-widest text-neutral-500 mb-2">Nuevo PIN (4 números)</label>
+              <input
+                type="password"
+                inputMode="numeric"
+                required
+                maxLength={4}
+                pattern="[0-9]{4}"
+                placeholder="••••"
+                value={nuevoPin}
+                onChange={e => setNuevoPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                className={`${inputClass} text-center font-mono text-xl tracking-[0.4em]`}
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-widest text-neutral-500 mb-2">Confirmar PIN (4 números)</label>
+              <input
+                type="password"
+                inputMode="numeric"
+                required
+                maxLength={4}
+                pattern="[0-9]{4}"
+                placeholder="••••"
+                value={confirmarPin}
+                onChange={e => setConfirmarPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                className={`${inputClass} text-center font-mono text-xl tracking-[0.4em]`}
+              />
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={guardandoPin || nuevoPin.length !== 4 || confirmarPin.length !== 4}
+              className="bg-white hover:bg-neutral-100 disabled:opacity-40 text-black font-extrabold px-6 py-3 rounded-2xl text-sm flex items-center gap-2 transition active:scale-[0.98]"
+            >
+              {guardandoPin ? <Loader2 size={16} className="animate-spin" /> : <KeyRound size={16} />}
+              {guardandoPin ? "Guardando…" : tienePin ? "Actualizar PIN" : "Guardar PIN"}
+            </button>
+          </div>
+        </form>
+      </div>
 
       {/* Cambiar contraseña */}
       <div className="apple-glass-card rounded-3xl overflow-hidden">

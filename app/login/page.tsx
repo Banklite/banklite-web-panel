@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Building2, Lock, ShieldCheck, Phone, ArrowRight, MessageSquare, Mail, RefreshCw, ChevronLeft, Eye, EyeOff } from "lucide-react";
+import { Building2, Lock, ShieldCheck, Phone, ArrowRight, MessageSquare, Mail, RefreshCw, ChevronLeft, Eye, EyeOff, KeyRound } from "lucide-react";
 import {
   ApiError,
   createUsuario,
@@ -10,6 +10,8 @@ import {
   resetClave,
   solicitarCodigoLogin,
   confirmarCodigoLogin,
+  loginConPIN,
+  solicitarCodigoConPIN,
   type LoginIniciarResponse,
 } from "@/lib/api";
 import { guardarSesion } from "@/lib/auth";
@@ -161,6 +163,50 @@ function LoginPageInner() {
   // Login
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [metodoLogin, setMetodoLogin] = useState<"pin" | "password">("pin");
+  const [pin, setPin] = useState("");
+
+  async function handleLoginPIN(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (!email.trim()) {
+      setError("Ingresa tu número de celular, correo o cédula.");
+      return;
+    }
+    if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+      setError("Ingresa los 4 números de tu PIN.");
+      return;
+    }
+    setCargando(true);
+    try {
+      const result = await loginConPIN(email, pin);
+      const usuarioRole = result.usuario.role;
+
+      if (rolPortal === "admin" && usuarioRole !== "admin") {
+        throw new Error("Esta cuenta no tiene permisos de administrador.");
+      }
+      if (rolPortal !== "admin" && usuarioRole === "admin") {
+        throw new Error("Esta cuenta de administrador debe acceder por 'Administrador'.");
+      }
+
+      guardarSesion(result.access_token, result.usuario);
+      router.replace(usuarioRole === "admin" ? "/admin" : "/cliente");
+    } catch (err: unknown) {
+      if (err instanceof ApiError) {
+        if (err.status === 401) {
+          setError("Celular/identificador o PIN incorrecto. Si aún no tienes un PIN, usa 'Contraseña' y configúralo en Clave Dinámica.");
+        } else {
+          setError(err.message);
+        }
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Error al iniciar sesión con PIN.");
+      }
+    } finally {
+      setCargando(false);
+    }
+  }
 
   // Registro
   const [nombre, setNombre] = useState("");
@@ -483,49 +529,124 @@ function LoginPageInner() {
 
           ) : (modo === "login" || rolPortal === "admin") ? (
             /* ── LOGIN ── */
-            <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-4">
               {rolPortal === "cliente" && (
-                <div className="flex gap-1 p-1 bg-white/[0.04] rounded-xl mb-2">
-                  <button type="button" onClick={() => { setModo("registro"); setError(null); }} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${modo === "registro" ? "bg-white/10 text-white" : "text-neutral-500 hover:text-neutral-300"}`}>
-                    Crear cuenta
-                  </button>
-                  <button type="button" onClick={() => { setModo("login"); setError(null); }} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${modo === "login" ? "bg-white/10 text-white" : "text-neutral-500 hover:text-neutral-300"}`}>
-                    Iniciar sesión
-                  </button>
-                </div>
-              )}
-              <div>
-                <DarkLabel>Correo, teléfono o cédula</DarkLabel>
-                <DarkInput type="text" required autoFocus placeholder="ejemplo@correo.com o 3104433445" value={email} onChange={(e) => setEmail(e.target.value)} />
-              </div>
-              <div>
-                <DarkLabel>Contraseña</DarkLabel>
-                <DarkInput type="password" required placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} />
-              </div>
-
-              {/* Phone registration optional */}
-              <div>
-                <button type="button" onClick={() => setMostrarCampoTelefono(!mostrarCampoTelefono)} className="text-xs text-neutral-500 hover:text-neutral-300 flex items-center gap-1 transition">
-                  <Phone size={13} />
-                  {mostrarCampoTelefono ? "Ocultar opción de WhatsApp" : "¿Sin WhatsApp registrado? Regístralo aquí"}
-                </button>
-                {mostrarCampoTelefono && (
-                  <div className="mt-2">
-                    <DarkLabel>Número de WhatsApp (+57...)</DarkLabel>
-                    <DarkInput type="tel" placeholder="+573104433445" value={telefonoExtra} onChange={(e) => setTelefonoExtra(e.target.value)} />
+                <>
+                  <div className="flex gap-1 p-1 bg-white/[0.04] rounded-xl mb-1">
+                    <button type="button" onClick={() => { setModo("registro"); setError(null); }} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${modo === "registro" ? "bg-white/10 text-white" : "text-neutral-500 hover:text-neutral-300"}`}>
+                      Crear cuenta
+                    </button>
+                    <button type="button" onClick={() => { setModo("login"); setError(null); }} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${modo === "login" ? "bg-white/10 text-white" : "text-neutral-500 hover:text-neutral-300"}`}>
+                      Iniciar sesión
+                    </button>
                   </div>
-                )}
-              </div>
 
-              <PrimaryBtn disabled={cargando}>
-                {cargando ? "Enviando código…" : <>Ingresar <ArrowRight size={16} /></>}
-              </PrimaryBtn>
-              <div className="text-center">
-                <button type="button" onClick={() => { setModo("reset"); setError(null); setResetPaso(1); setResetOk(null); setResetInfo(null); setResetEmail(email); }} className="text-xs text-neutral-500 hover:text-neutral-300 font-semibold transition">
-                  ¿Olvidaste tu contraseña?
-                </button>
-              </div>
-            </form>
+                  {/* Selector de Método: PIN Nequi vs Contraseña */}
+                  <div className="flex gap-1.5 p-1 bg-white/[0.02] border border-white/[0.08] rounded-xl text-xs font-bold">
+                    <button
+                      type="button"
+                      onClick={() => { setMetodoLogin("pin"); setError(null); }}
+                      className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+                        metodoLogin === "pin" ? "bg-white text-black shadow font-extrabold" : "text-neutral-400 hover:text-white"
+                      }`}
+                    >
+                      <KeyRound size={13} /> Entrar con PIN (4 dígitos)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setMetodoLogin("password"); setError(null); }}
+                      className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+                        metodoLogin === "password" ? "bg-white text-black shadow font-extrabold" : "text-neutral-400 hover:text-white"
+                      }`}
+                    >
+                      <Lock size={13} /> Contraseña
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* Login con PIN (Nequi Style) */}
+              {rolPortal === "cliente" && metodoLogin === "pin" ? (
+                <form onSubmit={handleLoginPIN} className="space-y-4 animate-fade-in">
+                  <div>
+                    <DarkLabel>Número de celular, correo o cédula</DarkLabel>
+                    <DarkInput
+                      type="text"
+                      required
+                      autoFocus
+                      placeholder="Ej: 3104433445 o correo@ejemplo.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <DarkLabel>PIN de 4 dígitos</DarkLabel>
+                    <input
+                      type="password"
+                      inputMode="numeric"
+                      required
+                      maxLength={4}
+                      pattern="[0-9]{4}"
+                      placeholder="••••"
+                      value={pin}
+                      onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                      className="w-full bg-white/[0.06] border border-white/[0.12] rounded-2xl px-4 py-4 text-center text-3xl font-mono tracking-[0.6em] text-white focus:outline-none focus:border-white/30 transition"
+                    />
+                  </div>
+
+                  <PrimaryBtn disabled={cargando || pin.length !== 4}>
+                    <KeyRound size={17} />
+                    {cargando ? "Verificando PIN…" : "Entrar con mi PIN"}
+                  </PrimaryBtn>
+
+                  <div className="text-center pt-1">
+                    <button
+                      type="button"
+                      onClick={() => { setMetodoLogin("password"); setError(null); }}
+                      className="text-xs text-neutral-400 hover:text-white font-semibold transition"
+                    >
+                      ¿No tienes PIN o lo olvidaste? Entra con contraseña
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                /* Login con Contraseña + 2FA */
+                <form onSubmit={handleLogin} className="space-y-4 animate-fade-in">
+                  <div>
+                    <DarkLabel>Correo, teléfono o cédula</DarkLabel>
+                    <DarkInput type="text" required autoFocus placeholder="ejemplo@correo.com o 3104433445" value={email} onChange={(e) => setEmail(e.target.value)} />
+                  </div>
+                  <div>
+                    <DarkLabel>Contraseña</DarkLabel>
+                    <DarkInput type="password" required placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} />
+                  </div>
+
+                  {/* Phone registration optional */}
+                  <div>
+                    <button type="button" onClick={() => setMostrarCampoTelefono(!mostrarCampoTelefono)} className="text-xs text-neutral-500 hover:text-neutral-300 flex items-center gap-1 transition">
+                      <Phone size={13} />
+                      {mostrarCampoTelefono ? "Ocultar opción de WhatsApp" : "¿Sin WhatsApp registrado? Regístralo aquí"}
+                    </button>
+                    {mostrarCampoTelefono && (
+                      <div className="mt-2">
+                        <DarkLabel>Número de WhatsApp (+57...)</DarkLabel>
+                        <DarkInput type="tel" placeholder="+573104433445" value={telefonoExtra} onChange={(e) => setTelefonoExtra(e.target.value)} />
+                      </div>
+                    )}
+                  </div>
+
+                  <PrimaryBtn disabled={cargando}>
+                    {cargando ? "Enviando código…" : <>Ingresar con contraseña <ArrowRight size={16} /></>}
+                  </PrimaryBtn>
+                  <div className="text-center">
+                    <button type="button" onClick={() => { setModo("reset"); setError(null); setResetPaso(1); setResetOk(null); setResetInfo(null); setResetEmail(email); }} className="text-xs text-neutral-500 hover:text-neutral-300 font-semibold transition">
+                      ¿Olvidaste tu contraseña?
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
 
           ) : (
             /* ── REGISTRO ── */

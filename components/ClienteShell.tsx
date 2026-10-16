@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   Sparkles,
+  KeyRound,
 } from "lucide-react";
 import Link from "next/link";
 import { Sesion, cerrarSesion, obtenerSesion } from "@/lib/auth";
@@ -21,6 +22,7 @@ import { NotificationBell } from "@/components/NotificationBell";
 
 const CLIENTE_LINKS = [
   { href: "/cliente", label: "Inicio", icon: Home },
+  { href: "/cliente/clave-dinamica", label: "Clave Dinámica", icon: KeyRound },
   { href: "/cliente/transferencias", label: "Transferir", icon: ArrowRightLeft },
   { href: "/cliente/tarjetas", label: "Mis Tarjetas", icon: CreditCard },
   { href: "/cliente/movimientos", label: "Movimientos", icon: FileText },

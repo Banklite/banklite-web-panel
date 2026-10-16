@@ -29,6 +29,7 @@ import {
   Sparkles,
   ArrowUpRight,
   TrendingUp,
+  KeyRound,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -267,7 +268,20 @@ export default function ClienteAppleDashboard() {
         <h2 className="text-lg font-bold text-neutral-300 mb-4 tracking-tight">
           Operaciones y Servicios
         </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
+          <Link
+            href="/cliente/clave-dinamica"
+            className="apple-glass-card rounded-2xl p-5 hover:border-amber-400/40 active:scale-[0.98] transition-all group flex flex-col justify-between gap-4"
+          >
+            <div className="h-11 w-11 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <KeyRound size={22} />
+            </div>
+            <div>
+              <p className="font-bold text-sm text-white">Clave Dinámica</p>
+              <p className="text-xs text-neutral-400 mt-0.5">Seguridad Nequi</p>
+            </div>
+          </Link>
+
           <Link
             href="/cliente/transferencias"
             className="apple-glass-card rounded-2xl p-5 hover:border-white/25 active:scale-[0.98] transition-all group flex flex-col justify-between gap-4"
