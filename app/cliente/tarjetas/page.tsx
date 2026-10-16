@@ -30,18 +30,14 @@ function maskNumeroCuenta(nc: string | null | undefined) {
 export default function ClienteTarjetasPage() {
   const [tarjetas, setTarjetas] = useState<Tarjeta[]>([]);
   const [cuentas, setCuentas] = useState<Cuenta[]>([]);
-  // numerosRevelados: guarda el número COMPLETO ya obtenido del backend por tarjeta id
   const [numerosRevelados, setNumerosRevelados] = useState<Record<string, string>>({});
-  // mostrarNumero: controla si se muestra o no (el ojo)
   const [mostrarNumero, setMostrarNumero] = useState<Record<string, boolean>>({});
-  // cargandoNumero: spinner mientras trae el número del backend
   const [cargandoNumero, setCargandoNumero] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [congelando, setCongelando] = useState<Record<string, boolean>>({});
   const [errorCongelar, setErrorCongelar] = useState<string | null>(null);
 
-  // Flujo de emisión
   const [emitiendo, setEmitiendo] = useState(false);
   const [solicitando, setSolicitando] = useState(false);
   const [resultadoEmision, setResultadoEmision] = useState<Tarjeta | null>(null);
@@ -50,333 +46,198 @@ export default function ClienteTarjetasPage() {
   const [tipoSeleccionado, setTipoSeleccionado] = useState<"virtual" | "fisica">("virtual");
 
   const sesion = obtenerSesion();
-  const titular = sesion
-    ? [sesion.usuario.nombre, sesion.usuario.apellido].filter(Boolean).join(" ").toUpperCase()
-    : "";
+  const titular = sesion ? [sesion.usuario.nombre, sesion.usuario.apellido].filter(Boolean).join(" ").toUpperCase() : "";
 
   useEffect(() => {
     async function cargar() {
       try {
         if (!sesion) return;
-        const [tarjetasResult, cuentasResult] = await Promise.allSettled([
-          listCards(),
-          listAccounts(),
-        ]);
-
-        const todasLasCuentas =
-          cuentasResult.status === "fulfilled" ? cuentasResult.value : [];
-        const todasLasTarjetas =
-          tarjetasResult.status === "fulfilled" ? tarjetasResult.value : [];
-
-        if (cuentasResult.status === "rejected") {
-          setError(
-            "No pudimos cargar sus cuentas. Es posible que el servicio esté temporalmente no disponible. Intente más tarde."
-          );
-          setLoading(false);
-          return;
-        }
-
-        const misCuentas = todasLasCuentas.filter(
-          (cu) => cu.id_usuario === sesion.usuario.id_usuario
-        );
+        const [tarjetasResult, cuentasResult] = await Promise.allSettled([listCards(), listAccounts()]);
+        const todasLasCuentas = cuentasResult.status === "fulfilled" ? cuentasResult.value : [];
+        const todasLasTarjetas = tarjetasResult.status === "fulfilled" ? tarjetasResult.value : [];
+        if (cuentasResult.status === "rejected") { setError("No pudimos cargar sus cuentas."); setLoading(false); return; }
+        const misCuentas = todasLasCuentas.filter((cu) => cu.id_usuario === sesion.usuario.id_usuario);
         const misCuentaIds = new Set(misCuentas.map((cu) => cu.id_cuenta));
         setTarjetas(todasLasTarjetas.filter((ta) => misCuentaIds.has(ta.id_cuenta)));
         setCuentas(misCuentas);
         const primeraActiva = misCuentas.find((c) => c.estado === "activa");
         if (primeraActiva) setCuentaSeleccionada(primeraActiva.id_cuenta);
-      } catch {
-        setError("Error inesperado al cargar sus datos. Intente nuevamente.");
-      } finally {
-        setLoading(false);
-      }
+      } catch { setError("Error inesperado al cargar sus datos."); } finally { setLoading(false); }
     }
     cargar();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /**
-   * Al pulsar el ojito:
-   * - Si ya está mostrando → ocultar (solo cambia estado visual, NO descarta el número cacheado)
-   * - Si está oculto y ya tenemos el número cacheado → mostrar directamente
-   * - Si está oculto y NO tenemos el número → llamar al backend (endpoint seguro) y mostrar
-   */
   async function toggleNumero(tarjetaId: string) {
     const yaVisible = mostrarNumero[tarjetaId];
-
-    if (yaVisible) {
-      // Ocultar
-      setMostrarNumero((prev) => ({ ...prev, [tarjetaId]: false }));
-      return;
-    }
-
-    // Si ya lo tenemos cacheado, solo mostrar
-    if (numerosRevelados[tarjetaId]) {
-      setMostrarNumero((prev) => ({ ...prev, [tarjetaId]: true }));
-      return;
-    }
-
-    // Pedir al backend
+    if (yaVisible) { setMostrarNumero((prev) => ({ ...prev, [tarjetaId]: false })); return; }
+    if (numerosRevelados[tarjetaId]) { setMostrarNumero((prev) => ({ ...prev, [tarjetaId]: true })); return; }
     if (!sesion) return;
     setCargandoNumero((prev) => ({ ...prev, [tarjetaId]: true }));
     try {
       const resultado = await revelarNumeroTarjeta(tarjetaId, sesion.usuario.id_usuario);
       setNumerosRevelados((prev) => ({ ...prev, [tarjetaId]: resultado.numero_formateado }));
       setMostrarNumero((prev) => ({ ...prev, [tarjetaId]: true }));
-    } catch {
-      // Si falla, no mostramos nada — el número permanece enmascarado
-    } finally {
-      setCargandoNumero((prev) => ({ ...prev, [tarjetaId]: false }));
-    }
+    } catch { /* permanece enmascarado */ } finally { setCargandoNumero((prev) => ({ ...prev, [tarjetaId]: false })); }
   }
 
   async function handleToggleFreeze(tarjetaId: string) {
     if (congelando[tarjetaId]) return;
-    setCongelando((prev) => ({ ...prev, [tarjetaId]: true }));
-    setErrorCongelar(null);
+    setCongelando((prev) => ({ ...prev, [tarjetaId]: true })); setErrorCongelar(null);
     try {
       const actualizada = await toggleFreezeCard(tarjetaId);
-      setTarjetas((prev) =>
-        prev.map((t) => (t.id_tarjeta === tarjetaId ? { ...t, ...actualizada, numero_tarjeta: actualizada.numero_tarjeta ?? t.numero_tarjeta } : t))
-      );
+      setTarjetas((prev) => prev.map((t) => (t.id_tarjeta === tarjetaId ? { ...t, ...actualizada, numero_tarjeta: actualizada.numero_tarjeta ?? t.numero_tarjeta } : t)));
     } catch (err: unknown) {
-      setErrorCongelar(err instanceof Error ? err.message : "No fue posible cambiar el estado de la tarjeta");
-    } finally {
-      setCongelando((prev) => ({ ...prev, [tarjetaId]: false }));
-    }
+      setErrorCongelar(err instanceof Error ? err.message : "No fue posible cambiar el estado.");
+    } finally { setCongelando((prev) => ({ ...prev, [tarjetaId]: false })); }
   }
 
   async function handleSolicitarTarjeta() {
     if (!sesion || !cuentaSeleccionada || solicitando) return;
-    setSolicitando(true);
-    setErrorEmision(null);
-    setResultadoEmision(null);
+    setSolicitando(true); setErrorEmision(null); setResultadoEmision(null);
     try {
-      const tarjeta = await solicitarTarjetaCliente({
-        id_usuario: sesion.usuario.id_usuario,
-        id_cuenta: cuentaSeleccionada,
-        tipo_tarjeta: tipoSeleccionado,
-      });
+      const tarjeta = await solicitarTarjetaCliente({ id_usuario: sesion.usuario.id_usuario, id_cuenta: cuentaSeleccionada, tipo_tarjeta: tipoSeleccionado });
       setResultadoEmision(tarjeta);
-      // Actualizar la lista
       const [t] = await Promise.all([listCards()]);
       const misCuentaIds = new Set(cuentas.map((cu) => cu.id_cuenta));
       setTarjetas(t.filter((ta) => misCuentaIds.has(ta.id_cuenta)));
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "No fue posible emitir la tarjeta";
-      setErrorEmision(msg);
-    } finally {
-      setSolicitando(false);
-    }
+    } catch (err: unknown) { setErrorEmision(err instanceof Error ? err.message : "No fue posible emitir la tarjeta."); }
+    finally { setSolicitando(false); }
   }
-
-  if (loading)
-    return (
-      <div className="space-y-6 pb-10">
-        {/* Header skeleton */}
-        <div className="flex items-center gap-4">
-          <div className="animate-pulse h-14 w-14 bg-slate-200 rounded-2xl" />
-          <div className="animate-pulse space-y-2 flex-1">
-            <div className="h-6 bg-slate-200 rounded w-1/3" />
-            <div className="h-4 bg-slate-200 rounded w-1/2" />
-          </div>
-        </div>
-        {/* Card skeletons */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[1, 2].map((i) => (
-            <div key={i} className="animate-pulse rounded-3xl overflow-hidden">
-              <div className="bg-slate-200 h-52 rounded-2xl" />
-              <div className="bg-white border border-slate-100 rounded-b-3xl p-5 space-y-3">
-                <div className="h-4 bg-slate-200 rounded w-2/3" />
-                <div className="h-4 bg-slate-200 rounded w-1/2" />
-                <div className="h-10 bg-slate-200 rounded-xl" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-
-  if (error)
-    return (
-      <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-8 flex items-center gap-4">
-        <AlertCircle size={32} className="text-red-500 flex-shrink-0" />
-        <p className="text-red-800 text-lg font-semibold">{error}</p>
-      </div>
-    );
 
   const estadoUsuario = sesion?.usuario.estado;
   const cuentasActivas = cuentas.filter((c) => c.estado === "activa");
 
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center py-24 gap-4">
+      <Loader2 size={40} className="text-white animate-spin" />
+      <p className="text-sm text-neutral-400 font-semibold">Cargando tus tarjetas…</p>
+    </div>
+  );
+
+  if (error) return (
+    <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-8 flex items-center gap-4">
+      <AlertCircle size={28} className="text-red-400 flex-shrink-0" />
+      <p className="text-red-400 font-semibold">{error}</p>
+    </div>
+  );
+
   return (
     <div className="space-y-6 pb-10">
-      {/* Encabezado */}
+      {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-4">
-          <div className="bg-brand-100 p-3 rounded-2xl text-brand-600">
-            <CreditCard size={28} strokeWidth={2.5} />
+          <div className="h-12 w-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center">
+            <CreditCard size={24} />
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-black text-slate-800">Mis Tarjetas</h1>
-            <p className="text-lg text-slate-500">Administra tus tarjetas bancarias.</p>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight">Mis Tarjetas</h1>
+            <p className="text-sm text-neutral-400">Gestiona y controla tus tarjetas bancarias</p>
           </div>
         </div>
         {!emitiendo && (
-          <button
-            onClick={() => { setEmitiendo(true); setResultadoEmision(null); setErrorEmision(null); }}
-            className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-bold px-5 py-3 rounded-2xl shadow-lg transition-colors text-base"
-          >
-            <Plus size={20} /> Solicitar Tarjeta
+          <button onClick={() => { setEmitiendo(true); setResultadoEmision(null); setErrorEmision(null); }}
+            className="flex items-center gap-2 apple-glass-button rounded-2xl px-5 py-2.5 text-sm font-bold text-white">
+            <Plus size={18} /> Solicitar Tarjeta
           </button>
         )}
       </div>
 
       {/* Panel de solicitud */}
       {emitiendo && (
-        <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-4 md:p-8 space-y-6">
-          <h2 className="text-xl md:text-2xl font-black text-slate-800">Solicitar Nueva Tarjeta</h2>
+        <div className="apple-glass-card rounded-3xl p-6 sm:p-8 space-y-5">
+          <h2 className="text-base font-extrabold text-white">Solicitar Nueva Tarjeta</h2>
 
           {estadoUsuario !== "verificado" && (
-            <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-5 flex gap-3">
-              <ShieldX size={28} className="text-amber-500 flex-shrink-0" />
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 flex gap-3">
+              <ShieldX size={24} className="text-amber-400 flex-shrink-0" />
               <div>
-                <p className="font-bold text-amber-800 text-lg">Identidad no verificada</p>
-                <p className="text-amber-700 mt-1">
-                  No puedes solicitar una tarjeta hasta completar la verificación de identidad.
-                  Esto se hace automáticamente al registrarse con tu cédula.
-                </p>
+                <p className="font-bold text-amber-400">Identidad no verificada</p>
+                <p className="text-xs text-neutral-400 mt-1">No puedes solicitar una tarjeta hasta completar la verificación de identidad con tu cédula.</p>
               </div>
             </div>
           )}
 
           {estadoUsuario === "verificado" && cuentasActivas.length === 0 && (
-            <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-5 flex gap-3">
-              <AlertCircle size={28} className="text-amber-500 flex-shrink-0" />
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 flex gap-3">
+              <AlertCircle size={24} className="text-amber-400 flex-shrink-0" />
               <div>
-                <p className="font-bold text-amber-800 text-lg">Sin cuenta activa</p>
-                <p className="text-amber-700 mt-1">
-                  Necesitas tener una cuenta bancaria activa para solicitar una tarjeta.
-                  Contacta al administrador para abrir tu cuenta.
-                </p>
+                <p className="font-bold text-amber-400">Sin cuenta activa</p>
+                <p className="text-xs text-neutral-400 mt-1">Necesitas una cuenta activa para solicitar una tarjeta. Contacta al administrador.</p>
               </div>
             </div>
           )}
 
           {estadoUsuario === "verificado" && cuentasActivas.length > 0 && !resultadoEmision && (
             <div className="space-y-5">
-              <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex gap-2 items-center">
-                <ShieldCheck size={20} className="text-green-600 flex-shrink-0" />
-                <p className="text-green-800 font-semibold text-sm">
-                  Tu identidad está verificada. Puedes emitir tu tarjeta.
-                </p>
+              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 flex gap-2 items-center">
+                <ShieldCheck size={18} className="text-emerald-400 flex-shrink-0" />
+                <p className="text-emerald-400 text-sm font-semibold">Identidad verificada. Puedes emitir tu tarjeta.</p>
               </div>
 
               <div>
-                <label className="block text-base font-bold text-slate-700 mb-2">
-                  Cuenta bancaria asociada
-                </label>
-                <select
-                  value={cuentaSeleccionada}
-                  onChange={(e) => setCuentaSeleccionada(e.target.value)}
-                  className="w-full border-2 border-slate-200 rounded-xl px-4 py-3 text-base focus:border-brand-600 focus:outline-none"
-                >
+                <label className="block text-[11px] font-bold uppercase tracking-widest text-neutral-500 mb-2">Cuenta bancaria asociada</label>
+                <select value={cuentaSeleccionada} onChange={(e) => setCuentaSeleccionada(e.target.value)}
+                  className="w-full bg-white/[0.06] border border-white/[0.12] rounded-2xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-white/30 transition appearance-none">
                   {cuentasActivas.map((c) => (
-                    <option key={c.id_cuenta} value={c.id_cuenta}>
-                      {c.tipo_cuenta.charAt(0).toUpperCase() + c.tipo_cuenta.slice(1)} —{" "}
-                      {maskNumeroCuenta(c.numero_cuenta)} · {c.moneda}
-                    </option>
+                    <option key={c.id_cuenta} value={c.id_cuenta}>{c.tipo_cuenta.charAt(0).toUpperCase() + c.tipo_cuenta.slice(1)} — {maskNumeroCuenta(c.numero_cuenta)} · {c.moneda}</option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-base font-bold text-slate-700 mb-2">
-                  Tipo de tarjeta
-                </label>
+                <label className="block text-[11px] font-bold uppercase tracking-widest text-neutral-500 mb-2">Tipo de tarjeta</label>
                 <div className="grid grid-cols-2 gap-3">
                   {(["virtual", "fisica"] as const).map((tipo) => (
-                    <button
-                      key={tipo}
-                      type="button"
-                      onClick={() => setTipoSeleccionado(tipo)}
-                      className={`p-4 rounded-2xl border-2 text-left transition-all ${
-                        tipoSeleccionado === tipo
-                          ? "border-brand-600 bg-brand-50"
-                          : "border-slate-200 hover:border-brand-500"
-                      }`}
-                    >
-                      <p className="font-bold text-slate-800 capitalize">{tipo}</p>
-                      <p className="text-sm text-slate-500 mt-1">
-                        {tipo === "virtual"
-                          ? "Para compras en línea y pagos digitales"
-                          : "Tarjeta física con chip y contactless"}
-                      </p>
+                    <button key={tipo} type="button" onClick={() => setTipoSeleccionado(tipo)}
+                      className={`p-4 rounded-2xl border text-left transition-all ${tipoSeleccionado === tipo ? "border-white/30 bg-white/[0.08]" : "border-white/[0.08] hover:border-white/20 bg-white/[0.03]"}`}>
+                      <p className="font-bold text-white capitalize text-sm">{tipo}</p>
+                      <p className="text-xs text-neutral-500 mt-1">{tipo === "virtual" ? "Para compras en línea y pagos digitales" : "Tarjeta física con chip y contactless"}</p>
                     </button>
                   ))}
                 </div>
               </div>
 
               {errorEmision && (
-                <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-4 flex gap-3 text-red-800">
-                  <AlertCircle size={22} className="flex-shrink-0" />
-                  <p className="font-semibold">{errorEmision}</p>
+                <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex gap-3 text-red-400">
+                  <AlertCircle size={18} className="flex-shrink-0" />
+                  <p className="text-sm font-semibold">{errorEmision}</p>
                 </div>
               )}
 
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setEmitiendo(false)}
-                  className="flex-1 border-2 border-slate-200 text-slate-600 hover:bg-slate-50 font-bold py-3 rounded-2xl transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleSolicitarTarjeta}
-                  disabled={solicitando || !cuentaSeleccionada}
-                  className="flex-1 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white font-black py-3 rounded-2xl flex items-center justify-center gap-2 text-lg shadow-lg transition-colors"
-                >
-                  {solicitando ? <Loader2 size={22} className="animate-spin" /> : <Plus size={22} />}
+              <div className="flex gap-3">
+                <button onClick={() => setEmitiendo(false)} className="flex-1 border border-white/[0.12] hover:border-white/25 text-neutral-400 hover:text-white font-bold py-3.5 rounded-2xl text-sm transition">Cancelar</button>
+                <button onClick={handleSolicitarTarjeta} disabled={solicitando || !cuentaSeleccionada}
+                  className="flex-1 bg-white hover:bg-neutral-100 disabled:opacity-40 text-black font-extrabold py-3.5 rounded-2xl text-sm flex items-center justify-center gap-2 transition active:scale-[0.98]">
+                  {solicitando ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
                   {solicitando ? "Emitiendo…" : "Emitir Tarjeta"}
                 </button>
               </div>
             </div>
           )}
 
-          {/* Resultado exitoso */}
           {resultadoEmision && (
-            <div className="space-y-6">
-              <div className="text-center">
-                <CheckCircle size={72} className="text-green-500 mx-auto mb-4" />
-                <h3 className="text-2xl font-black text-green-700">¡Tarjeta emitida correctamente!</h3>
+            <div className="space-y-5">
+              <div className="text-center space-y-2">
+                <div className="inline-flex p-4 rounded-3xl bg-emerald-500/10 border border-emerald-500/20">
+                  <CheckCircle size={40} className="text-emerald-400" />
+                </div>
+                <h3 className="text-lg font-extrabold text-white">¡Tarjeta emitida correctamente!</h3>
               </div>
-              <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-6 space-y-3">
+              <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-5 space-y-3">
                 {[
                   { label: "Número de tarjeta", value: maskNumeroTarjeta(resultadoEmision.numero_tarjeta) },
                   { label: "Tipo", value: resultadoEmision.tipo_tarjeta.charAt(0).toUpperCase() + resultadoEmision.tipo_tarjeta.slice(1) },
-                  { label: "Estado", value: "✅ ACTIVA" },
-                  {
-                    label: "Cuenta asociada",
-                    value: maskNumeroCuenta(
-                      cuentas.find((c) => c.id_cuenta === resultadoEmision.id_cuenta)?.numero_cuenta
-                    ),
-                  },
-                  {
-                    label: "Fecha de emisión",
-                    value: new Date(resultadoEmision.fecha_emision).toLocaleDateString("es-CO"),
-                  },
+                  { label: "Estado", value: "Activa" },
+                  { label: "Fecha de emisión", value: new Date(resultadoEmision.fecha_emision).toLocaleDateString("es-CO") },
                 ].map((item) => (
-                  <div key={item.label} className="flex justify-between items-center border-b border-green-200 pb-3 last:border-0 last:pb-0">
-                    <span className="text-green-700 font-semibold">{item.label}</span>
-                    <span className="font-bold text-green-900">{item.value}</span>
+                  <div key={item.label} className="flex justify-between text-sm border-b border-white/[0.06] pb-2 last:border-0 last:pb-0">
+                    <span className="text-neutral-400">{item.label}</span>
+                    <span className="font-bold text-white">{item.value}</span>
                   </div>
                 ))}
               </div>
-              <p className="text-sm text-slate-500 text-center">
-                Ve a &quot;Mis Tarjetas&quot; y pulsa el ojo 👁 para ver el número completo.
-              </p>
-              <button
-                onClick={() => setEmitiendo(false)}
-                className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-4 rounded-2xl text-lg"
-              >
+              <button onClick={() => setEmitiendo(false)} className="w-full bg-white hover:bg-neutral-100 text-black font-extrabold py-3.5 rounded-2xl text-sm transition active:scale-[0.98]">
                 Ver mis tarjetas
               </button>
             </div>
@@ -388,18 +249,18 @@ export default function ClienteTarjetasPage() {
       {!emitiendo && (
         <>
           {errorCongelar && (
-            <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-4 flex gap-3 text-red-800">
-              <AlertCircle size={22} className="flex-shrink-0" />
-              <p className="font-semibold">{errorCongelar}</p>
+            <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex gap-3 text-red-400">
+              <AlertCircle size={18} /> <p className="text-sm font-semibold">{errorCongelar}</p>
             </div>
           )}
+
           {tarjetas.length === 0 ? (
-            <div className="text-center py-16">
-              <CreditCard size={64} className="mx-auto text-slate-300 mb-4" />
-              <h2 className="text-2xl font-bold text-slate-600">Aún no tienes tarjetas</h2>
-              <p className="text-slate-500 mt-2 text-lg">
-                Usa el botón &quot;Solicitar Tarjeta&quot; para emitir la tuya.
-              </p>
+            <div className="apple-glass-card rounded-3xl p-16 text-center space-y-4">
+              <div className="inline-flex p-5 rounded-3xl bg-white/[0.04] border border-white/[0.08]">
+                <CreditCard size={40} className="text-neutral-600" />
+              </div>
+              <h2 className="text-lg font-extrabold text-white">Aún no tienes tarjetas</h2>
+              <p className="text-sm text-neutral-500">Usa el botón "Solicitar Tarjeta" para emitir la tuya.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -411,109 +272,79 @@ export default function ClienteTarjetasPage() {
                 const congelada = tarjeta.estado === "congelada";
 
                 return (
-                  <div key={tarjeta.id_tarjeta} className="rounded-3xl overflow-hidden shadow-xl">
-                    <div
-                      className={`relative text-white p-7 rounded-2xl bg-gradient-to-br ${
-                        congelada
-                          ? "from-gray-400 to-gray-600"
-                          : tarjeta.estado === "activa"
-                            ? "from-brand-500 via-brand-600 to-brand-900"
-                            : "from-gray-500 to-gray-700"
-                      }`}
-                    >
-                      <div className="flex justify-between items-start mb-8">
+                  <div key={tarjeta.id_tarjeta} className="space-y-0 rounded-3xl overflow-hidden">
+                    {/* Cara de la tarjeta */}
+                    <div className={`relative text-white p-7 rounded-3xl overflow-hidden select-none ${congelada ? "bg-gradient-to-br from-neutral-700 to-neutral-900" : tarjeta.estado === "activa" ? "bg-gradient-to-br from-neutral-800 to-neutral-950" : "bg-gradient-to-br from-neutral-700 to-neutral-900"}`}>
+                      <div className="absolute inset-0 titanium-shimmer pointer-events-none" />
+                      <div className="absolute top-0 right-0 bottom-0 w-40 bg-white/[0.03] rounded-full translate-x-16" />
+
+                      <div className="flex justify-between items-start mb-8 relative z-10">
                         <div>
-                          <p className="text-white/80 text-sm font-semibold uppercase tracking-widest">BankLite</p>
-                          <p className="text-xs text-white/60 mt-1 capitalize">{tarjeta.tipo_tarjeta}</p>
+                          <p className="font-extrabold tracking-tight text-white text-base">BankLite</p>
+                          <p className="text-[10px] text-white/50 mt-0.5 uppercase tracking-widest capitalize">{tarjeta.tipo_tarjeta}</p>
                         </div>
-                        <CreditCard size={36} className="text-white/60" />
+                        <div className="flex items-center gap-2">
+                          <div className="h-6 w-8 rounded bg-gradient-to-br from-amber-300 via-amber-400 to-amber-600 shadow-inner" />
+                          <span className="text-white/40 text-sm font-bold">))</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3 mb-6">
-                        <p className="text-2xl font-mono font-bold tracking-widest flex-1">
-                          {verNumero && numeroCompleto
-                            ? numeroCompleto
-                            : maskNumeroTarjeta(tarjeta.numero_tarjeta)}
+
+                      <div className="flex items-center gap-3 mb-6 relative z-10">
+                        <p className="text-xl font-mono font-bold tracking-[0.15em] flex-1 text-white/90">
+                          {verNumero && numeroCompleto ? numeroCompleto : maskNumeroTarjeta(tarjeta.numero_tarjeta)}
                         </p>
-                        <button
-                          onClick={() => toggleNumero(tarjeta.id_tarjeta)}
-                          className="bg-white/20 hover:bg-white/30 rounded-lg p-2 transition-colors flex-shrink-0"
-                          title={verNumero ? "Ocultar número" : "Ver número completo"}
-                          disabled={numeroCargando}
-                        >
-                          {numeroCargando
-                            ? <Loader2 size={18} className="animate-spin" />
-                            : verNumero
-                              ? <EyeOff size={18} />
-                              : <Eye size={18} />
-                          }
+                        <button onClick={() => toggleNumero(tarjeta.id_tarjeta)} disabled={numeroCargando}
+                          className="bg-white/10 hover:bg-white/20 rounded-xl p-2 transition flex-shrink-0">
+                          {numeroCargando ? <Loader2 size={16} className="animate-spin" /> : verNumero ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
                       </div>
-                      <div className="flex justify-between items-end">
+
+                      <div className="flex justify-between items-end relative z-10">
                         <div>
-                          <p className="font-bold uppercase tracking-wide">{titular || "TITULAR"}</p>
-                          <p className="text-white/80 text-sm mt-1">
-                            Estado: {congelada ? "Congelada" : tarjeta.estado.charAt(0).toUpperCase() + tarjeta.estado.slice(1)}
-                          </p>
+                          <p className="text-[10px] text-white/40 uppercase tracking-widest mb-0.5">Titular</p>
+                          <p className="font-bold uppercase tracking-wide text-sm text-white">{titular || "TITULAR"}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold uppercase">{tipoLabel(tarjeta.tipo_tarjeta)}</p>
-                          <p className="text-white/70 text-xs mt-1">
-                            Cuenta {maskNumeroCuenta(cuenta?.numero_cuenta)}
-                          </p>
+                          <p className="text-[10px] text-white/40 uppercase tracking-widest mb-0.5">Cuenta</p>
+                          <p className="text-xs text-white/70 font-mono">{maskNumeroCuenta(cuenta?.numero_cuenta)}</p>
                         </div>
                       </div>
+
                       {congelada && (
-                        <div className="absolute inset-0 rounded-2xl bg-black/35 flex flex-col items-center justify-center gap-2">
-                          <Lock size={48} className="text-white" />
-                          <p className="font-bold text-white">Tarjeta congelada</p>
+                        <div className="absolute inset-0 rounded-3xl bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center gap-2">
+                          <Lock size={36} className="text-white" />
+                          <p className="font-bold text-white text-sm">Tarjeta congelada</p>
                         </div>
                       )}
                     </div>
-                    <div className="bg-white p-5 border border-slate-100 rounded-b-3xl space-y-3">
-                      <div className="flex items-center gap-2">
-                        {tarjeta.estado === "activa" ? (
-                          <CheckCircle size={22} className="text-brand-500" />
-                        ) : (
-                          <Lock size={22} className="text-red-400" />
-                        )}
-                        <span
-                          className={`text-lg font-bold ${
-                            tarjeta.estado === "activa" ? "text-brand-700" : "text-red-600"
-                          }`}
-                        >
-                          {tarjeta.estado === "activa"
-                            ? "Tarjeta Activa"
-                            : congelada
-                              ? "Tarjeta Congelada"
-                              : "Tarjeta " + tarjeta.estado}
-                        </span>
-                      </div>
-                      <p className="text-slate-500 text-sm">
-                        Procesador: <span className="font-bold text-slate-700">{tarjeta.procesador_externo}</span>
-                      </p>
-                      {tarjeta.estado !== "vencida" && (
-                        <button
-                          onClick={() => handleToggleFreeze(tarjeta.id_tarjeta)}
-                          disabled={congelando[tarjeta.id_tarjeta]}
-                          className={`w-full flex items-center justify-center gap-2 font-bold py-2.5 rounded-xl transition-colors disabled:opacity-50 ${
-                            congelada
-                              ? "bg-brand-600 hover:bg-brand-700 text-white"
-                              : "border-2 border-brand-500 text-brand-700 hover:bg-brand-50"
-                          }`}
-                        >
-                          {congelando[tarjeta.id_tarjeta] ? (
-                            <Loader2 size={18} className="animate-spin" />
-                          ) : congelada ? (
-                            <Sun size={18} />
+
+                    {/* Panel de control */}
+                    <div className="apple-glass rounded-b-3xl px-5 py-4 border-t border-white/[0.06] space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {tarjeta.estado === "activa" ? (
+                            <CheckCircle size={16} className="text-emerald-400" />
                           ) : (
-                            <Snowflake size={18} />
+                            <Lock size={16} className="text-neutral-500" />
                           )}
+                          <span className={`text-sm font-bold ${tarjeta.estado === "activa" ? "text-emerald-400" : congelada ? "text-neutral-400" : "text-neutral-500"}`}>
+                            {tarjeta.estado === "activa" ? "Activa" : congelada ? "Congelada" : tarjeta.estado}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-neutral-500 font-semibold">{tipoLabel(tarjeta.tipo_tarjeta)}</span>
+                      </div>
+
+                      {tarjeta.estado !== "vencida" && (
+                        <button onClick={() => handleToggleFreeze(tarjeta.id_tarjeta)} disabled={congelando[tarjeta.id_tarjeta]}
+                          className={`w-full flex items-center justify-center gap-2 font-bold py-2.5 rounded-xl text-sm transition disabled:opacity-50 ${congelada ? "bg-white/10 hover:bg-white/15 text-white" : "border border-white/[0.12] hover:border-white/25 text-neutral-300 hover:text-white"}`}>
+                          {congelando[tarjeta.id_tarjeta] ? <Loader2 size={16} className="animate-spin" /> : congelada ? <Sun size={16} /> : <Snowflake size={16} />}
                           {congelada ? "Descongelar tarjeta" : "Congelar tarjeta"}
                         </button>
                       )}
+
                       {verNumero && (
-                        <p className="text-xs text-amber-600 font-semibold flex items-center gap-1">
-                          Número visible — pulsa el ojo para ocultar
+                        <p className="text-[11px] text-amber-400 font-semibold flex items-center gap-1">
+                          <Eye size={12} /> Número visible — pulsa el ojo para ocultar
                         </p>
                       )}
                     </div>
