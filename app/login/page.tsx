@@ -5,7 +5,16 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Building2, Lock, UserPlus, ShieldCheck, Calendar, Phone, Sparkles, HeartHandshake } from "lucide-react";
 import { Field } from "@/components/Field";
 import { Banner } from "@/components/Banner";
-import { ApiError, createUsuario, login as loginRequest, solicitarReset, resetClave } from "@/lib/api";
+import {
+  ApiError,
+  createUsuario,
+  login as loginRequest,
+  solicitarReset,
+  resetClave,
+  solicitarCodigoLogin,
+  confirmarCodigoLogin,
+  type LoginIniciarResponse,
+} from "@/lib/api";
 import { guardarSesion } from "@/lib/auth";
 
 const PAISES = [
@@ -38,6 +47,15 @@ function LoginPageInner() {
   const [modo, setModo] = useState<"login" | "registro" | "reset">(
     searchParams.get("modo") === "registro" ? "registro" : "login"
   );
+
+  // Verificación 2FA con Código por WhatsApp y Correo
+  const [paso2FA, setPaso2FA] = useState(false);
+  const [datos2FA, setDatos2FA] = useState<LoginIniciarResponse | null>(null);
+  const [codigo2FA, setCodigo2FA] = useState("");
+  const [telefonoExtra, setTelefonoExtra] = useState("");
+  const [mostrarCampoTelefono, setMostrarCampoTelefono] = useState(false);
+  const [info2FA, setInfo2FA] = useState<string | null>(null);
+  const [reenviando, setReenviando] = useState(false);
 
   // Recuperación de contraseña
   const [resetPaso, setResetPaso] = useState<1 | 2>(1);
@@ -87,36 +105,23 @@ function LoginPageInner() {
     return edad < 18;
   })();
 
-  async function entrarConSesion(correo: string, clave: string, portalEsAdmin: boolean) {
-    const result = await loginRequest(correo, clave);
-    const usuarioRole = result.usuario.role;
-
-    if (portalEsAdmin && usuarioRole !== "admin") {
-      throw new Error("Estas credenciales no tienen permisos de administrador. Usa el Portal Clientes para acceder con tu cuenta personal.");
-    }
-
-    if (!portalEsAdmin && usuarioRole === "admin") {
-      throw new Error("Esta cuenta de administrador no puede acceder por el Portal Clientes. Cambia a 'Acceso Admin' para iniciar sesión.");
-    }
-
-    guardarSesion(result.access_token, result.usuario);
-    // Redirigir directamente al portal del rol, sin pasar por /
-    if (usuarioRole === "admin") {
-      router.replace("/admin");
-    } else {
-      router.replace("/cliente");
-    }
-  }
-
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setInfo2FA(null);
     setCargando(true);
     try {
-      await entrarConSesion(email, password, rolPortal === "admin");
+      // Paso 1: Enviar credenciales y disparar código a WhatsApp y Correo
+      const res = await solicitarCodigoLogin(email, password, telefonoExtra.trim() || undefined);
+      setDatos2FA(res);
+      setPaso2FA(true);
+      setInfo2FA(res.mensaje);
+      if (res.codigo_debug) {
+        setCodigo2FA(res.codigo_debug);
+      }
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.status === 401 ? "Email o contraseña incorrectos." : err.message);
+        setError(err.status === 401 ? "Correo/teléfono o contraseña incorrectos." : err.message);
       } else if (err instanceof Error) {
         setError(err.message);
       } else {
@@ -127,8 +132,72 @@ function LoginPageInner() {
     }
   }
 
+  async function handleConfirmar2FA(e: React.FormEvent) {
+    e.preventDefault();
+    if (!datos2FA) return;
+    setError(null);
+    setCargando(true);
+    try {
+      const result = await confirmarCodigoLogin(datos2FA.id_usuario, codigo2FA);
+      const usuarioRole = result.usuario.role;
+
+      if (rolPortal === "admin" && usuarioRole !== "admin") {
+        throw new Error("Estas credenciales no tienen permisos de administrador. Usa el Portal Clientes para acceder.");
+      }
+
+      if (rolPortal !== "admin" && usuarioRole === "admin") {
+        throw new Error("Esta cuenta de administrador no puede acceder por el Portal Clientes. Cambia a 'Acceso Admin'.");
+      }
+
+      guardarSesion(result.access_token, result.usuario);
+      if (usuarioRole === "admin") {
+        router.replace("/admin");
+      } else {
+        router.replace("/cliente");
+      }
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.status === 400 ? "Código de confirmación incorrecto o expirado." : err.message);
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Error al verificar el código de confirmación.");
+      }
+    } finally {
+      setCargando(false);
+    }
+  }
+
+  async function handleReenviar2FA() {
+    if (!email || !password) return;
+    setError(null);
+    setReenviando(true);
+    try {
+      const res = await solicitarCodigoLogin(email, password, telefonoExtra.trim() || undefined);
+      setDatos2FA(res);
+      setInfo2FA("¡Nuevo código de confirmación enviado a tu WhatsApp y correo!");
+      if (res.codigo_debug) setCodigo2FA(res.codigo_debug);
+    } catch (err) {
+      setError("No se pudo reenviar el código. Intenta nuevamente.");
+    } finally {
+      setReenviando(false);
+    }
+  }
+
+  function cancelar2FA() {
+    setPaso2FA(false);
+    setDatos2FA(null);
+    setCodigo2FA("");
+    setInfo2FA(null);
+    setError(null);
+  }
+
   function volverAlLogin() {
     setModo("login");
+    setPaso2FA(false);
+    setDatos2FA(null);
+    setCodigo2FA("");
+    setInfo2FA(null);
     setError(null);
     setResetPaso(1);
     setResetCodigo("");
@@ -194,25 +263,33 @@ function LoginPageInner() {
         pais_residencia: paisResidencia,
         password: regPassword,
         fecha_nacimiento: fechaNacimiento,
-                  servicio_solicitado: servicioSolicitado,
-          cedula,
-          tipo_documento: tipoDocumento,
-          fecha_expedicion: fechaExpedicion,
-          fecha_vencimiento: fechaVencimiento,
-          pais_expedicion: paisExpedicion,
-          ...(esMenor
-            ? {
-                representante_nombre: representanteNombre.trim(),
-                representante_documento: representanteDocumento,
-                representante_tipo_documento: representanteTipoDoc,
-                representante_parentesco: representanteParentesco,
-                representante_telefono: "+57" + representanteTelefono,
-                ...(representanteEmail ? { representante_email: representanteEmail } : {}),
-              }
-            : {}),
+        servicio_solicitado: servicioSolicitado,
+        cedula,
+        tipo_documento: tipoDocumento,
+        fecha_expedicion: fechaExpedicion,
+        fecha_vencimiento: fechaVencimiento,
+        pais_expedicion: paisExpedicion,
+        ...(esMenor
+          ? {
+              representante_nombre: representanteNombre.trim(),
+              representante_documento: representanteDocumento,
+              representante_tipo_documento: representanteTipoDoc,
+              representante_parentesco: representanteParentesco,
+              representante_telefono: "+57" + representanteTelefono,
+              ...(representanteEmail ? { representante_email: representanteEmail } : {}),
+            }
+          : {}),
       });
-      // Entra directo al sistema tras el registro (nunca como admin)
-      await entrarConSesion(regEmail, regPassword, false);
+
+      // Disparar confirmación 2FA con código enviado a WhatsApp y Correo
+      setEmail(regEmail);
+      setPassword(regPassword);
+      const res = await solicitarCodigoLogin(regEmail, regPassword);
+      setDatos2FA(res);
+      setPaso2FA(true);
+      setModo("login");
+      setInfo2FA("¡Cuenta creada exitosamente! Hemos enviado tu código de acceso a tu WhatsApp y a tu correo.");
+      if (res.codigo_debug) setCodigo2FA(res.codigo_debug);
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message);
@@ -411,14 +488,92 @@ function LoginPageInner() {
               </form>
             )}
           </div>
-        ) : (modo === "login" || rolPortal === "admin") ? (
-          <form onSubmit={handleLogin} className="space-y-4">
-            <Field label="Correo electrónico" hint="Tu correo personal registrado en el banco.">
+        ) : paso2FA && datos2FA ? (
+          /* Paso 2FA: El usuario ingresa el código recibido en WhatsApp y Correo */
+          <form onSubmit={handleConfirmar2FA} className="space-y-5 animate-fade-in">
+            <div className="text-center space-y-2">
+              <div className="inline-flex p-3 rounded-2xl bg-brand-50 border border-brand-200 text-brand-700">
+                <ShieldCheck size={36} className="text-brand-600" />
+              </div>
+              <h2 className="text-xl font-extrabold text-slate-900">
+                Confirmación de Seguridad (2FA)
+              </h2>
+              <p className="text-sm text-slate-600">
+                Hola <strong className="text-brand-700">{datos2FA.nombre}</strong>, hemos enviado tu código de acceso a:
+              </p>
+            </div>
+
+            {/* Tarjetas de canales WhatsApp y Correo */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center gap-2.5">
+                <span className="text-lg">💬</span>
+                <div>
+                  <p className="font-bold">WhatsApp</p>
+                  <p className="font-mono text-emerald-700">{datos2FA.telefono_enmascarado}</p>
+                </div>
+              </div>
+              <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 flex items-center gap-2.5">
+                <span className="text-lg">✉️</span>
+                <div>
+                  <p className="font-bold">Correo Electrónico</p>
+                  <p className="font-mono text-blue-700">{datos2FA.email_enmascarado}</p>
+                </div>
+              </div>
+            </div>
+
+            {info2FA && <Banner kind="success" text={info2FA} />}
+
+            <Field label="Código de Confirmación (6 dígitos)" hint="Ingresa los 6 números que recibiste en tu WhatsApp o en tu correo.">
               <input
-                type="email"
+                type="text"
+                inputMode="numeric"
                 required
                 autoFocus
-                placeholder="ejemplo@correo.com"
+                minLength={6}
+                maxLength={6}
+                pattern="[0-9]{6}"
+                placeholder="123456"
+                value={codigo2FA}
+                onChange={(e) => setCodigo2FA(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3.5 text-center text-3xl font-mono tracking-[0.4em] font-extrabold text-slate-900 focus:outline-none focus:border-brand-600 focus:ring-4 focus:ring-brand-100 transition"
+              />
+            </Field>
+
+            <button
+              type="submit"
+              disabled={cargando || codigo2FA.length !== 6}
+              className="w-full bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 disabled:opacity-50 text-white rounded-xl px-4 py-3.5 text-base font-extrabold flex items-center justify-center gap-2 shadow-lg shadow-brand-600/30 transition transform active:scale-95"
+            >
+              <Lock size={20} />
+              {cargando ? "Verificando código…" : "Confirmar e Iniciar Sesión"}
+            </button>
+
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 border-t border-slate-100 text-xs">
+              <button
+                type="button"
+                onClick={handleReenviar2FA}
+                disabled={reenviando}
+                className="text-brand-600 hover:text-brand-700 font-bold hover:underline disabled:opacity-50"
+              >
+                {reenviando ? "Reenviando…" : "🔄 ¿No lo recibiste? Reenviar código"}
+              </button>
+              <button
+                type="button"
+                onClick={cancelar2FA}
+                className="text-slate-500 hover:text-slate-700 font-medium hover:underline"
+              >
+                ← Cambiar usuario
+              </button>
+            </div>
+          </form>
+        ) : (modo === "login" || rolPortal === "admin") ? (
+          <form onSubmit={handleLogin} className="space-y-4">
+            <Field label="Correo electrónico o Teléfono" hint="Tu correo personal o número registrado (ej: 3104433445 o ejemplo@correo.com).">
+              <input
+                type="text"
+                required
+                autoFocus
+                placeholder="ejemplo@correo.com o 3104433445"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full border-2 border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-100 transition"
@@ -434,13 +589,41 @@ function LoginPageInner() {
                 className="w-full border-2 border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-100 transition"
               />
             </Field>
+
+            {/* Opción para registrar o actualizar teléfono al iniciar sesión */}
+            <div>
+              <button
+                type="button"
+                onClick={() => setMostrarCampoTelefono(!mostrarCampoTelefono)}
+                className="text-xs font-semibold text-brand-600 hover:text-brand-700 flex items-center gap-1"
+              >
+                <Phone size={14} />
+                {mostrarCampoTelefono
+                  ? "Ocultar registro de teléfono"
+                  : "¿Quieres registrar o actualizar tu número de teléfono para recibir el WhatsApp?"}
+              </button>
+              {mostrarCampoTelefono && (
+                <div className="mt-2 p-3 bg-brand-50/70 rounded-xl border border-brand-100 animate-fade-in">
+                  <Field label="Número de WhatsApp a registrar" hint="Código de país + número (ej: +573104433445 o 3104433445)">
+                    <input
+                      type="tel"
+                      placeholder="+573104433445"
+                      value={telefonoExtra}
+                      onChange={(e) => setTelefonoExtra(e.target.value)}
+                      className="w-full border-2 border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-brand-600 bg-white"
+                    />
+                  </Field>
+                </div>
+              )}
+            </div>
+
             <button
               type="submit"
               disabled={cargando}
-              className="w-full bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-700 disabled:opacity-60 text-white rounded-xl px-4 py-3.5 text-base font-bold flex items-center justify-center gap-2 shadow-lg shadow-brand-600/30 transition transform active:scale-95"
+              className="w-full bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 disabled:opacity-60 text-white rounded-xl px-4 py-3.5 text-base font-bold flex items-center justify-center gap-2 shadow-lg shadow-brand-600/30 transition transform active:scale-95"
             >
               <Lock size={20} />
-              {cargando ? "Verificando acceso…" : "Ingresar al Banco"}
+              {cargando ? "Enviando código de confirmación…" : "Ingresar al Banco"}
             </button>
             <div className="text-center">
               <button

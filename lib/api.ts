@@ -151,6 +151,30 @@ export function login(email: string, password: string) {
   });
 }
 
+export type LoginIniciarResponse = {
+  requiere_2fa: boolean;
+  id_usuario: string;
+  nombre: string;
+  email_enmascarado: string;
+  telefono_enmascarado: string;
+  mensaje: string;
+  codigo_debug?: string | null;
+};
+
+export function solicitarCodigoLogin(identificador: string, password: string, telefono?: string) {
+  return request<LoginIniciarResponse>(`${IDENTITY_URL}/auth/login/solicitar-codigo`, {
+    method: "POST",
+    body: JSON.stringify({ identificador, password, telefono }),
+  });
+}
+
+export function confirmarCodigoLogin(id_usuario: string, codigo: string) {
+  return request<LoginResponse>(`${IDENTITY_URL}/auth/login/confirmar-codigo`, {
+    method: "POST",
+    body: JSON.stringify({ id_usuario, codigo }),
+  });
+}
+
 export type EvaluacionRiesgo = {
   id_evaluacion: string;
   nivel_riesgo: string;
