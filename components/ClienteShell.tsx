@@ -19,6 +19,7 @@ import {
 import Link from "next/link";
 import { Sesion, cerrarSesion, obtenerSesion } from "@/lib/auth";
 import { NotificationBell } from "@/components/NotificationBell";
+import { ClaveDinamicaWidget } from "@/components/ClaveDinamicaWidget";
 
 const CLIENTE_LINKS = [
   { href: "/cliente", label: "Inicio", icon: Home },
@@ -190,6 +191,7 @@ export function ClienteShell({ children }: { children: React.ReactNode }) {
                 </p>
                 <p className="text-xs text-neutral-400 font-mono">{sesion.usuario.email}</p>
               </div>
+              <ClaveDinamicaWidget idUsuario={sesion.usuario.id_usuario} />
               <NotificationBell idUsuario={sesion.usuario.id_usuario} />
               <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-neutral-800 to-neutral-700 border border-white/20 text-white font-bold text-sm flex items-center justify-center shadow">
                 {sesion.usuario.nombre.charAt(0).toUpperCase()}
