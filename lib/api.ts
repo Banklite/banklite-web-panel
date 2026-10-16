@@ -784,3 +784,184 @@ export function createAuditoriaCompliance(data: { id_sospecha: string; auditor?:
     body: JSON.stringify(data),
   });
 }
+
+// ============================================================================
+// NUEVAS APIS ESTILO NEQUI Y NOTIFICACIONES
+// ============================================================================
+
+// 1. Notificaciones (Email Gmail/Resend y WhatsApp)
+export function getNotificationChannelsStatus() {
+  return request<{
+    gmail_configured: boolean;
+    resend_configured: boolean;
+    whatsapp_configured: boolean;
+    email_sandbox_active: boolean;
+    whatsapp_sandbox_active: boolean;
+  }>(`${NOTIFICATION_URL}/notifications/channels/status`);
+}
+
+export function sendDirectEmail(data: { to_email: string; subject: string; message: string; html_content?: string }) {
+  return request<{ ok: boolean; canal: string; detalle: string }>(`${NOTIFICATION_URL}/notifications/send-email`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function sendDirectWhatsApp(data: { to_phone: string; message: string }) {
+  return request<{ ok: boolean; canal: string; detalle: string; phone: string }>(`${NOTIFICATION_URL}/notifications/send-whatsapp`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+// 2. Bolsillos de Ahorro (Nequi Pockets)
+export type Bolsillo = {
+  id_bolsillo: string;
+  id_cuenta: string;
+  nombre: string;
+  emoji: string;
+  monto_meta: number | null;
+  saldo_actual: number;
+  bloqueado: boolean;
+  fecha_creacion: string;
+  progreso_porcentaje?: number | null;
+};
+
+export function listBolsillos(idCuenta: string) {
+  return request<Bolsillo[]>(`${ACCOUNT_URL}/accounts/${idCuenta}/bolsillos`);
+}
+
+export function createBolsillo(idCuenta: string, data: { nombre: string; emoji?: string; monto_meta?: number; bloqueado?: boolean }) {
+  return request<Bolsillo>(`${ACCOUNT_URL}/accounts/${idCuenta}/bolsillos`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function meterPlataBolsillo(idBolsillo: string, monto: number) {
+  return request<Bolsillo>(`${ACCOUNT_URL}/accounts/bolsillos/${idBolsillo}/meter-plata`, {
+    method: "POST",
+    body: JSON.stringify({ monto }),
+  });
+}
+
+export function sacarPlataBolsillo(idBolsillo: string, monto: number) {
+  return request<Bolsillo>(`${ACCOUNT_URL}/accounts/bolsillos/${idBolsillo}/sacar-plata`, {
+    method: "POST",
+    body: JSON.stringify({ monto }),
+  });
+}
+
+export function deleteBolsillo(idBolsillo: string) {
+  return fetch(`${ACCOUNT_URL}/accounts/bolsillos/${idBolsillo}`, { method: "DELETE" });
+}
+
+// 3. Saca Plata / Retiro sin Tarjeta (Nequi Cashout)
+export type TokenRetiro = {
+  id_token: string;
+  id_cuenta: string;
+  codigo_retiro: string;
+  monto: number;
+  estado: string;
+  fecha_creacion: string;
+  fecha_expiracion: string;
+};
+
+export function generarTokenRetiro(idCuenta: string, monto: number) {
+  return request<TokenRetiro>(`${ACCOUNT_URL}/accounts/${idCuenta}/retiro-token`, {
+    method: "POST",
+    body: JSON.stringify({ monto }),
+  });
+}
+
+// 4. Servicios Públicos y Facturas (Nequi "Paga tus servicios")
+export type ConvenioServicio = {
+  codigo: string;
+  nombre: string;
+  categoria: string;
+  logo_emoji: string;
+};
+
+export function listConveniosServicios() {
+  return request<ConvenioServicio[]>(`${TRANSFER_URL}/transfers/servicios/convenios`);
+}
+
+export function consultarFacturaServicio(convenioCodigo: string, referenciaPago: string) {
+  return request<{
+    convenio_codigo: string;
+    nombre_convenio: string;
+    referencia_pago: string;
+    monto: number;
+    fecha_vencimiento: string;
+    estado_factura: string;
+  }>(`${TRANSFER_URL}/transfers/servicios/consultar`, {
+    method: "POST",
+    body: JSON.stringify({ convenio_codigo: convenioCodigo, referencia_pago: referenciaPago }),
+  });
+}
+
+export function pagarServicioPublico(data: { id_cuenta_origen: string; convenio_codigo: string; referencia_pago: string; monto: number }) {
+  return request<{
+    id_pago: string;
+    comprobante: string;
+    nombre_convenio: string;
+    referencia_pago: string;
+    monto: number;
+    fecha_pago: string;
+    estado: string;
+  }>(`${TRANSFER_URL}/transfers/servicios/pagar`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+// 5. Pagos con Código QR (Nequi QR / Bre-B)
+export function generarCodigoQR(data: { id_cuenta_destino: string; nombre_titular: string; monto?: number; concepto?: string }) {
+  return request<{
+    qr_payload: string;
+    qr_token: string;
+    cuenta_destino: string;
+    nombre_titular: string;
+    monto: number | null;
+    concepto: string | null;
+  }>(`${TRANSFER_URL}/transfers/qr/generar`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function decodificarQR(qrPayload: string) {
+  return request<{
+    valido: boolean;
+    id_cuenta_destino: string;
+    nombre_titular: string;
+    token_qr: string;
+    monto_sugerido: number | null;
+    concepto: string | null;
+  }>(`${TRANSFER_URL}/transfers/qr/decodificar?qr_payload=${encodeURIComponent(qrPayload)}`, {
+    method: "POST",
+  });
+}
+
+export function pagarConQR(data: { id_cuenta_origen: string; qr_payload: string; monto?: number }) {
+  return request<any>(`${TRANSFER_URL}/transfers/qr/pagar`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+// 6. Clave Dinámica / OTP (2FA)
+export function generarOTP(idUsuario: string, operacion = "general") {
+  return request<{ valido: boolean; mensaje: string; codigo_debug?: string }>(`${IDENTITY_URL}/auth/otp/generar`, {
+    method: "POST",
+    body: JSON.stringify({ id_usuario: idUsuario, operacion }),
+  });
+}
+
+export function validarOTP(idUsuario: string, codigo: string, operacion = "general") {
+  return request<{ valido: boolean; mensaje: string }>(`${IDENTITY_URL}/auth/otp/validar`, {
+    method: "POST",
+    body: JSON.stringify({ id_usuario: idUsuario, codigo, operacion }),
+  });
+}
+
