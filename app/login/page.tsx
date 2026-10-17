@@ -347,6 +347,11 @@ function LoginPageInner() {
   async function handleRegistro(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    const cleanTel = telefonoLocal.replace(/\D/g, "");
+    if (!cleanTel || cleanTel.length < 10) {
+      setError("El número de teléfono celular es obligatorio y debe tener 10 dígitos (ej: 300 123 4567). Este número será tu cuenta bancaria y donde recibirás tus notificaciones de WhatsApp y SMS.");
+      return;
+    }
     if (esMenor && (!representanteNombre.trim() || representanteDocumento.length < 6 || representanteTelefono.length < 7)) {
       setError("Para menores de 18 años debes ingresar nombre, documento y teléfono del representante legal.");
       return;
@@ -673,17 +678,27 @@ function LoginPageInner() {
               </div>
 
               <div>
-                <DarkLabel>Teléfono (WhatsApp)</DarkLabel>
+                <DarkLabel>Número de Celular (Obligatorio · Tu Cuenta BankLite)</DarkLabel>
                 <div className="flex gap-2">
                   <select
                     value={telefonoPrefix}
                     onChange={(e) => setTelefonoPrefix(e.target.value)}
-                    className="bg-white/[0.06] border border-white/[0.12] rounded-2xl px-3 py-3.5 text-sm text-white focus:outline-none appearance-none"
+                    className="bg-white/[0.06] border border-white/[0.12] rounded-2xl px-3 py-3.5 text-sm text-white focus:outline-none appearance-none font-bold"
                   >
                     {PAISES.map((p) => <option key={p.code} value={PAIS_PREFIJOS[p.code]}>{p.label}</option>)}
                   </select>
-                  <DarkInput type="tel" required placeholder="3001234567" value={telefonoLocal} onChange={(e) => setTelefonoLocal(e.target.value.replace(/\D/g, ""))} />
+                  <DarkInput
+                    type="tel"
+                    required
+                    maxLength={10}
+                    placeholder="3001234567"
+                    value={telefonoLocal}
+                    onChange={(e) => setTelefonoLocal(e.target.value.replace(/\D/g, ""))}
+                  />
                 </div>
+                <p className="text-[11px] text-cyan-400 font-semibold mt-1.5 flex items-center gap-1">
+                  <span>📱 Tu celular será tu número de cuenta bancaria y donde recibirás tus WhatsApp y SMS.</span>
+                </p>
               </div>
 
               <div>

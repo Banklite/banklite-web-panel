@@ -176,10 +176,9 @@ export default function ClienteAppleDashboard() {
                 >
                   {mostrarSaldo ? formatCOP(ledger?.saldo_actual) : "$ ••••••••"}
                 </p>
-                <p className="text-xs text-neutral-400 mt-2 font-mono">
-                  {cuenta
-                    ? `${cuenta.tipo_cuenta.toUpperCase()} · ${maskNumeroCuenta(cuenta.numero_cuenta)}`
-                    : "Sin cuenta activa"}
+                <p className="text-xs text-neutral-400 mt-2 font-mono flex items-center gap-1.5">
+                  <span className="text-neutral-500">📱 Cuenta (Celular):</span>
+                  <span className="text-emerald-400 font-bold">{cuenta ? cuenta.numero_cuenta : "Sin cuenta"}</span>
                 </p>
               </div>
             )}
@@ -361,14 +360,17 @@ export default function ClienteAppleDashboard() {
               </span>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1">
+            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1.5">
               <span className="text-[10px] uppercase font-bold text-neutral-400 tracking-wider">
-                Número de Cuenta (para recibir dinero)
+                Número de Cuenta (Tu Celular para recibir dinero)
               </span>
-              <p className="text-2xl font-black font-mono tracking-wider text-white">
-                {formatNumeroCuenta(cuenta.numero_cuenta)}
+              <p className="text-2xl font-black font-mono tracking-wider text-emerald-400">
+                📱 {cuenta.numero_cuenta}
               </p>
-              <p className="text-xs text-neutral-400">
+              <p className="text-xs text-neutral-300">
+                Tu número de celular es tu número de cuenta oficial BankLite y tu llave Bre-B registrada.
+              </p>
+              <p className="text-xs text-neutral-400 pt-1">
                 Tipo: {cuenta.tipo_cuenta.charAt(0).toUpperCase() + cuenta.tipo_cuenta.slice(1)} • Moneda: {cuenta.moneda}
               </p>
             </div>

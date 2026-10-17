@@ -90,6 +90,15 @@ export default function ClienteQRBreBPage() {
   const [qrComprobanteDataUrl, setQrComprobanteDataUrl] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Cámara en vivo
+  const [camaraActiva, setCamaraActiva] = useState(false);
+  const [iniciandoCamara, setIniciandoCamara] = useState(false);
+  const [camaraFacing, setCamaraFacing] = useState<"environment" | "user">("environment");
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const animFrameRef = useRef<number | null>(null);
+
   // ---------- TAB 2: GENERAR QR (COBRAR) ----------
   const [montoCobro, setMontoCobro] = useState<string>("");
   const [conceptoCobro, setConceptoCobro] = useState<string>("");
@@ -190,6 +199,145 @@ export default function ClienteQRBreBPage() {
       handleGenerarMiQR();
     }
   }, [tab, cuentaActiva]);
+
+  // Detener cámara en vivo
+  const detenerCamara = () => {
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    setCamaraActiva(false);
+    setIniciandoCamara(false);
+  };
+
+  // Limpiar cámara al desmontar
+  useEffect(() => {
+    return () => {
+      detenerCamara();
+    };
+  }, []);
+
+  // Iniciar cámara en vivo
+  async function iniciarCamara(facing: "environment" | "user" = camaraFacing) {
+    setErrorLecturaQR(null);
+    setIniciandoCamara(true);
+    setCamaraActiva(true);
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+
+    try {
+      if (typeof navigator === "undefined" || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Tu navegador no soporta acceso directo a la cámara. Usa la opción de subir foto.");
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: facing,
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+        audio: false,
+      });
+
+      streamRef.current = stream;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.setAttribute("playsinline", "true");
+        await videoRef.current.play();
+        setIniciandoCamara(false);
+        iniciarEscaneoFrames();
+      }
+    } catch (err: unknown) {
+      console.error("Error al iniciar cámara:", err);
+      detenerCamara();
+      setErrorLecturaQR(
+        err instanceof Error
+          ? `No se pudo acceder a la cámara: ${err.message}`
+          : "Permiso de cámara denegado o dispositivo no disponible."
+      );
+    }
+  }
+
+  function alternarCamara() {
+    const nextFacing = camaraFacing === "environment" ? "user" : "environment";
+    setCamaraFacing(nextFacing);
+    iniciarCamara(nextFacing);
+  }
+
+  // Bucle de detección continua en video
+  async function iniciarEscaneoFrames() {
+    let jsQRModule: any = null;
+
+    const tick = async () => {
+      const video = videoRef.current;
+      if (!video || video.readyState !== video.HAVE_ENOUGH_DATA) {
+        animFrameRef.current = requestAnimationFrame(tick);
+        return;
+      }
+
+      let qrDetectado: string | null = null;
+
+      // 1. BarcodeDetector nativo
+      if (typeof window !== "undefined" && "BarcodeDetector" in window) {
+        try {
+          const detector = new (window as any).BarcodeDetector({ formats: ["qr_code"] });
+          const detected = await detector.detect(video);
+          if (detected && detected.length > 0 && detected[0].rawValue) {
+            qrDetectado = detected[0].rawValue;
+          }
+        } catch {}
+      }
+
+      // 2. Fallback con canvas y jsQR
+      if (!qrDetectado) {
+        try {
+          if (!canvasRef.current && typeof document !== "undefined") {
+            canvasRef.current = document.createElement("canvas");
+          }
+          if (canvasRef.current) {
+            const canvas = canvasRef.current;
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            const ctx = canvas.getContext("2d", { willReadFrequently: true });
+            if (ctx) {
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+              if (!jsQRModule) {
+                jsQRModule = (await import("jsqr")).default;
+              }
+              const code = jsQRModule(imgData.data, imgData.width, imgData.height);
+              if (code && code.data) {
+                qrDetectado = code.data;
+              }
+            }
+          }
+        } catch (err) {
+          console.error("Error en frame jsQR:", err);
+        }
+      }
+
+      if (qrDetectado) {
+        detenerCamara();
+        procesarPayloadQR(qrDetectado);
+        return;
+      }
+
+      animFrameRef.current = requestAnimationFrame(tick);
+    };
+
+    animFrameRef.current = requestAnimationFrame(tick);
+  }
 
   // ---------- LEER QR MEDIANTE FOTO (JSQR + BarcodeDetector) ----------
   async function handleSeleccionarFoto(file: File) {
@@ -480,7 +628,7 @@ export default function ClienteQRBreBPage() {
                 </div>
               )}
 
-              {/* ÁREA PARA SUBIR FOTO DEL QR */}
+              {/* ÁREA PARA SUBIR FOTO DEL QR (HIDDEN INPUT) */}
               <input
                 ref={fileInputRef}
                 type="file"
@@ -493,28 +641,116 @@ export default function ClienteQRBreBPage() {
                 }}
               />
 
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-white/15 hover:border-cyan-400/50 bg-white/[0.02] hover:bg-white/[0.05] rounded-3xl p-8 text-center cursor-pointer transition-all space-y-3 group"
-              >
-                <div className="h-16 w-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform shadow-lg shadow-cyan-500/10">
-                  {analizandoFoto ? <Loader2 size={30} className="animate-spin" /> : <Upload size={30} />}
+              {/* VISOR DE CÁMARA EN VIVO */}
+              {camaraActiva ? (
+                <div className="relative rounded-3xl overflow-hidden bg-black border-2 border-cyan-400/60 shadow-[0_0_50px_rgba(6,182,212,0.25)] p-1 animate-fade-in">
+                  <div className="relative aspect-[4/3] sm:aspect-video w-full rounded-[22px] overflow-hidden bg-neutral-950 flex items-center justify-center">
+                    <video
+                      ref={videoRef}
+                      playsInline
+                      autoPlay
+                      muted
+                      className="w-full h-full object-cover"
+                    />
+
+                    {/* Overlay de Guía de Escaneo QR con Láser */}
+                    <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
+                      <div className="relative w-56 h-56 sm:w-64 sm:h-64 border-2 border-cyan-400/70 rounded-3xl overflow-hidden shadow-[0_0_30px_rgba(6,182,212,0.3)]">
+                        {/* Láser escaneador animado */}
+                        <div className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_12px_#22d3ee] laser-scanner" />
+                        {/* Esquinas decorativas Apple */}
+                        <div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-cyan-300 rounded-tl-sm" />
+                        <div className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-cyan-300 rounded-tr-sm" />
+                        <div className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-cyan-300 rounded-bl-sm" />
+                        <div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-cyan-300 rounded-br-sm" />
+                      </div>
+                      <p className="text-[11px] font-bold text-white/90 drop-shadow mt-4 bg-black/60 px-3 py-1 rounded-full border border-white/10">
+                        Apunta la cámara al código QR para leerlo
+                      </p>
+                    </div>
+
+                    {/* Botones de control de cámara (arriba) */}
+                    <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-20">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[11px] font-bold text-emerald-400">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        {iniciandoCamara ? "Iniciando cámara..." : "Cámara en Vivo"}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={alternarCamara}
+                          className="p-2 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/15 text-white transition flex items-center gap-1 text-xs"
+                          title="Cambiar cámara"
+                        >
+                          <RefreshCw size={14} />
+                          <span className="text-[10px] hidden sm:inline">Voltear</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={detenerCamara}
+                          className="p-2 rounded-full bg-black/60 hover:bg-red-500/80 backdrop-blur-md border border-white/15 text-white transition flex items-center gap-1 text-xs"
+                          title="Cerrar cámara"
+                        >
+                          <X size={15} />
+                          <span className="text-[10px] hidden sm:inline">Cerrar</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-extrabold text-white">
-                    {analizandoFoto ? "Analizando imagen y decodificando QR…" : "Toca aquí para subir o tomar foto del QR"}
-                  </p>
-                  <p className="text-xs text-neutral-500 mt-1">
-                    Soporta capturas de pantalla, fotos de galería o cámara (PNG, JPG, WEBP)
-                  </p>
+              ) : (
+                /* DOS MÉTODOS: ABRIR CÁMARA O SUBIR FOTO */
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Tarjeta 1: Abrir Cámara en Vivo */}
+                  <div
+                    onClick={() => iniciarCamara()}
+                    className="border-2 border-cyan-500/30 hover:border-cyan-400 bg-gradient-to-b from-cyan-500/10 to-transparent hover:bg-cyan-500/15 rounded-3xl p-6 text-center cursor-pointer transition-all space-y-3 group shadow-lg shadow-cyan-500/5 flex flex-col justify-between"
+                  >
+                    <div className="h-14 w-14 rounded-2xl bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform shadow-lg shadow-cyan-500/20">
+                      <Camera size={28} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-extrabold text-white">
+                        Abrir Cámara en Vivo
+                      </p>
+                      <p className="text-xs text-neutral-400 mt-1">
+                        Apunta tu cámara web o del celular para escanear en tiempo real
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-black transition shadow"
+                    >
+                      <Camera size={14} /> Escanear con cámara
+                    </button>
+                  </div>
+
+                  {/* Tarjeta 2: Subir Foto o Captura */}
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed border-white/15 hover:border-emerald-400/50 bg-white/[0.02] hover:bg-white/[0.05] rounded-3xl p-6 text-center cursor-pointer transition-all space-y-3 group flex flex-col justify-between"
+                  >
+                    <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform shadow-lg shadow-emerald-500/10">
+                      {analizandoFoto ? <Loader2 size={28} className="animate-spin" /> : <Upload size={28} />}
+                    </div>
+                    <div>
+                      <p className="text-sm font-extrabold text-white">
+                        {analizandoFoto ? "Analizando imagen…" : "Subir Foto o Captura"}
+                      </p>
+                      <p className="text-xs text-neutral-400 mt-1">
+                        Sube una foto de galería o captura de pantalla con código QR
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/[0.08] text-xs font-bold text-white hover:bg-white/[0.15] transition"
+                    >
+                      <Upload size={14} /> Seleccionar archivo
+                    </button>
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/[0.08] text-xs font-bold text-white hover:bg-white/[0.15] transition"
-                >
-                  <Camera size={14} /> Seleccionar archivo o foto
-                </button>
-              </div>
+              )}
 
               {/* O PEGAR CÓDIGO MANUAL */}
               <div className="relative flex items-center justify-center">

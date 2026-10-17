@@ -98,3 +98,23 @@
   background-size: 200% 100%;
   animation: shimmer 4s infinite linear;
 }
+
+/* Camera QR Laser Scanner */
+@keyframes laserScan {
+  0% {
+    top: 6%;
+    opacity: 0.8;
+  }
+  50% {
+    top: 92%;
+    opacity: 1;
+  }
+  100% {
+    top: 6%;
+    opacity: 0.8;
+  }
+}
+
+.laser-scanner {
+  animation: laserScan 2.4s ease-in-out infinite;
+}

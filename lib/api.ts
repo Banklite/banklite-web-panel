@@ -104,6 +104,11 @@ export function reverificarUsuario(id_usuario: string) {
 
 
 export function updateUsuario(id_usuario: string, data: {
+  nombre?: string;
+  apellido?: string;
+  email?: string;
+  pais_residencia?: string;
+  servicio_solicitado?: string;
   cedula?: string;
   fecha_nacimiento?: string;
   fecha_expedicion?: string;
