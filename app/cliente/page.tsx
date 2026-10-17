@@ -18,6 +18,7 @@ import {
   QrCode,
   Copy,
   Check,
+  Receipt,
 } from "lucide-react";
 import {
   Cuenta,
@@ -349,11 +350,11 @@ export default function ClienteAppleDashboard() {
             className="apple-glass-card rounded-2xl p-5 active:scale-[0.97] group flex flex-col justify-between gap-4"
           >
             <div className="h-12 w-12 rounded-2xl bg-teal-50 text-teal-600 border border-teal-200/80 flex items-center justify-center group-hover:scale-105 transition-transform shadow-sm">
-              <FileText size={22} />
+              <Receipt size={22} />
             </div>
             <div>
-              <p className="font-bold text-sm text-slate-900">Extractos</p>
-              <p className="text-xs text-slate-500 mt-0.5">Historial contable</p>
+              <p className="font-bold text-sm text-slate-900">Movimientos</p>
+              <p className="text-xs text-slate-500 mt-0.5">Tipo Nequi & QR</p>
             </div>
           </Link>
 

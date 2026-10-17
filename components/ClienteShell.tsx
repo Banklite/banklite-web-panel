@@ -187,7 +187,7 @@ export function ClienteShell({ children }: { children: React.ReactNode }) {
               Banca Digital Segura • Bre-B
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2.5 sm:gap-3.5">
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-bold text-slate-900 tracking-tight">
                   {nombreCompleto || sesion.usuario.nombre}
@@ -199,6 +199,15 @@ export function ClienteShell({ children }: { children: React.ReactNode }) {
               <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-slate-900 to-slate-700 text-white font-bold text-sm flex items-center justify-center shadow-sm">
                 {sesion.usuario.nombre.charAt(0).toUpperCase()}
               </div>
+              {/* Botón Cerrar Sesión en Header */}
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-extrabold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100/90 border border-rose-200/90 transition-all active:scale-[0.97] shadow-sm ml-1"
+                title="Cerrar sesión de BankLite"
+              >
+                <LogOut size={15} />
+                <span className="hidden md:inline">Cerrar sesión</span>
+              </button>
             </div>
           </div>
         </header>
