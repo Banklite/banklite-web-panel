@@ -1,42 +1,40 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { obtenerSesion } from "@/lib/auth";
-import {
-  getLedgerBalance,
-  listAccounts,
-  listCards,
-  listTransfers,
-  Cuenta,
-  Tarjeta,
-  CuentaContable,
-  Transferencia,
-} from "@/lib/api";
+import Link from "next/link";
 import {
   CreditCard,
   ArrowRightLeft,
   FileText,
-  User,
-  Phone,
   ShieldCheck,
   Eye,
   EyeOff,
-  Plus,
-  Wallet,
-  QrCode,
-  Smartphone,
+  User,
+  ArrowUpRight,
   Repeat,
   Sparkles,
-  ArrowUpRight,
-  TrendingUp,
+  Smartphone,
   KeyRound,
+  QrCode,
+  Copy,
+  Check,
 } from "lucide-react";
-import Link from "next/link";
+import {
+  Cuenta,
+  Tarjeta,
+  Transferencia,
+  CuentaContable,
+  listAccounts,
+  listCards,
+  listTransfers,
+  getLedgerBalance,
+} from "@/lib/api";
+import { obtenerSesion } from "@/lib/auth";
 
-function formatCOP(valor: string | number | undefined | null): string {
-  if (valor == null) return "—";
-  const num = typeof valor === "string" ? parseFloat(valor) : valor;
-  if (isNaN(num)) return "—";
+function formatCOP(v: number | string | null | undefined): string {
+  if (v == null) return "$ 0";
+  const num = typeof v === "string" ? parseFloat(v) : v;
+  if (isNaN(num)) return "$ 0";
   return new Intl.NumberFormat("es-CO", {
     style: "currency",
     currency: "COP",
@@ -52,11 +50,11 @@ function maskNumeroCuenta(nc: string | null | undefined): string {
 
 function formatNumeroCuenta(nc: string | null | undefined): string {
   if (!nc) return "Sin asignar";
-  return nc.replace(/(\d{4})(\d{3})(\d{3})/, "$1 $2 $3") || nc;
+  return nc.replace(/(\d{3})(\d{3})(\d{4})/, "$1 $2 $3") || nc;
 }
 
 function maskNumeroTarjeta(nt: string | null | undefined): string {
-  if (!nt) return "•••• •••• •••• ••••";
+  if (!nt) return "4532 •••• •••• 9012";
   const c = nt.replace(/\s/g, "");
   return `4532 •••• •••• ${c.slice(-4)}`;
 }
@@ -70,6 +68,7 @@ export default function ClienteAppleDashboard() {
   const [mostrarSaldo, setMostrarSaldo] = useState(true);
   const [cardFlipped, setCardFlipped] = useState(false);
   const [cargando, setCargando] = useState(true);
+  const [copiadoCuenta, setCopiadoCuenta] = useState(false);
 
   useEffect(() => {
     const s = obtenerSesion();
@@ -110,20 +109,28 @@ export default function ClienteAppleDashboard() {
     cargar();
   }, []);
 
+  function handleCopiarNumero() {
+    if (cuenta?.numero_cuenta) {
+      navigator.clipboard.writeText(cuenta.numero_cuenta);
+      setCopiadoCuenta(true);
+      setTimeout(() => setCopiadoCuenta(false), 2000);
+    }
+  }
+
   return (
-    <div className="space-y-8 max-w-4xl mx-auto pb-12 font-sans text-neutral-100">
-      {/* Encabezado con Estilo Apple OS */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-b border-white/[0.08] pb-6">
+    <div className="space-y-8 max-w-5xl mx-auto pb-12 font-sans text-slate-900">
+      {/* Encabezado con Estilo Apple OS Light Glass */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 border-b border-slate-200/80 pb-6">
         <div className="flex items-center gap-4">
-          <div className="h-14 w-14 rounded-2xl bg-gradient-to-tr from-neutral-800 to-neutral-700 border border-white/10 flex items-center justify-center text-white text-2xl font-bold shadow-xl">
+          <div className="h-14 w-14 rounded-2xl bg-gradient-to-tr from-slate-900 to-slate-800 text-white flex items-center justify-center text-2xl font-black shadow-lg shadow-slate-900/15">
             {nombre.charAt(0).toUpperCase()}
           </div>
           <div>
-            <div className="inline-flex items-center gap-1.5 text-xs text-emerald-400 font-semibold uppercase tracking-wider">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Cuenta Verificada 2FA
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-[11px] text-emerald-700 font-bold uppercase tracking-wider">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Cuenta Verificada 2FA & Bre-B
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight apple-text-gradient">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 mt-0.5">
               Hola, {nombre}
             </h1>
           </div>
@@ -133,14 +140,14 @@ export default function ClienteAppleDashboard() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setMostrarSaldo(!mostrarSaldo)}
-            className="apple-glass px-4 py-2.5 rounded-full text-xs font-semibold text-neutral-300 hover:text-white flex items-center gap-2 transition"
+            className="apple-glass px-4 py-2.5 rounded-full text-xs font-bold text-slate-700 hover:text-slate-950 flex items-center gap-2 transition active:scale-[0.97]"
           >
-            {mostrarSaldo ? <EyeOff size={16} /> : <Eye size={16} />}
+            {mostrarSaldo ? <EyeOff size={15} /> : <Eye size={15} />}
             <span>{mostrarSaldo ? "Ocultar saldos" : "Mostrar saldos"}</span>
           </button>
           <Link
             href="/cliente/perfil"
-            className="apple-glass-button px-4 py-2.5 rounded-full text-xs font-semibold text-white flex items-center gap-1.5 shadow"
+            className="apple-glass px-4 py-2.5 rounded-full text-xs font-bold text-slate-700 hover:text-slate-950 flex items-center gap-1.5 shadow-sm transition active:scale-[0.97]"
           >
             <User size={15} />
             <span>Mi Perfil</span>
@@ -148,58 +155,72 @@ export default function ClienteAppleDashboard() {
         </div>
       </div>
 
-      {/* SECCIÓN PRINCIPAL: Saldo Apple Titanium + Tarjeta 3D */}
+      {/* SECCIÓN PRINCIPAL: Saldo Apple White Glass Glow + Tarjeta 3D */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         {/* Tarjeta de Saldo Disponible (7 columnas) */}
-        <div className="lg:col-span-7 apple-glass-card rounded-3xl p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden">
+        <div className="lg:col-span-7 apple-glass-glow-emerald rounded-3xl p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden">
           <div className="relative z-10 space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs uppercase tracking-widest text-neutral-400 font-bold">
-                Saldo Disponible
+              <span className="text-[11px] uppercase tracking-widest text-slate-500 font-bold">
+                Saldo Disponible en Cuenta
               </span>
-              <span className="text-xs font-mono px-3 py-1 rounded-full bg-white/10 text-neutral-300 font-semibold">
+              <span className="text-xs font-mono px-3 py-1 rounded-full bg-emerald-100/70 border border-emerald-200/60 text-emerald-800 font-bold">
                 {cuenta ? cuenta.moneda : "COP"}
               </span>
             </div>
 
             {cargando ? (
               <div className="animate-pulse space-y-3 py-2">
-                <div className="h-14 bg-white/10 rounded-2xl w-3/4" />
-                <div className="h-4 bg-white/5 rounded w-1/3" />
+                <div className="h-14 bg-slate-200/70 rounded-2xl w-3/4" />
+                <div className="h-4 bg-slate-200/50 rounded w-1/3" />
               </div>
             ) : (
               <div>
                 <p
-                  className={`text-4xl sm:text-5xl font-black tracking-tight leading-none text-white transition-all duration-300 ${
+                  className={`text-4xl sm:text-5xl font-black tracking-tight leading-none text-slate-950 transition-all duration-300 ${
                     mostrarSaldo ? "" : "blur-md select-none opacity-60"
                   }`}
                 >
                   {mostrarSaldo ? formatCOP(ledger?.saldo_actual) : "$ ••••••••"}
                 </p>
-                <p className="text-xs text-neutral-400 mt-2 font-mono flex items-center gap-1.5">
-                  <span className="text-neutral-500">📱 Cuenta (Celular):</span>
-                  <span className="text-emerald-400 font-bold">{cuenta ? cuenta.numero_cuenta : "Sin cuenta"}</span>
-                </p>
+
+                <div className="flex flex-wrap items-center gap-2 mt-3 pt-2">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100/90 border border-slate-200 text-xs font-mono">
+                    <span className="text-slate-500 font-sans font-semibold">📱 Cuenta / Celular:</span>
+                    <span className="text-slate-900 font-black">{cuenta ? cuenta.numero_cuenta : "Sin cuenta"}</span>
+                  </div>
+
+                  {cuenta && (
+                    <button
+                      onClick={handleCopiarNumero}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-[11px] font-bold text-slate-700 hover:text-slate-900 hover:border-slate-300 transition active:scale-[0.97]"
+                      title="Copiar número de cuenta"
+                    >
+                      {copiadoCuenta ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
+                      <span>{copiadoCuenta ? "Copiado" : "Copiar"}</span>
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>
 
-          <div className="relative z-10 pt-6 mt-6 border-t border-white/10 flex items-center justify-between text-xs text-neutral-400">
-            <div className="flex items-center gap-1.5 text-neutral-300 font-medium">
-              <ShieldCheck size={16} className="text-emerald-400" />
-              <span>Protegido por Fogafín & BankLite</span>
+          <div className="relative z-10 pt-6 mt-6 border-t border-slate-200/80 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-1.5 text-slate-600 font-semibold">
+              <ShieldCheck size={16} className="text-emerald-600" />
+              <span>Protegido por Fogafín & Red Bre-B</span>
             </div>
             <Link
               href="/cliente/transferencias"
-              className="text-white hover:text-emerald-400 font-bold flex items-center gap-1 group"
+              className="apple-primary-button rounded-full px-5 py-2 font-bold text-xs flex items-center gap-1 group shadow"
             >
-              Transferir
+              <span>Transferir</span>
               <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </Link>
           </div>
         </div>
 
-        {/* Tarjeta Bancaria Interactiva Apple Titanium (5 columnas) */}
+        {/* Tarjeta Bancaria Interactiva Apple White Titanium (5 columnas) */}
         <div className="lg:col-span-5 flex flex-col justify-between">
           <div className="perspective-1000 w-full h-full min-h-[220px]">
             <div
@@ -208,55 +229,58 @@ export default function ClienteAppleDashboard() {
                 cardFlipped ? "rotate-y-180" : ""
               }`}
             >
-              {/* Cara Frontal: Apple Titanium Card */}
-              <div className="w-full h-full min-h-[220px] rounded-3xl p-6 flex flex-col justify-between apple-glass-card border border-white/20 shadow-xl relative overflow-hidden select-none">
+              {/* Cara Frontal: Apple White Titanium Card */}
+              <div className="w-full h-full min-h-[220px] rounded-3xl p-6 flex flex-col justify-between apple-white-titanium shadow-2xl relative overflow-hidden select-none">
                 <div className="absolute inset-0 titanium-shimmer pointer-events-none" />
 
                 <div className="flex items-start justify-between relative z-10">
-                  <span className="font-bold tracking-tight text-white text-base">BankLite</span>
+                  <span className="font-extrabold tracking-tight text-slate-900 text-lg">BankLite</span>
                   <div className="flex items-center gap-2">
-                    <div className="h-6 w-8 rounded bg-gradient-to-br from-amber-300 via-amber-400 to-amber-600 shadow-inner" />
-                    <span className="text-neutral-400 text-sm font-bold">)))</span>
+                    <div className="h-7 w-9 rounded-lg bg-gradient-to-br from-amber-200 via-amber-300 to-amber-500 shadow-sm border border-amber-400/40" />
+                    <span className="text-slate-400 text-sm font-bold tracking-widest">)))</span>
                   </div>
                 </div>
 
                 <div className="space-y-3 relative z-10">
-                  <p className="font-mono text-lg sm:text-xl tracking-[0.2em] text-neutral-100 font-semibold">
+                  <p className="font-mono text-lg sm:text-xl tracking-[0.2em] text-slate-800 font-bold">
                     {tarjeta ? maskNumeroTarjeta(tarjeta.numero_tarjeta) : "4532 •••• •••• 9012"}
                   </p>
-                  <div className="flex justify-between items-end text-[10px] text-neutral-400 uppercase tracking-widest">
-                    <span className="font-bold text-neutral-200 text-xs">{nombre}</span>
-                    <span className="font-mono text-neutral-300 text-xs">10/30</span>
+                  <div className="flex justify-between items-end text-[10px] text-slate-500 uppercase tracking-widest">
+                    <span className="font-black text-slate-800 text-xs">{nombre}</span>
+                    <span className="font-mono text-slate-600 text-xs font-bold">10/30</span>
                   </div>
                 </div>
               </div>
 
               {/* Cara Trasera: Reverso con CVV Dinámico */}
-              <div className="w-full h-full min-h-[220px] rounded-3xl py-6 flex flex-col justify-between apple-glass-card border border-white/20 shadow-xl absolute inset-0 rotate-y-180 backface-hidden select-none">
-                <div className="w-full h-9 bg-neutral-900 border-y border-white/10 mt-1" />
+              <div className="w-full h-full min-h-[220px] rounded-3xl py-6 flex flex-col justify-between apple-white-titanium shadow-2xl absolute inset-0 rotate-y-180 backface-hidden select-none">
+                <div className="w-full h-10 bg-slate-800 mt-1 shadow-inner" />
                 <div className="px-6 space-y-2">
-                  <div className="flex justify-between items-center bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
-                    <span className="text-[10px] text-neutral-400 uppercase font-bold">CVV Dinámico</span>
-                    <span className="font-mono text-base font-extrabold text-emerald-400 tracking-widest">
+                  <div className="flex justify-between items-center bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
+                    <span className="text-[10px] text-slate-500 uppercase font-bold">CVV Dinámico</span>
+                    <span className="font-mono text-base font-extrabold text-emerald-600 tracking-widest">
                       842
                     </span>
                   </div>
-                  <p className="text-[9px] text-neutral-500 text-center">Protección antifraude activa en compras web.</p>
+                  <p className="text-[9px] text-slate-500 text-center font-medium">
+                    Protección antifraude activa en compras web.
+                  </p>
                 </div>
-                <div className="px-6 text-[9px] text-neutral-400 flex justify-between">
-                  <span>BankLite Card</span>
-                  <span>Flip 3D</span>
+                <div className="px-6 text-[10px] font-bold text-slate-500 flex justify-between">
+                  <span>Apple Titanium Edition</span>
+                  <span className="text-sky-600">Flip 3D</span>
                 </div>
               </div>
             </div>
           </div>
+
           <div className="text-center mt-2">
             <button
               onClick={() => setCardFlipped(!cardFlipped)}
-              className="inline-flex items-center gap-1 text-[11px] text-neutral-400 hover:text-white transition"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition active:scale-[0.97]"
             >
-              <Repeat size={12} />
-              {cardFlipped ? "Ver frente" : "Girar tarjeta (ver CVV)"}
+              <Repeat size={13} />
+              <span>{cardFlipped ? "Ver frente de la tarjeta" : "Girar tarjeta (ver CVV dinámico)"}</span>
             </button>
           </div>
         </div>
@@ -264,85 +288,85 @@ export default function ClienteAppleDashboard() {
 
       {/* BENTO GRID: Acciones Rápidas Estilo Apple iOS */}
       <div>
-        <h2 className="text-lg font-bold text-neutral-300 mb-4 tracking-tight">
+        <h2 className="text-lg font-extrabold text-slate-900 mb-4 tracking-tight">
           Operaciones y Servicios
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-4">
           <Link
             href="/cliente/clave-dinamica"
-            className="apple-glass-card rounded-2xl p-5 hover:border-amber-400/40 active:scale-[0.98] transition-all group flex flex-col justify-between gap-4"
+            className="apple-glass-card rounded-2xl p-5 active:scale-[0.97] group flex flex-col justify-between gap-4"
           >
-            <div className="h-11 w-11 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <div className="h-12 w-12 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200/80 flex items-center justify-center group-hover:scale-105 transition-transform shadow-sm">
               <KeyRound size={22} />
             </div>
             <div>
-              <p className="font-bold text-sm text-white">Clave Dinámica</p>
-              <p className="text-xs text-neutral-400 mt-0.5">Seguridad Nequi</p>
+              <p className="font-bold text-sm text-slate-900">Clave Dinámica</p>
+              <p className="text-xs text-slate-500 mt-0.5">Seguridad Nequi</p>
             </div>
           </Link>
 
           <Link
             href="/cliente/transferencias"
-            className="apple-glass-card rounded-2xl p-5 hover:border-white/25 active:scale-[0.98] transition-all group flex flex-col justify-between gap-4"
+            className="apple-glass-card rounded-2xl p-5 active:scale-[0.97] group flex flex-col justify-between gap-4"
           >
-            <div className="h-11 w-11 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <div className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200/80 flex items-center justify-center group-hover:scale-105 transition-transform shadow-sm">
               <ArrowRightLeft size={22} />
             </div>
             <div>
-              <p className="font-bold text-sm text-white">Transferir</p>
-              <p className="text-xs text-neutral-400 mt-0.5">Por celular Bre-B</p>
+              <p className="font-bold text-sm text-slate-900">Transferir</p>
+              <p className="text-xs text-slate-500 mt-0.5">Por celular Bre-B</p>
             </div>
           </Link>
 
           <Link
             href="/cliente/qr"
-            className="apple-glass-card rounded-2xl p-5 hover:border-cyan-400/40 active:scale-[0.98] transition-all group flex flex-col justify-between gap-4"
+            className="apple-glass-card rounded-2xl p-5 active:scale-[0.97] group flex flex-col justify-between gap-4"
           >
-            <div className="h-11 w-11 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <div className="h-12 w-12 rounded-2xl bg-sky-50 text-sky-600 border border-sky-200/80 flex items-center justify-center group-hover:scale-105 transition-transform shadow-sm">
               <QrCode size={22} />
             </div>
             <div>
-              <p className="font-bold text-sm text-white">QR & Bre-B</p>
-              <p className="text-xs text-neutral-400 mt-0.5">Pagar por foto</p>
+              <p className="font-bold text-sm text-slate-900">QR & Bre-B</p>
+              <p className="text-xs text-slate-500 mt-0.5">Cámara y cobro</p>
             </div>
           </Link>
 
           <Link
             href="/cliente/tarjetas"
-            className="apple-glass-card rounded-2xl p-5 hover:border-white/25 active:scale-[0.98] transition-all group flex flex-col justify-between gap-4"
+            className="apple-glass-card rounded-2xl p-5 active:scale-[0.97] group flex flex-col justify-between gap-4"
           >
-            <div className="h-11 w-11 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <div className="h-12 w-12 rounded-2xl bg-purple-50 text-purple-600 border border-purple-200/80 flex items-center justify-center group-hover:scale-105 transition-transform shadow-sm">
               <CreditCard size={22} />
             </div>
             <div>
-              <p className="font-bold text-sm text-white">Tarjetas</p>
-              <p className="text-xs text-neutral-400 mt-0.5">Límites y bloqueo</p>
+              <p className="font-bold text-sm text-slate-900">Tarjetas</p>
+              <p className="text-xs text-slate-500 mt-0.5">Límites y bloqueo</p>
             </div>
           </Link>
 
           <Link
             href="/cliente/movimientos"
-            className="apple-glass-card rounded-2xl p-5 hover:border-white/25 active:scale-[0.98] transition-all group flex flex-col justify-between gap-4"
+            className="apple-glass-card rounded-2xl p-5 active:scale-[0.97] group flex flex-col justify-between gap-4"
           >
-            <div className="h-11 w-11 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <div className="h-12 w-12 rounded-2xl bg-teal-50 text-teal-600 border border-teal-200/80 flex items-center justify-center group-hover:scale-105 transition-transform shadow-sm">
               <FileText size={22} />
             </div>
             <div>
-              <p className="font-bold text-sm text-white">Extractos</p>
-              <p className="text-xs text-neutral-400 mt-0.5">Historial contable</p>
+              <p className="font-bold text-sm text-slate-900">Extractos</p>
+              <p className="text-xs text-slate-500 mt-0.5">Historial contable</p>
             </div>
           </Link>
 
           <Link
             href="/cliente/perfil"
-            className="apple-glass-card rounded-2xl p-5 hover:border-white/25 active:scale-[0.98] transition-all group flex flex-col justify-between gap-4"
+            className="apple-glass-card rounded-2xl p-5 active:scale-[0.97] group flex flex-col justify-between gap-4"
           >
-            <div className="h-11 w-11 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <div className="h-12 w-12 rounded-2xl bg-blue-50 text-blue-600 border border-blue-200/80 flex items-center justify-center group-hover:scale-105 transition-transform shadow-sm">
               <Smartphone size={22} />
             </div>
             <div>
-              <p className="font-bold text-sm text-white">Seguridad 2FA</p>
-              <p className="text-xs text-neutral-400 mt-0.5">WhatsApp y Claves</p>
+              <p className="font-bold text-sm text-slate-900">Seguridad 2FA</p>
+              <p className="text-xs text-slate-500 mt-0.5">Perfil y WhatsApp</p>
             </div>
           </Link>
         </div>
@@ -354,24 +378,33 @@ export default function ClienteAppleDashboard() {
         {cuenta && (
           <div className="apple-glass-card rounded-3xl p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-base text-white">Detalles de la Cuenta</h3>
-              <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-widest px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+              <h3 className="font-extrabold text-base text-slate-900">Detalles de la Cuenta</h3>
+              <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-widest px-2.5 py-1 rounded-full bg-emerald-100 border border-emerald-200">
                 {cuenta.estado}
               </span>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1.5">
-              <span className="text-[10px] uppercase font-bold text-neutral-400 tracking-wider">
+            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
+              <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block">
                 Número de Cuenta (Tu Celular para recibir dinero)
               </span>
-              <p className="text-2xl font-black font-mono tracking-wider text-emerald-400">
-                📱 {cuenta.numero_cuenta}
+              <div className="flex items-center justify-between">
+                <p className="text-2xl sm:text-3xl font-black font-mono tracking-wider text-slate-900">
+                  📱 {formatNumeroCuenta(cuenta.numero_cuenta)}
+                </p>
+                <button
+                  onClick={handleCopiarNumero}
+                  className="apple-glass-button px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-950 flex items-center gap-1.5"
+                >
+                  {copiadoCuenta ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                  <span>{copiadoCuenta ? "Copiado" : "Copiar"}</span>
+                </button>
+              </div>
+              <p className="text-xs text-slate-600">
+                Tu número celular es tu identificador oficial en BankLite y tu llave Bre-B registrada.
               </p>
-              <p className="text-xs text-neutral-300">
-                Tu número de celular es tu número de cuenta oficial BankLite y tu llave Bre-B registrada.
-              </p>
-              <p className="text-xs text-neutral-400 pt-1">
-                Tipo: {cuenta.tipo_cuenta.charAt(0).toUpperCase() + cuenta.tipo_cuenta.slice(1)} • Moneda: {cuenta.moneda}
+              <p className="text-xs text-slate-500 pt-1 font-mono">
+                Tipo: {cuenta.tipo_cuenta.toUpperCase()} • Moneda: {cuenta.moneda}
               </p>
             </div>
           </div>
@@ -380,38 +413,38 @@ export default function ClienteAppleDashboard() {
         {/* Analítica Visual de Gastos (Estilo Apple Wallet) */}
         <div className="apple-glass-card rounded-3xl p-6 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-base text-white">Distribución de Gastos</h3>
-            <span className="text-xs text-neutral-400">Este mes</span>
+            <h3 className="font-extrabold text-base text-slate-900">Distribución de Gastos</h3>
+            <span className="text-xs font-bold text-slate-500">Este mes</span>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-3.5 pt-1">
             <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-neutral-300 font-medium">💡 Servicios Públicos (EPM/Enel)</span>
-                <span className="font-mono text-cyan-400 font-bold">45%</span>
+              <div className="flex justify-between text-xs mb-1.5">
+                <span className="text-slate-700 font-semibold">💡 Servicios Públicos (EPM/Enel)</span>
+                <span className="font-mono text-sky-600 font-bold">45%</span>
               </div>
-              <div className="w-full bg-neutral-800 h-2 rounded-full overflow-hidden">
-                <div className="bg-gradient-to-r from-cyan-500 to-blue-500 h-full w-[45%]" />
+              <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                <div className="bg-gradient-to-r from-sky-400 to-blue-600 h-full w-[45%] rounded-full" />
               </div>
             </div>
 
             <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-neutral-300 font-medium">🛍️ Compras con Tarjeta</span>
-                <span className="font-mono text-purple-400 font-bold">35%</span>
+              <div className="flex justify-between text-xs mb-1.5">
+                <span className="text-slate-700 font-semibold">🛍️ Compras con Tarjeta</span>
+                <span className="font-mono text-purple-600 font-bold">35%</span>
               </div>
-              <div className="w-full bg-neutral-800 h-2 rounded-full overflow-hidden">
-                <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-full w-[35%]" />
+              <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                <div className="bg-gradient-to-r from-purple-400 to-indigo-600 h-full w-[35%] rounded-full" />
               </div>
             </div>
 
             <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-neutral-300 font-medium">📲 Transferencias Enviadas</span>
-                <span className="font-mono text-emerald-400 font-bold">20%</span>
+              <div className="flex justify-between text-xs mb-1.5">
+                <span className="text-slate-700 font-semibold">📲 Transferencias Enviadas</span>
+                <span className="font-mono text-emerald-600 font-bold">20%</span>
               </div>
-              <div className="w-full bg-neutral-800 h-2 rounded-full overflow-hidden">
-                <div className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full w-[20%]" />
+              <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                <div className="bg-gradient-to-r from-emerald-400 to-teal-600 h-full w-[20%] rounded-full" />
               </div>
             </div>
           </div>
@@ -420,37 +453,37 @@ export default function ClienteAppleDashboard() {
 
       {/* ÚLTIMOS MOVIMIENTOS: Estilo Apple Transactions */}
       {cuenta && (
-        <div className="apple-glass-card rounded-3xl p-6 space-y-4">
-          <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
+        <div className="apple-glass-card rounded-3xl p-6 sm:p-7 space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
             <div>
-              <h2 className="text-lg font-bold text-white tracking-tight">Últimos Movimientos</h2>
-              <p className="text-xs text-neutral-400">Registrados en doble partida contable por Ledger</p>
+              <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">Últimos Movimientos</h2>
+              <p className="text-xs text-slate-500">Registrados en doble partida contable por Ledger</p>
             </div>
             <Link
               href="/cliente/movimientos"
-              className="apple-glass-button px-4 py-2 rounded-full text-xs font-semibold text-neutral-200 hover:text-white"
+              className="apple-glass-button px-4 py-2 rounded-full text-xs font-bold text-slate-700 hover:text-slate-950 shadow-sm"
             >
               Ver todos →
             </Link>
           </div>
 
           {movimientos.length === 0 ? (
-            <p className="text-neutral-500 text-sm py-6 text-center">
+            <p className="text-slate-500 text-sm py-6 text-center">
               No hay movimientos recientes en esta cuenta.
             </p>
           ) : (
-            <div className="divide-y divide-white/[0.06]">
+            <div className="divide-y divide-slate-100">
               {movimientos.map((m) => (
                 <div key={m.id_transferencia} className="py-3.5 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-white/[0.05] border border-white/10 text-neutral-300 flex items-center justify-center">
+                  <div className="flex items-center gap-3.5">
+                    <div className="h-10 w-10 rounded-2xl bg-slate-100 border border-slate-200/80 text-slate-700 flex items-center justify-center shadow-sm">
                       <ArrowRightLeft size={18} />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-white">
+                      <p className="text-sm font-bold text-slate-900">
                         {m.concepto || "Transferencia bancaria"}
                       </p>
-                      <p className="text-xs text-neutral-500">
+                      <p className="text-xs text-slate-500">
                         {new Date(m.fecha_solicitud).toLocaleDateString("es-CO", {
                           day: "numeric",
                           month: "short",
@@ -460,7 +493,7 @@ export default function ClienteAppleDashboard() {
                       </p>
                     </div>
                   </div>
-                  <p className="text-sm font-bold font-mono text-white">
+                  <p className="text-sm font-black font-mono text-slate-900">
                     -{formatCOP(m.monto)}
                   </p>
                 </div>

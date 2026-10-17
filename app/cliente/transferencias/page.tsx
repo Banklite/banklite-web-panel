@@ -391,8 +391,8 @@ export default function ClienteTransferenciasPage() {
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-24 gap-4">
-      <Loader2 size={40} className="text-white animate-spin" />
-      <p className="text-sm text-neutral-400 font-semibold">Cargando información…</p>
+      <Loader2 size={40} className="text-sky-600 animate-spin" />
+      <p className="text-sm text-slate-500 font-semibold">Cargando información…</p>
     </div>
   );
 
@@ -400,12 +400,12 @@ export default function ClienteTransferenciasPage() {
     <div className="space-y-6 max-w-2xl mx-auto pb-10">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <div className="h-12 w-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center">
+        <div className="h-12 w-12 rounded-2xl bg-sky-50 border border-sky-200 text-sky-600 flex items-center justify-center">
           <ArrowRightLeft size={24} />
         </div>
         <div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight">Transferir Dinero</h1>
-          <p className="text-sm text-neutral-400">Pasa plata por celular, guarda contactos o usa cuenta bancaria</p>
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Transferir Dinero</h1>
+          <p className="text-sm text-slate-500">Pasa plata por celular, guarda contactos o usa cuenta bancaria</p>
         </div>
       </div>
 
@@ -414,8 +414,8 @@ export default function ClienteTransferenciasPage() {
         <div className="flex gap-2">
           {PASOS_LABELS.map((label, i) => (
             <div key={label} className="flex-1">
-              <div className={`h-1 rounded-full transition-all ${i <= pasoIndex ? "bg-white" : "bg-white/10"}`} />
-              <p className={`text-[10px] font-semibold mt-1.5 ${i <= pasoIndex ? "text-neutral-300" : "text-neutral-600"}`}>{i + 1}. {label}</p>
+              <div className={`h-1 rounded-full transition-all ${i <= pasoIndex ? "bg-sky-500" : "bg-slate-200"}`} />
+              <p className={`text-[10px] font-semibold mt-1.5 ${i <= pasoIndex ? "text-slate-700" : "text-slate-400"}`}>{i + 1}. {label}</p>
             </div>
           ))}
         </div>
@@ -423,7 +423,7 @@ export default function ClienteTransferenciasPage() {
 
       {/* Error global */}
       {error && paso !== "error_final" && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex gap-3 text-red-400">
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex gap-3 text-red-600">
           <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />
           <p className="text-sm font-semibold">{error}</p>
         </div>
@@ -432,9 +432,9 @@ export default function ClienteTransferenciasPage() {
       {/* PROCESANDO */}
       {paso === "procesando" && (
         <div className="apple-glass-card rounded-3xl p-16 text-center space-y-4">
-          <Loader2 size={56} className="text-white animate-spin mx-auto" />
-          <h2 className="text-xl font-extrabold text-white">Procesando de forma segura…</h2>
-          <p className="text-sm text-neutral-400">Validando en riel de pagos inmediatos y aplicando doble partida contable por Ledger.</p>
+          <Loader2 size={56} className="text-sky-600 animate-spin mx-auto" />
+          <h2 className="text-xl font-extrabold text-slate-900">Procesando de forma segura…</h2>
+          <p className="text-sm text-slate-500">Validando en riel de pagos inmediatos y aplicando doble partida contable por Ledger.</p>
         </div>
       )}
 
@@ -442,14 +442,14 @@ export default function ClienteTransferenciasPage() {
       {paso === "exito" && resultado && (
         <div className="apple-glass-card rounded-3xl p-8 space-y-6 animate-fade-in">
           <div className="text-center space-y-3">
-            <div className="inline-flex p-4 rounded-3xl bg-emerald-500/10 border border-emerald-500/20">
-              <CheckCircle size={48} className="text-emerald-400" />
+            <div className="inline-flex p-4 rounded-3xl bg-emerald-50 border border-emerald-200">
+              <CheckCircle size={48} className="text-emerald-600" />
             </div>
-            <h2 className="text-2xl font-extrabold text-white">¡Transferencia exitosa!</h2>
-            <p className="text-sm text-neutral-400">Tu dinero fue enviado y acreditado al instante.</p>
+            <h2 className="text-2xl font-extrabold text-slate-900">¡Transferencia exitosa!</h2>
+            <p className="text-sm text-slate-500">Tu dinero fue enviado y acreditado al instante.</p>
           </div>
 
-          <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-5 space-y-3">
+          <div className="bg-white/80 border border-slate-200/80 rounded-2xl p-5 space-y-3">
             {[
               { label: "Monto", value: resultado.monto },
               { label: "Destinatario", value: resultado.destinatario },
@@ -459,9 +459,9 @@ export default function ClienteTransferenciasPage() {
               { label: "Canal", value: resultado.telefono ? "Bre-B / Transferencia Celular Inmediata" : "Riel Interno ACH Inmediato" },
               { label: "Estado", value: "Completada" },
             ].map((item) => (
-              <div key={item.label} className="flex justify-between items-center border-b border-white/[0.06] pb-3 last:border-0 last:pb-0">
-                <span className="text-sm text-neutral-400">{item.label}</span>
-                <span className="font-bold text-white text-right text-sm">{item.value}</span>
+              <div key={item.label} className="flex justify-between items-center border-b border-slate-200/70 pb-3 last:border-0 last:pb-0">
+                <span className="text-sm text-slate-500">{item.label}</span>
+                <span className="font-bold text-slate-900 text-right text-sm">{item.value}</span>
               </div>
             ))}
           </div>
@@ -470,25 +470,25 @@ export default function ClienteTransferenciasPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
               onClick={compartirWhatsApp}
-              className="w-full flex items-center justify-center gap-2 font-bold px-4 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black text-sm transition active:scale-95 shadow-lg shadow-emerald-500/20"
+              className="w-full flex items-center justify-center gap-2 font-bold px-4 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm transition active:scale-95 shadow-lg shadow-emerald-600/20"
             >
               <Share2 size={16} /> Compartir por WhatsApp
             </button>
             <button
               onClick={copiarReferencia}
-              className="w-full flex items-center justify-center gap-2 font-bold px-4 py-3.5 rounded-2xl apple-glass-button text-white text-sm transition active:scale-95"
+              className="w-full flex items-center justify-center gap-2 font-bold px-4 py-3.5 rounded-2xl apple-glass-button text-slate-700 hover:text-slate-900 text-sm transition active:scale-95"
             >
-              {copiadoRef ? <Check size={16} className="text-emerald-400" /> : <Copy size={16} />}
+              {copiadoRef ? <Check size={16} className="text-emerald-600" /> : <Copy size={16} />}
               {copiadoRef ? "¡Referencia copiada!" : "Copiar referencia"}
             </button>
           </div>
 
-          <button onClick={alternarFavoritoTransaccion} className={`w-full flex items-center justify-center gap-2 font-bold px-6 py-3 rounded-2xl border transition-all text-xs ${esFavorito ? "border-amber-400/30 bg-amber-500/10 text-amber-400" : "border-white/10 bg-white/[0.03] text-neutral-400 hover:text-white"}`}>
+          <button onClick={alternarFavoritoTransaccion} className={`w-full flex items-center justify-center gap-2 font-bold px-6 py-3 rounded-2xl border transition-all text-xs ${esFavorito ? "border-amber-200 bg-amber-50 text-amber-600" : "border-slate-200 bg-white/70 text-slate-600 hover:text-slate-900"}`}>
             <Star size={15} className={esFavorito ? "fill-amber-400" : ""} />
             {esFavorito ? "Contacto guardado en favoritos" : "Guardar destinatario en favoritos"}
           </button>
 
-          <button onClick={reiniciar} className="w-full bg-white hover:bg-neutral-100 text-black font-extrabold px-8 py-3.5 rounded-2xl text-sm transition active:scale-[0.98]">
+          <button onClick={reiniciar} className="w-full apple-primary-button font-extrabold px-8 py-3.5 rounded-2xl text-sm transition active:scale-[0.98]">
             Hacer otra transferencia
           </button>
         </div>
@@ -497,17 +497,17 @@ export default function ClienteTransferenciasPage() {
       {/* ERROR FINAL */}
       {paso === "error_final" && (
         <div className="apple-glass-card rounded-3xl p-8 space-y-6 text-center">
-          <div className="inline-flex p-4 rounded-3xl bg-red-500/10 border border-red-500/20">
-            <AlertCircle size={48} className="text-red-400" />
+          <div className="inline-flex p-4 rounded-3xl bg-red-50 border border-red-200">
+            <AlertCircle size={48} className="text-red-600" />
           </div>
-          <h2 className="text-xl font-extrabold text-white">No se pudo procesar</h2>
-          <p className="text-sm text-neutral-400">Tu dinero no fue descontado. Puedes intentarlo de nuevo.</p>
-          {error && <p className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-red-400 text-xs font-mono text-left">{error}</p>}
+          <h2 className="text-xl font-extrabold text-slate-900">No se pudo procesar</h2>
+          <p className="text-sm text-slate-500">Tu dinero no fue descontado. Puedes intentarlo de nuevo.</p>
+          {error && <p className="bg-red-50 border border-red-200 rounded-xl p-3 text-red-600 text-xs font-mono text-left">{error}</p>}
           <div className="space-y-2">
-            <button onClick={() => { setError(null); setPaso("confirmar"); }} className="w-full apple-glass-button rounded-2xl py-3.5 text-sm font-bold text-white flex items-center justify-center gap-2">
+            <button onClick={() => { setError(null); setPaso("confirmar"); }} className="w-full apple-glass-button rounded-2xl py-3.5 text-sm font-bold text-slate-700 hover:text-slate-900 flex items-center justify-center gap-2">
               <RefreshCw size={16} /> Intentar de nuevo
             </button>
-            <button onClick={reiniciar} className="text-sm text-neutral-500 hover:text-neutral-300 font-semibold transition">Cancelar y comenzar de nuevo</button>
+            <button onClick={reiniciar} className="text-sm text-slate-400 hover:text-slate-600 font-semibold transition">Cancelar y comenzar de nuevo</button>
           </div>
         </div>
       )}
@@ -516,11 +516,11 @@ export default function ClienteTransferenciasPage() {
       {paso === "elegir_cuenta" && (
         <div className="apple-glass-card rounded-3xl p-6 sm:p-8 space-y-5">
           <div>
-            <h2 className="text-base font-extrabold text-white mb-1">Selecciona la cuenta de origen</h2>
-            <p className="text-xs text-neutral-500">¿Desde dónde quieres enviar el dinero?</p>
+            <h2 className="text-base font-extrabold text-slate-900 mb-1">Selecciona la cuenta de origen</h2>
+            <p className="text-xs text-slate-500">¿Desde dónde quieres enviar el dinero?</p>
           </div>
           {cuentas.length === 0 ? (
-            <p className="text-neutral-500 text-sm text-center py-8">No tienes cuentas activas disponibles.</p>
+            <p className="text-slate-500 text-sm text-center py-8">No tienes cuentas activas disponibles.</p>
           ) : (
             <div className="space-y-3">
               {cuentas.map((c) => {
@@ -528,15 +528,15 @@ export default function ClienteTransferenciasPage() {
                 const selected = cuentaOrigen === c.id_cuenta;
                 return (
                   <button key={c.id_cuenta} onClick={() => setCuentaOrigen(c.id_cuenta)}
-                    className={`w-full text-left p-5 rounded-2xl border transition-all ${selected ? "border-white/30 bg-white/[0.08]" : "border-white/[0.08] hover:border-white/20 bg-white/[0.03]"}`}
+                    className={`w-full text-left p-5 rounded-2xl border transition-all ${selected ? "border-sky-500 bg-sky-50/60 shadow-sm" : "border-slate-200/80 hover:border-slate-300 bg-white/70 hover:bg-slate-50"}`}
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-bold text-white text-sm capitalize">{c.tipo_cuenta} — {maskNumeroCuenta(c.numero_cuenta)}</p>
-                        <p className="text-xs text-neutral-500 mt-0.5">{c.moneda}</p>
+                        <p className="font-bold text-slate-900 text-sm capitalize">{c.tipo_cuenta} — {maskNumeroCuenta(c.numero_cuenta)}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{c.moneda}</p>
                       </div>
                       <div className="text-right">
-                        <p className={`text-lg font-extrabold ${selected ? "text-white" : "text-neutral-300"}`}>
+                        <p className={`text-lg font-extrabold ${selected ? "text-slate-900" : "text-slate-600"}`}>
                           {saldo != null ? formatCOP(saldo) : "—"}
                         </p>
                       </div>
@@ -548,7 +548,7 @@ export default function ClienteTransferenciasPage() {
           )}
           <div className="flex justify-end">
             <button disabled={!cuentaOrigen} onClick={() => setPaso("buscar_destinatario")}
-              className="bg-white hover:bg-neutral-100 disabled:opacity-40 text-black font-extrabold px-6 py-3 rounded-2xl text-sm flex items-center gap-2 transition active:scale-[0.98]">
+              className="apple-primary-button disabled:opacity-40 font-extrabold px-6 py-3 rounded-2xl text-sm flex items-center gap-2 transition active:scale-[0.98]">
               Continuar <ChevronRight size={18} />
             </button>
           </div>
@@ -559,24 +559,24 @@ export default function ClienteTransferenciasPage() {
       {paso === "buscar_destinatario" && (
         <div className="space-y-5">
           <div className="apple-glass-card rounded-3xl p-6 sm:p-8 space-y-6">
-            <button onClick={() => { setPaso("elegir_cuenta"); setDestinatario(null); setErrorBusqueda(null); }} className="text-xs font-semibold text-neutral-400 hover:text-white flex items-center gap-1 transition">
+            <button onClick={() => { setPaso("elegir_cuenta"); setDestinatario(null); setErrorBusqueda(null); }} className="text-xs font-semibold text-slate-500 hover:text-slate-900 flex items-center gap-1 transition">
               <ChevronLeft size={14} /> Volver a cuentas
             </button>
 
             <div>
-              <h2 className="text-lg font-extrabold text-white mb-1">¿A quién vas a enviar dinero?</h2>
-              <p className="text-xs text-neutral-400">Pasa plata al instante por número de teléfono o cuenta bancaria.</p>
+              <h2 className="text-lg font-extrabold text-slate-900 mb-1">¿A quién vas a enviar dinero?</h2>
+              <p className="text-xs text-slate-500">Pasa plata al instante por número de teléfono o cuenta bancaria.</p>
             </div>
 
             {/* SELECTOR DE MÉTODO: POR CELULAR vs POR NÚMERO DE CUENTA */}
-            <div className="grid grid-cols-2 gap-2 p-1.5 bg-black/40 border border-white/[0.08] rounded-2xl">
+            <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 border border-slate-200/80 rounded-2xl">
               <button
                 type="button"
                 onClick={() => { setMetodoBusqueda("telefono"); setErrorBusqueda(null); }}
                 className={`flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-all ${
                   metodoBusqueda === "telefono"
-                    ? "bg-white text-black shadow-lg"
-                    : "text-neutral-400 hover:text-white"
+                    ? "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-500 hover:text-slate-900"
                 }`}
               >
                 <Smartphone size={16} />
@@ -588,8 +588,8 @@ export default function ClienteTransferenciasPage() {
                 onClick={() => { setMetodoBusqueda("cuenta"); setErrorBusqueda(null); }}
                 className={`flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-all ${
                   metodoBusqueda === "cuenta"
-                    ? "bg-white text-black shadow-lg"
-                    : "text-neutral-400 hover:text-white"
+                    ? "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-500 hover:text-slate-900"
                 }`}
               >
                 <Building2 size={16} />
@@ -600,11 +600,11 @@ export default function ClienteTransferenciasPage() {
             {/* FORMULARIO DE BÚSQUEDA SEGÚN MÉTODO */}
             {metodoBusqueda === "telefono" ? (
               <div className="space-y-2">
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-400">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500">
                   Número de celular del destinatario
                 </label>
                 <div className="flex gap-2">
-                  <div className="flex items-center gap-1.5 px-3.5 bg-white/[0.04] border border-white/[0.12] rounded-2xl text-xs font-bold text-neutral-300">
+                  <div className="flex items-center gap-1.5 px-3.5 bg-slate-50 border border-slate-200/90 rounded-2xl text-xs font-bold text-slate-700">
                     <span className="text-base">🇨🇴</span>
                     <span>+57</span>
                   </div>
@@ -621,24 +621,24 @@ export default function ClienteTransferenciasPage() {
                       setErrorBusqueda(null);
                     }}
                     onKeyDown={(e) => { if (e.key === "Enter") handleBuscarPorTelefono(); }}
-                    className="flex-1 bg-white/[0.06] border border-white/[0.12] rounded-2xl px-4 py-3.5 text-base font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-400/50 transition"
+                    className="flex-1 bg-slate-50 border border-slate-200/90 rounded-2xl px-4 py-3.5 text-base font-mono text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-sky-500 focus:bg-white shadow-sm transition"
                   />
                   <button
                     onClick={handleBuscarPorTelefono}
                     disabled={buscando || telefonoDest.length < 10}
-                    className="bg-cyan-500 hover:bg-cyan-400 disabled:opacity-40 text-black font-extrabold px-5 py-3.5 rounded-2xl flex items-center gap-2 text-xs transition active:scale-95"
+                    className="bg-sky-600 hover:bg-sky-700 disabled:opacity-40 text-white font-extrabold px-5 py-3.5 rounded-2xl flex items-center gap-2 text-xs transition active:scale-95 shadow-sm shadow-sky-500/10"
                   >
                     {buscando ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
                     <span className="hidden sm:inline">Buscar</span>
                   </button>
                 </div>
-                <p className="text-[11px] text-neutral-500">
+                <p className="text-[11px] text-slate-400">
                   El sistema busca la cuenta activa registrada en BankLite vinculada a este número.
                 </p>
               </div>
             ) : (
               <div className="space-y-2">
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-400">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500">
                   Número de cuenta de ahorros o corriente
                 </label>
                 <div className="flex gap-2">
@@ -654,12 +654,12 @@ export default function ClienteTransferenciasPage() {
                       setErrorBusqueda(null);
                     }}
                     onKeyDown={(e) => { if (e.key === "Enter") handleBuscarPorCuenta(); }}
-                    className="flex-1 bg-white/[0.06] border border-white/[0.12] rounded-2xl px-4 py-3.5 text-base font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30 transition"
+                    className="flex-1 bg-slate-50 border border-slate-200/90 rounded-2xl px-4 py-3.5 text-base font-mono text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-sky-500 focus:bg-white shadow-sm transition"
                   />
                   <button
                     onClick={handleBuscarPorCuenta}
                     disabled={buscando || numeroCuentaDest.length < 6}
-                    className="apple-glass-button rounded-2xl px-5 py-3.5 text-white font-bold flex items-center gap-2 text-xs disabled:opacity-40"
+                    className="apple-glass-button rounded-2xl px-5 py-3.5 text-slate-700 hover:text-slate-900 font-bold flex items-center gap-2 text-xs disabled:opacity-40"
                   >
                     {buscando ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
                     <span className="hidden sm:inline">Buscar</span>
@@ -670,7 +670,7 @@ export default function ClienteTransferenciasPage() {
 
             {/* Error de búsqueda */}
             {errorBusqueda && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex gap-3 text-red-400 animate-fade-in">
+              <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex gap-3 text-red-600 animate-fade-in">
                 <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
                 <p className="text-xs font-semibold">{errorBusqueda}</p>
               </div>
@@ -678,42 +678,42 @@ export default function ClienteTransferenciasPage() {
 
             {/* TARJETA DE DESTINATARIO VERIFICADO ENCONTRADO */}
             {destinatario && (
-              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-5 space-y-4 animate-fade-in">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 space-y-4 animate-fade-in">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-black flex items-center justify-center font-black text-lg shadow-lg">
+                    <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center font-black text-lg shadow-md">
                       {destinatario.nombre_titular.charAt(0).toUpperCase()}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="text-base font-black text-white">{destinatario.nombre_titular}</p>
-                        <ShieldCheck size={16} className="text-emerald-400" />
+                        <p className="text-base font-black text-slate-900">{destinatario.nombre_titular}</p>
+                        <ShieldCheck size={16} className="text-emerald-600" />
                       </div>
-                      <p className="text-xs text-emerald-400 font-semibold">Destinatario Verificado en BankLite</p>
+                      <p className="text-xs text-emerald-600 font-semibold">Destinatario Verificado en BankLite</p>
                     </div>
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full">
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full">
                     Listo para enviar
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 text-xs pt-3 border-t border-emerald-500/20">
+                <div className="grid grid-cols-2 gap-3 text-xs pt-3 border-t border-emerald-200">
                   {destinatario.telefono ? (
                     <div>
-                      <span className="text-neutral-400 block text-[11px]">Celular asociado</span>
-                      <span className="font-mono text-white font-bold flex items-center gap-1 mt-0.5">
-                        <Phone size={12} className="text-cyan-400" /> +57 {formatTelefono(destinatario.telefono)}
+                      <span className="text-slate-500 block text-[11px]">Celular asociado</span>
+                      <span className="font-mono text-slate-900 font-bold flex items-center gap-1 mt-0.5">
+                        <Phone size={12} className="text-sky-600" /> +57 {formatTelefono(destinatario.telefono)}
                       </span>
                     </div>
                   ) : (
                     <div>
-                      <span className="text-neutral-400 block text-[11px]">Número de cuenta</span>
-                      <span className="font-mono text-white font-bold">{destinatario.numero_cuenta_enmascarado}</span>
+                      <span className="text-slate-500 block text-[11px]">Número de cuenta</span>
+                      <span className="font-mono text-slate-900 font-bold">{destinatario.numero_cuenta_enmascarado}</span>
                     </div>
                   )}
                   <div>
-                    <span className="text-neutral-400 block text-[11px]">Tipo de cuenta</span>
-                    <span className="text-white font-bold capitalize">{destinatario.tipo_cuenta} · {destinatario.moneda}</span>
+                    <span className="text-slate-500 block text-[11px]">Tipo de cuenta</span>
+                    <span className="text-slate-900 font-bold capitalize">{destinatario.tipo_cuenta} · {destinatario.moneda}</span>
                   </div>
                 </div>
               </div>
@@ -723,7 +723,7 @@ export default function ClienteTransferenciasPage() {
               <button
                 disabled={!destinatario}
                 onClick={() => setPaso("detalles")}
-                className="bg-white hover:bg-neutral-100 disabled:opacity-40 text-black font-extrabold px-7 py-3.5 rounded-2xl text-sm flex items-center gap-2 transition active:scale-[0.98] shadow-lg shadow-white/10"
+                className="apple-primary-button disabled:opacity-40 font-extrabold px-7 py-3.5 rounded-2xl text-sm flex items-center gap-2 transition active:scale-[0.98]"
               >
                 Continuar al monto <ChevronRight size={18} />
               </button>
@@ -736,24 +736,24 @@ export default function ClienteTransferenciasPage() {
           <div className="apple-glass-card rounded-3xl p-6 sm:p-8 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="h-9 w-9 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
+                <div className="h-9 w-9 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center">
                   <BookUser size={18} />
                 </div>
                 <div>
-                  <h3 className="text-sm font-extrabold text-white flex items-center gap-2">
+                  <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
                     Mis Contactos Guardados
-                    <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded-full text-neutral-300 font-bold">
+                    <span className="text-[10px] bg-slate-100 px-2 py-0.5 rounded-full text-slate-600 font-bold border border-slate-200">
                       {contactos.length}
                     </span>
                   </h3>
-                  <p className="text-[11px] text-neutral-400">Toca un contacto para pasarle dinero al instante</p>
+                  <p className="text-[11px] text-slate-500">Toca un contacto para pasarle dinero al instante</p>
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={() => { setMostrarModalContacto(true); setErrorNuevoContacto(null); }}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/[0.08] hover:bg-white/[0.15] border border-white/[0.12] text-xs font-bold text-white transition active:scale-95"
+                className="apple-glass-button flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-900 transition active:scale-95"
               >
                 <Plus size={14} />
                 <span>Nuevo</span>
@@ -763,35 +763,35 @@ export default function ClienteTransferenciasPage() {
             {/* Barra de búsqueda de contactos si hay más de 2 */}
             {contactos.length > 2 && (
               <div className="relative">
-                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500" />
+                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   placeholder="Filtrar por nombre, alias o celular…"
                   value={filtroContacto}
                   onChange={(e) => setFiltroContacto(e.target.value)}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-white/20 transition"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-sky-500 focus:bg-white shadow-sm transition"
                 />
               </div>
             )}
 
             {/* LISTADO DE CONTACTOS */}
             {contactos.length === 0 ? (
-              <div className="text-center py-6 border border-dashed border-white/10 rounded-2xl p-6 space-y-2">
-                <Smartphone size={28} className="text-neutral-600 mx-auto" />
-                <p className="text-xs text-neutral-400 font-semibold">No tienes contactos guardados todavía</p>
-                <p className="text-[11px] text-neutral-500 max-w-sm mx-auto">
+              <div className="text-center py-6 border border-dashed border-slate-200 rounded-2xl p-6 space-y-2">
+                <Smartphone size={28} className="text-slate-400 mx-auto" />
+                <p className="text-xs text-slate-600 font-semibold">No tienes contactos guardados todavía</p>
+                <p className="text-[11px] text-slate-400 max-w-sm mx-auto">
                   Agrega a tus amigos o familiares con su número de celular para transferirles en un solo clic.
                 </p>
                 <button
                   type="button"
                   onClick={() => setMostrarModalContacto(true)}
-                  className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 text-xs font-bold transition"
+                  className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-sky-50 border border-sky-200 text-sky-600 hover:bg-sky-100 text-xs font-bold transition"
                 >
                   <Plus size={14} /> Agregar primer contacto
                 </button>
               </div>
             ) : contactosFiltrados.length === 0 ? (
-              <p className="text-xs text-neutral-500 text-center py-4">No hay contactos que coincidan con la búsqueda.</p>
+              <p className="text-xs text-slate-400 text-center py-4">No hay contactos que coincidan con la búsqueda.</p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-72 overflow-y-auto pr-1">
                 {contactosFiltrados.map((c) => {
@@ -804,24 +804,24 @@ export default function ClienteTransferenciasPage() {
                       onClick={() => elegirContacto(c)}
                       className={`group p-3 rounded-2xl border transition-all text-left flex items-center justify-between cursor-pointer active:scale-[0.98] ${
                         isCurrentDest
-                          ? "border-emerald-500/50 bg-emerald-500/10 shadow-md"
-                          : "border-white/[0.08] hover:border-white/25 bg-white/[0.03] hover:bg-white/[0.06]"
+                          ? "border-emerald-500/50 bg-emerald-50 shadow-sm"
+                          : "border-slate-200/80 hover:border-slate-300 bg-white/70 hover:bg-slate-50"
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-white/10 to-white/5 border border-white/10 text-white font-extrabold text-sm flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-slate-100 to-slate-200 border border-slate-200 text-slate-700 font-extrabold text-sm flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
                           {initial}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-xs font-bold text-white truncate">
+                          <p className="text-xs font-bold text-slate-900 truncate">
                             {c.alias || c.nombre || "Contacto"}
                           </p>
                           {c.telefono ? (
-                            <p className="text-[11px] font-mono text-cyan-400 flex items-center gap-1 mt-0.5">
+                            <p className="text-[11px] font-mono text-sky-600 flex items-center gap-1 mt-0.5">
                               <Smartphone size={11} /> {formatTelefono(c.telefono)}
                             </p>
                           ) : (
-                            <p className="text-[11px] font-mono text-neutral-500">
+                            <p className="text-[11px] font-mono text-slate-400">
                               {c.banco_destino || "BankLite"}
                             </p>
                           )}
@@ -834,7 +834,7 @@ export default function ClienteTransferenciasPage() {
                           onClick={(e) => alternarFavoritoContacto(c, e)}
                           title={isFav ? "Quitar de favoritos" : "Marcar favorito"}
                           className={`p-1.5 rounded-lg transition ${
-                            isFav ? "text-amber-400 hover:text-amber-300" : "text-neutral-600 hover:text-neutral-400"
+                            isFav ? "text-amber-500 hover:text-amber-600" : "text-slate-400 hover:text-slate-600"
                           }`}
                         >
                           <Star size={14} className={isFav ? "fill-amber-400" : ""} />
@@ -844,7 +844,7 @@ export default function ClienteTransferenciasPage() {
                           type="button"
                           onClick={(e) => eliminarContacto(c, e)}
                           title="Eliminar contacto"
-                          className="p-1.5 rounded-lg text-neutral-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition"
                         >
                           <Trash2 size={13} />
                         </button>
@@ -860,28 +860,28 @@ export default function ClienteTransferenciasPage() {
 
       {/* MODAL PARA AGREGAR NUEVO CONTACTO DE TELÉFONO */}
       {mostrarModalContacto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
-          <div className="apple-glass-card border border-white/20 rounded-3xl p-6 sm:p-7 max-w-md w-full space-y-5 shadow-2xl relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fade-in">
+          <div className="apple-glass-card border border-slate-200 rounded-3xl p-6 sm:p-7 max-w-md w-full space-y-5 shadow-2xl relative">
             <button
               onClick={() => { setMostrarModalContacto(false); setErrorNuevoContacto(null); }}
-              className="absolute top-5 right-5 text-neutral-400 hover:text-white p-1 rounded-xl transition"
+              className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 p-1 rounded-xl transition"
             >
               <X size={18} />
             </button>
 
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center">
+              <div className="h-10 w-10 rounded-2xl bg-sky-50 border border-sky-200 text-sky-600 flex items-center justify-center">
                 <BookUser size={20} />
               </div>
               <div>
-                <h3 className="text-base font-extrabold text-white">Nuevo Contacto</h3>
-                <p className="text-xs text-neutral-400">Guarda a alguien con su número de teléfono</p>
+                <h3 className="text-base font-extrabold text-slate-900">Nuevo Contacto</h3>
+                <p className="text-xs text-slate-500">Guarda a alguien con su número de teléfono</p>
               </div>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-400 mb-1.5">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
                   Nombre o Alias (opcional)
                 </label>
                 <input
@@ -889,16 +889,16 @@ export default function ClienteTransferenciasPage() {
                   placeholder="Ej: Mamá, Carlos Amigo, Arriendo…"
                   value={nuevoNombre}
                   onChange={(e) => setNuevoNombre(e.target.value)}
-                  className="w-full bg-white/[0.06] border border-white/[0.12] rounded-2xl px-4 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-400/50 transition"
+                  className="w-full bg-slate-50 border border-slate-200/90 rounded-2xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-sky-500 focus:bg-white shadow-sm transition"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-400 mb-1.5">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
                   Número de celular
                 </label>
                 <div className="flex gap-2">
-                  <div className="flex items-center gap-1 px-3 bg-white/[0.04] border border-white/[0.12] rounded-2xl text-xs font-bold text-neutral-300">
+                  <div className="flex items-center gap-1 px-3 bg-slate-50 border border-slate-200/90 rounded-2xl text-xs font-bold text-slate-700">
                     <span>🇨🇴</span> +57
                   </div>
                   <input
@@ -908,16 +908,16 @@ export default function ClienteTransferenciasPage() {
                     placeholder="300 123 4567"
                     value={nuevoTelefono}
                     onChange={(e) => setNuevoTelefono(e.target.value.replace(/\D/g, ""))}
-                    className="flex-1 bg-white/[0.06] border border-white/[0.12] rounded-2xl px-4 py-3 text-sm font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-400/50 transition"
+                    className="flex-1 bg-slate-50 border border-slate-200/90 rounded-2xl px-4 py-3 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-sky-500 focus:bg-white shadow-sm transition"
                   />
                 </div>
-                <p className="text-[10px] text-neutral-500 mt-1">
+                <p className="text-[10px] text-slate-400 mt-1">
                   Se buscará la cuenta BankLite vinculada a este número de celular.
                 </p>
               </div>
 
               {errorNuevoContacto && (
-                <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-3 text-red-400 text-xs flex gap-2">
+                <div className="bg-red-50 border border-red-200 rounded-2xl p-3 text-red-600 text-xs flex gap-2">
                   <AlertCircle size={15} className="flex-shrink-0 mt-0.5" />
                   <span>{errorNuevoContacto}</span>
                 </div>
@@ -928,7 +928,7 @@ export default function ClienteTransferenciasPage() {
               <button
                 type="button"
                 onClick={() => { setMostrarModalContacto(false); setErrorNuevoContacto(null); }}
-                className="flex-1 py-3 rounded-2xl border border-white/10 text-xs font-bold text-neutral-400 hover:text-white transition"
+                className="apple-glass-button flex-1 py-3 rounded-2xl text-xs font-bold text-slate-600 hover:text-slate-900 transition"
               >
                 Cancelar
               </button>
@@ -936,9 +936,9 @@ export default function ClienteTransferenciasPage() {
                 type="button"
                 disabled={guardandoContacto || nuevoTelefono.length < 10}
                 onClick={handleCrearContacto}
-                className="flex-1 py-3 rounded-2xl bg-white hover:bg-neutral-100 disabled:opacity-40 text-black text-xs font-extrabold flex items-center justify-center gap-1.5 transition active:scale-95 shadow-lg shadow-white/10"
+                className="flex-1 py-3 rounded-2xl apple-primary-button disabled:opacity-40 text-xs font-extrabold flex items-center justify-center gap-1.5 transition active:scale-95 shadow-sm shadow-sky-500/10"
               >
-                {guardandoContacto ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                {guardandoContacto ? <Loader2 size={14} className="animate-spin text-white" /> : <Check size={14} />}
                 <span>Guardar contacto</span>
               </button>
             </div>
@@ -956,15 +956,15 @@ export default function ClienteTransferenciasPage() {
 
         return (
           <div className="apple-glass-card rounded-3xl p-6 sm:p-8 space-y-5 animate-fade-in">
-            <button onClick={() => setPaso("buscar_destinatario")} className="text-xs font-semibold text-neutral-400 hover:text-white flex items-center gap-1 transition">
+            <button onClick={() => setPaso("buscar_destinatario")} className="text-xs font-semibold text-slate-500 hover:text-slate-900 flex items-center gap-1 transition">
               <ChevronLeft size={14} /> Volver a destinatario
             </button>
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-base font-extrabold text-white mb-0.5">¿Cuánto vas a enviar?</h2>
-                <p className="text-xs text-neutral-500">Saldo disponible: <strong className="text-white">{formatCOP(saldoDisponible)}</strong></p>
+                <h2 className="text-base font-extrabold text-slate-900 mb-0.5">¿Cuánto vas a enviar?</h2>
+                <p className="text-xs text-slate-500">Saldo disponible: <strong className="text-slate-900">{formatCOP(saldoDisponible)}</strong></p>
               </div>
-              <span className="text-xs font-mono px-2.5 py-1 rounded-full bg-white/10 text-neutral-300 font-semibold">
+              <span className="text-xs font-mono px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 font-semibold">
                 COP
               </span>
             </div>
@@ -972,7 +972,7 @@ export default function ClienteTransferenciasPage() {
             {/* Input Grande de Monto */}
             <div>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 font-bold text-2xl">$</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-2xl">$</span>
                 <input
                   type="number"
                   min="1"
@@ -980,8 +980,8 @@ export default function ClienteTransferenciasPage() {
                   placeholder="0"
                   value={monto}
                   onChange={(e) => setMonto(e.target.value)}
-                  className={`w-full bg-white/[0.06] border rounded-2xl pl-10 pr-4 py-4 text-3xl font-black text-white focus:outline-none transition ${
-                    excedeSaldo ? "border-red-400/50 bg-red-500/[0.04]" : "border-white/[0.12] focus:border-white/30"
+                  className={`w-full bg-slate-50 border rounded-2xl pl-10 pr-4 py-4 text-3xl font-black text-slate-900 focus:outline-none focus:bg-white shadow-sm transition ${
+                    excedeSaldo ? "border-red-300 bg-red-50 text-red-600" : "border-slate-200/90 focus:border-sky-500"
                   }`}
                 />
               </div>
@@ -993,7 +993,7 @@ export default function ClienteTransferenciasPage() {
                     key={m}
                     type="button"
                     onClick={() => setMonto(m.toString())}
-                    className="px-3 py-1.5 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/20 text-xs font-bold text-neutral-300 transition active:scale-95"
+                    className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white/70 hover:bg-slate-100 hover:border-slate-300 text-xs font-bold text-slate-700 transition active:scale-95"
                   >
                     ${(m / 1000).toFixed(0)}k
                   </button>
@@ -1002,7 +1002,7 @@ export default function ClienteTransferenciasPage() {
                   <button
                     type="button"
                     onClick={() => setMonto(Math.floor(saldoDisponible).toString())}
-                    className="px-3 py-1.5 rounded-xl border border-amber-400/30 bg-amber-500/10 hover:bg-amber-500/20 text-xs font-bold text-amber-300 transition active:scale-95"
+                    className="px-3 py-1.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-xs font-bold text-amber-700 transition active:scale-95"
                   >
                     Todo mi saldo
                   </button>
@@ -1011,16 +1011,16 @@ export default function ClienteTransferenciasPage() {
 
               {/* CALCULADORA DE SALDO REMANENTE */}
               {montoNum > 0 && (
-                <div className="mt-3 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-between text-xs">
-                  <span className="text-neutral-400">Te quedará en tu cuenta:</span>
-                  <span className={`font-mono font-bold ${excedeSaldo ? "text-red-400" : "text-emerald-400"}`}>
+                <div className="mt-3 p-3 rounded-2xl bg-white/80 border border-slate-200/80 flex items-center justify-between text-xs">
+                  <span className="text-slate-500">Te quedará en tu cuenta:</span>
+                  <span className={`font-mono font-bold ${excedeSaldo ? "text-red-600" : "text-emerald-600"}`}>
                     {excedeSaldo ? "Saldo insuficiente" : formatCOP(saldoRemanente)}
                   </span>
                 </div>
               )}
 
               {excedeSaldo && (
-                <div className="flex items-center gap-2 mt-2 text-red-400">
+                <div className="flex items-center gap-2 mt-2 text-red-600">
                   <AlertCircle size={14} />
                   <p className="text-xs font-semibold">El monto supera tu saldo disponible</p>
                 </div>
@@ -1028,15 +1028,15 @@ export default function ClienteTransferenciasPage() {
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold uppercase tracking-widest text-neutral-500 mb-2">Concepto o motivo (opcional)</label>
+              <label className="block text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-2">Concepto o motivo (opcional)</label>
               <input type="text" placeholder="Ej: Arriendo, almuerzo, cuota…" value={concepto} onChange={(e) => setConcepto(e.target.value)}
-                className="w-full bg-white/[0.06] border border-white/[0.12] rounded-2xl px-4 py-3.5 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30 transition"
+                className="w-full bg-slate-50 border border-slate-200/90 rounded-2xl px-4 py-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-sky-500 focus:bg-white shadow-sm transition"
               />
             </div>
 
             <div className="flex justify-end">
               <button disabled={!monto || Number(monto) <= 0 || excedeSaldo} onClick={() => setPaso("confirmar")}
-                className="bg-white hover:bg-neutral-100 disabled:opacity-40 text-black font-extrabold px-6 py-3 rounded-2xl text-sm flex items-center gap-2 transition active:scale-[0.98]">
+                className="apple-primary-button disabled:opacity-40 font-extrabold px-6 py-3 rounded-2xl text-sm flex items-center gap-2 transition active:scale-[0.98]">
                 Revisar <ChevronRight size={18} />
               </button>
             </div>
@@ -1047,17 +1047,17 @@ export default function ClienteTransferenciasPage() {
       {/* PASO 4: CONFIRMAR CON SEGURIDAD FOGAFÍN Y CANAL INMEDIATO */}
       {paso === "confirmar" && destinatario && (
         <div className="apple-glass-card rounded-3xl p-6 sm:p-8 space-y-5 animate-fade-in">
-          <button onClick={() => setPaso("detalles")} className="text-xs font-semibold text-neutral-400 hover:text-white flex items-center gap-1 transition">
+          <button onClick={() => setPaso("detalles")} className="text-xs font-semibold text-slate-500 hover:text-slate-900 flex items-center gap-1 transition">
             <ChevronLeft size={14} /> Volver a monto
           </button>
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-extrabold text-white">Confirma tu transferencia</h2>
-            <div className="flex items-center gap-1 text-[11px] text-emerald-400 font-bold uppercase tracking-wider bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
+            <h2 className="text-base font-extrabold text-slate-900">Confirma tu transferencia</h2>
+            <div className="flex items-center gap-1 text-[11px] text-emerald-600 font-bold uppercase tracking-wider bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
               <ShieldCheck size={14} /> Fogafín
             </div>
           </div>
 
-          <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-5 space-y-3">
+          <div className="bg-white/80 border border-slate-200/80 rounded-2xl p-5 space-y-3">
             {[
               { label: "Monto a enviar", value: formatCOP(monto), big: true },
               { label: "Destinatario", value: destinatario.nombre_titular },
@@ -1067,31 +1067,31 @@ export default function ClienteTransferenciasPage() {
               { label: "Canal de liquidación", value: destinatario.telefono ? "Bre-B Celular Inmediato" : "ACH Riel Interno Inmediato" },
               { label: "Concepto", value: concepto || "Sin concepto" },
             ].map((item) => (
-              <div key={item.label} className="flex justify-between items-center border-b border-white/[0.06] pb-3 last:border-0 last:pb-0">
-                <span className="text-sm text-neutral-400">{item.label}</span>
-                <span className={`font-bold text-white text-right ${item.big ? "text-xl text-emerald-400 font-mono" : "text-sm"}`}>{item.value}</span>
+              <div key={item.label} className="flex justify-between items-center border-b border-slate-200/70 pb-3 last:border-0 last:pb-0">
+                <span className="text-sm text-slate-500">{item.label}</span>
+                <span className={`font-bold text-slate-900 text-right ${item.big ? "text-xl text-emerald-600 font-mono" : "text-sm"}`}>{item.value}</span>
               </div>
             ))}
           </div>
 
-          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0">
+          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0">
               <KeyRound size={20} />
             </div>
             <div className="text-xs">
-              <p className="font-extrabold text-white">Autorización Protegida</p>
-              <p className="text-neutral-400 mt-0.5">
+              <p className="font-extrabold text-slate-900">Autorización Protegida</p>
+              <p className="text-slate-500 mt-0.5">
                 Esta transacción se valida mediante tu Clave Dinámica activa y genera comprobante contable automático en Ledger.
               </p>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
-            <button onClick={reiniciar} className="flex-1 border border-white/[0.12] hover:border-white/25 text-neutral-400 hover:text-white font-bold py-3.5 rounded-2xl text-sm transition">
+            <button onClick={reiniciar} className="apple-glass-button flex-1 font-bold py-3.5 rounded-2xl text-sm text-slate-600 hover:text-slate-900 transition">
               Cancelar
             </button>
             <button onClick={handleTransferir} disabled={enviando}
-              className="flex-1 bg-white hover:bg-neutral-100 disabled:opacity-40 text-black font-extrabold py-3.5 rounded-2xl text-sm flex items-center justify-center gap-2 transition active:scale-[0.98] shadow-lg shadow-white/10">
+              className="flex-1 apple-primary-button disabled:opacity-40 font-extrabold py-3.5 rounded-2xl text-sm flex items-center justify-center gap-2 transition active:scale-[0.98]">
               <Send size={16} /> Confirmar y Enviar
             </button>
           </div>

@@ -131,15 +131,15 @@ export default function ClaveDinamicaPage() {
   const porcentaje = (segundosRestantes / 60) * 100;
 
   return (
-    <div className="space-y-8 max-w-2xl mx-auto pb-12 font-sans text-neutral-100">
+    <div className="space-y-8 max-w-2xl mx-auto pb-12 font-sans text-slate-900">
       {/* Encabezado */}
-      <div className="flex items-center gap-4 pt-2 border-b border-white/[0.08] pb-6">
-        <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-amber-500/20 to-amber-400/10 border border-amber-400/20 text-amber-400 flex items-center justify-center shadow-lg">
+      <div className="flex items-center gap-4 pt-2 border-b border-slate-200/80 pb-6">
+        <div className="h-12 w-12 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center shadow-sm">
           <KeyRound size={24} />
         </div>
         <div>
-          <div className="inline-flex items-center gap-1.5 text-xs text-amber-400 font-semibold uppercase tracking-wider">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+          <div className="inline-flex items-center gap-1.5 text-xs text-amber-600 font-semibold uppercase tracking-wider">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
             Seguridad Bancaria Nequi Style
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight apple-text-gradient">
@@ -153,13 +153,13 @@ export default function ClaveDinamicaPage() {
         <div className="absolute inset-0 titanium-shimmer pointer-events-none opacity-40" />
 
         <div className="flex justify-between items-center relative z-10">
-          <span className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 flex items-center gap-1.5">
-            <Clock size={13} className="text-amber-400" /> Válida por {segundosRestantes}s
+          <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-1.5">
+            <Clock size={13} className="text-amber-600" /> Válida por {segundosRestantes}s
           </span>
           <button
             onClick={() => idUsuario && solicitarNuevaClave(idUsuario)}
             disabled={cargandoClave}
-            className="apple-glass-button px-3 py-1.5 rounded-xl text-xs font-semibold text-neutral-300 hover:text-white flex items-center gap-1.5 transition"
+            className="apple-glass-button px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1.5 transition"
           >
             <RefreshCw size={13} className={cargandoClave ? "animate-spin" : ""} />
             Actualizar
@@ -168,11 +168,11 @@ export default function ClaveDinamicaPage() {
 
         {/* Dígitos de la Clave Dinámica */}
         <div className="py-4 relative z-10 space-y-3">
-          <div className="inline-flex items-center justify-center gap-3 sm:gap-4 p-4 rounded-3xl bg-white/[0.04] border border-white/10 shadow-2xl">
+          <div className="inline-flex items-center justify-center gap-3 sm:gap-4 p-4 rounded-3xl bg-slate-50 border border-slate-200 shadow-sm">
             {clave.split("").map((digito, idx) => (
               <span
                 key={idx}
-                className="w-10 sm:w-12 h-14 sm:h-16 rounded-2xl bg-white/[0.08] border border-white/15 text-2xl sm:text-3xl font-mono font-black text-white flex items-center justify-center shadow-inner tracking-wider"
+                className="w-10 sm:w-12 h-14 sm:h-16 rounded-2xl bg-white border border-slate-200/80 text-2xl sm:text-3xl font-mono font-black text-slate-900 flex items-center justify-center shadow-sm tracking-wider"
               >
                 {digito}
               </span>
@@ -180,7 +180,7 @@ export default function ClaveDinamicaPage() {
           </div>
 
           {/* Barra de progreso de tiempo */}
-          <div className="w-full max-w-xs mx-auto bg-white/10 h-1.5 rounded-full overflow-hidden mt-4">
+          <div className="w-full max-w-xs mx-auto bg-slate-200 h-1.5 rounded-full overflow-hidden mt-4">
             <div
               className="bg-gradient-to-r from-amber-400 to-emerald-400 h-full transition-all duration-1000 ease-linear rounded-full"
               style={{ width: `${porcentaje}%` }}
@@ -192,7 +192,7 @@ export default function ClaveDinamicaPage() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 relative z-10 pt-2">
           <button
             onClick={copiarClave}
-            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-white hover:bg-neutral-100 text-black font-extrabold text-sm flex items-center justify-center gap-2 transition active:scale-95 shadow-xl shadow-white/10"
+            className="w-full sm:w-auto px-6 py-3 rounded-2xl apple-primary-button font-extrabold text-sm flex items-center justify-center gap-2 transition active:scale-95 shadow-md shadow-sky-500/20"
           >
             {copiado ? <Check size={16} className="text-emerald-600" /> : <Copy size={16} />}
             {copiado ? "¡Clave copiada!" : "Copiar clave dinámica"}
@@ -200,8 +200,8 @@ export default function ClaveDinamicaPage() {
         </div>
 
         {/* Banner informativo */}
-        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] text-xs text-neutral-400 text-left flex items-start gap-3 relative z-10">
-          <Info size={16} className="text-neutral-300 flex-shrink-0 mt-0.5" />
+        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs text-slate-500 text-left flex items-start gap-3 relative z-10">
+          <Info size={16} className="text-slate-400 flex-shrink-0 mt-0.5" />
           <p>
             Usa esta clave dinámica de 6 dígitos para autorizar transferencias de alto valor,
             pagos por internet y retiros en cajeros automáticos sin tarjeta. Cambia automáticamente
@@ -214,12 +214,12 @@ export default function ClaveDinamicaPage() {
       <div className="apple-glass-card rounded-3xl p-6 sm:p-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-xl bg-purple-50 border border-purple-200 text-purple-600 flex items-center justify-center">
               <Lock size={20} />
             </div>
             <div>
-              <h2 className="text-base font-extrabold text-white">PIN de Entrada Rápida (4 Dígitos)</h2>
-              <p className="text-xs text-neutral-400 mt-0.5">
+              <h2 className="text-base font-extrabold text-slate-900">PIN de Entrada Rápida (4 Dígitos)</h2>
+              <p className="text-xs text-slate-500 mt-0.5">
                 {tienePin
                   ? "Tienes un PIN activo. Puedes entrar con él en lugar de contraseña."
                   : "Configura tu PIN de 4 números para entrar rápido como en Nequi."}
@@ -229,7 +229,7 @@ export default function ClaveDinamicaPage() {
 
           <button
             onClick={() => setMostrarFormPin(!mostrarFormPin)}
-            className="apple-glass-button px-4 py-2.5 rounded-2xl text-xs font-bold text-white transition active:scale-95"
+            className="apple-glass-button px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-700 hover:text-slate-900 transition active:scale-95"
           >
             {mostrarFormPin ? "Cancelar" : tienePin ? "Cambiar PIN" : "Configurar PIN"}
           </button>
@@ -239,8 +239,8 @@ export default function ClaveDinamicaPage() {
           <div
             className={`p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 border ${
               pinMensaje.tipo === "ok"
-                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                : "bg-rose-500/10 border-rose-500/20 text-rose-400"
+                ? "bg-emerald-50 border-emerald-200 text-emerald-600"
+                : "bg-rose-50 border-rose-200 text-rose-600"
             }`}
           >
             {pinMensaje.tipo === "ok" ? <Check size={14} /> : <Info size={14} />}
@@ -250,10 +250,10 @@ export default function ClaveDinamicaPage() {
 
         {/* Formulario para configurar PIN */}
         {mostrarFormPin && (
-          <form onSubmit={handleGuardarPIN} className="space-y-4 pt-2 border-t border-white/[0.08] animate-fade-in">
+          <form onSubmit={handleGuardarPIN} className="space-y-4 pt-2 border-t border-slate-200/80 animate-fade-in">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-widest text-neutral-400 mb-2">
+                <label className="block text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-2">
                   Nuevo PIN (4 números)
                 </label>
                 <input
@@ -265,12 +265,12 @@ export default function ClaveDinamicaPage() {
                   placeholder="••••"
                   value={nuevoPin}
                   onChange={(e) => setNuevoPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                  className="w-full bg-white/[0.06] border border-white/[0.12] rounded-2xl px-4 py-3.5 text-center text-2xl font-mono tracking-[0.5em] text-white focus:outline-none focus:border-white/30 transition"
+                  className="w-full bg-slate-50 border border-slate-200/90 rounded-2xl px-4 py-3.5 text-center text-2xl font-mono tracking-[0.5em] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-sky-500 focus:bg-white shadow-sm transition"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-widest text-neutral-400 mb-2">
+                <label className="block text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-2">
                   Confirma tu PIN (4 números)
                 </label>
                 <input
@@ -282,7 +282,7 @@ export default function ClaveDinamicaPage() {
                   placeholder="••••"
                   value={confirmarPin}
                   onChange={(e) => setConfirmarPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                  className="w-full bg-white/[0.06] border border-white/[0.12] rounded-2xl px-4 py-3.5 text-center text-2xl font-mono tracking-[0.5em] text-white focus:outline-none focus:border-white/30 transition"
+                  className="w-full bg-slate-50 border border-slate-200/90 rounded-2xl px-4 py-3.5 text-center text-2xl font-mono tracking-[0.5em] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-sky-500 focus:bg-white shadow-sm transition"
                 />
               </div>
             </div>
@@ -291,7 +291,7 @@ export default function ClaveDinamicaPage() {
               <button
                 type="submit"
                 disabled={guardandoPin || nuevoPin.length !== 4 || confirmarPin.length !== 4}
-                className="bg-white hover:bg-neutral-100 disabled:opacity-40 text-black font-extrabold px-6 py-3 rounded-2xl text-sm flex items-center gap-2 transition active:scale-95 shadow-lg shadow-white/10"
+                className="apple-primary-button disabled:opacity-40 font-extrabold px-6 py-3 rounded-2xl text-sm flex items-center gap-2 transition active:scale-95 shadow-md shadow-sky-500/20"
               >
                 {guardandoPin ? "Guardando..." : "Guardar mi PIN"}
                 <ArrowRight size={16} />
@@ -303,21 +303,21 @@ export default function ClaveDinamicaPage() {
 
       {/* CANALES DE SEGURIDAD ASOCIADOS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="p-5 rounded-3xl bg-white/[0.03] border border-white/[0.08] space-y-2">
-          <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+        <div className="p-5 rounded-3xl bg-slate-50 border border-slate-200/80 space-y-2">
+          <div className="flex items-center gap-2 text-emerald-600 text-xs font-bold uppercase tracking-wider">
             <Smartphone size={16} /> WhatsApp Protegido
           </div>
-          <p className="text-xs text-neutral-400 leading-relaxed">
+          <p className="text-xs text-slate-500 leading-relaxed">
             Las confirmaciones 2FA y los comprobantes se envían de forma cifrada a tu número de WhatsApp
             registrado mediante Green API.
           </p>
         </div>
 
-        <div className="p-5 rounded-3xl bg-white/[0.03] border border-white/[0.08] space-y-2">
-          <div className="flex items-center gap-2 text-sky-400 text-xs font-bold uppercase tracking-wider">
+        <div className="p-5 rounded-3xl bg-slate-50 border border-slate-200/80 space-y-2">
+          <div className="flex items-center gap-2 text-sky-600 text-xs font-bold uppercase tracking-wider">
             <ShieldCheck size={16} /> Antifraude en Tiempo Real
           </div>
-          <p className="text-xs text-neutral-400 leading-relaxed">
+          <p className="text-xs text-slate-500 leading-relaxed">
             Tu cuenta cuenta con evaluación de riesgo instantánea en cada transacción, protegiendo
             tu saldo ante anomalías o accesos no reconocidos.
           </p>

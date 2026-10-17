@@ -10,59 +10,143 @@
     scroll-behavior: smooth;
   }
   body {
-    background-color: #000000;
-    color: #f5f5f7;
+    background-color: #f8fafc;
+    color: #0f172a;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
 }
 
-/* Apple Fluid Motion & Glassmorphism Utilities */
+/* ======================================================== */
+/* APPLE WHITE GLASS GLOW DESIGN SYSTEM                     */
+/* Encoded with Emil Kowalski Design Engineering Standards  */
+/* ======================================================== */
+
+/* Ambient Glow Light Canvas */
+.apple-ambient-glow {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  pointer-events: none;
+  opacity: 0.55;
+  transition: all 0.5s ease-out;
+}
+
+/* Translucent Frosted Glass Base */
 .apple-glass {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.76);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.05), 0 1px 3px 0 rgba(15, 23, 42, 0.03), inset 0 1px 1px 0 rgba(255, 255, 255, 1);
 }
 
+/* Liquid White Glass Card with Specular Highlight */
 .apple-glass-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 100%);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-}
-
-.apple-glass-button {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.70) 100%);
+  backdrop-filter: blur(32px) saturate(190%);
+  -webkit-backdrop-filter: blur(32px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 
+    0 20px 45px -15px rgba(15, 23, 42, 0.06),
+    0 1px 3px 0 rgba(15, 23, 42, 0.03),
+    0 0 0 1px rgba(226, 232, 240, 0.5),
+    inset 0 1px 2px rgba(255, 255, 255, 1);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+.apple-glass-card:hover {
+  border-color: rgba(255, 255, 255, 1);
+  box-shadow: 
+    0 25px 50px -12px rgba(15, 23, 42, 0.09),
+    0 0 0 1px rgba(14, 165, 233, 0.2),
+    inset 0 1px 2px rgba(255, 255, 255, 1);
+  transform: translateY(-2px);
+}
+
+/* Apple Glass Glow - Luminous Cyan/Blue Aura */
+.apple-glass-glow {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.78) 100%);
+  backdrop-filter: blur(32px) saturate(190%);
+  -webkit-backdrop-filter: blur(32px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 1);
+  box-shadow: 
+    0 20px 50px -12px rgba(14, 165, 233, 0.16),
+    0 0 35px -5px rgba(56, 189, 248, 0.12),
+    0 0 0 1px rgba(14, 165, 233, 0.15),
+    inset 0 1px 3px rgba(255, 255, 255, 1);
+}
+
+/* Apple Glass Glow - Emerald (Banking Security) */
+.apple-glass-glow-emerald {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.78) 100%);
+  backdrop-filter: blur(32px) saturate(190%);
+  -webkit-backdrop-filter: blur(32px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 1);
+  box-shadow: 
+    0 20px 50px -12px rgba(16, 185, 129, 0.16),
+    0 0 35px -5px rgba(52, 211, 153, 0.12),
+    0 0 0 1px rgba(16, 185, 129, 0.18),
+    inset 0 1px 3px rgba(255, 255, 255, 1);
+}
+
+/* Apple Glass Button (Emil Kowalski Instant Active Press) */
+.apple-glass-button {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(203, 213, 225, 0.7);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04), inset 0 1px 0 rgba(255, 255, 255, 1);
+  color: #0f172a;
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 .apple-glass-button:hover {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 1);
+  border-color: rgba(148, 163, 184, 0.9);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1);
   transform: translateY(-1px);
 }
+
 .apple-glass-button:active {
   transform: scale(0.97);
 }
 
-.apple-text-gradient {
-  background: linear-gradient(180deg, #FFFFFF 0%, #A1A1A6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* Primary Glass Pill Button */
+.apple-primary-button {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 6px 20px -4px rgba(2, 132, 199, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.apple-text-gradient-gold {
-  background: linear-gradient(135deg, #FCE8B2 0%, #E3A857 50%, #C47B2B 100%);
+.apple-primary-button:hover {
+  background: linear-gradient(135deg, #38bdf8 0%, #0369a1 100%);
+  box-shadow: 0 8px 24px -4px rgba(2, 132, 199, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.apple-primary-button:active {
+  transform: scale(0.97);
+}
+
+/* Apple High-Fidelity Typography Gradients (Light Mode) */
+.apple-text-gradient {
+  background: linear-gradient(180deg, #0f172a 0%, #334155 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .apple-text-gradient-cyan {
-  background: linear-gradient(135deg, #A5F3FC 0%, #06B6D4 50%, #0284C7 100%);
+  background: linear-gradient(135deg, #0284c7 0%, #0f766e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.apple-text-gradient-gold {
+  background: linear-gradient(135deg, #b45309 0%, #d97706 50%, #92400e 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -82,8 +166,18 @@
   transform: rotateY(180deg);
 }
 
-/* Titanium Shimmer */
-@keyframes shimmer {
+/* Apple White Titanium Card Finish */
+.apple-white-titanium {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 40%, #e2e8f0 100%);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 
+    0 25px 60px -15px rgba(15, 23, 42, 0.12),
+    0 0 0 1px rgba(203, 213, 225, 0.6),
+    inset 0 1px 3px rgba(255, 255, 255, 1);
+}
+
+/* Pearlescent Holographic Shimmer */
+@keyframes pearlShimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
@@ -92,11 +186,11 @@
   background: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.65) 50%,
     rgba(255, 255, 255, 0) 100%
   );
   background-size: 200% 100%;
-  animation: shimmer 4s infinite linear;
+  animation: pearlShimmer 4.5s infinite linear;
 }
 
 /* Camera QR Laser Scanner */
@@ -117,4 +211,14 @@
 
 .laser-scanner {
   animation: laserScan 2.4s ease-in-out infinite;
+}
+
+/* Accessibility: Reduced motion rule */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

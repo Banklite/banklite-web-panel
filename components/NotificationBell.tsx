@@ -96,24 +96,24 @@ export function NotificationBell({ idUsuario }: { idUsuario: string }) {
           if (!abierto) cargar();
         }}
         aria-label="Notificaciones"
-        className="relative h-9 w-9 rounded-full bg-white/[0.06] border border-white/[0.12] hover:bg-white/[0.12] hover:border-white/20 text-neutral-300 hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-sm"
+        className="relative h-9 w-9 rounded-full bg-white/90 border border-slate-200/80 hover:bg-white hover:border-slate-300 text-slate-700 hover:text-slate-950 flex items-center justify-center transition-all active:scale-[0.97] shadow-sm"
       >
         <Bell size={17} />
         {noLeidas > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center shadow-lg shadow-rose-500/50 animate-pulse">
+          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center shadow-md shadow-rose-500/30 animate-pulse">
             {noLeidas > 9 ? "9+" : noLeidas}
           </span>
         )}
       </button>
 
       {abierto && (
-        <div className="absolute right-0 mt-3 w-80 sm:w-96 max-w-[92vw] bg-neutral-950/95 backdrop-blur-3xl rounded-3xl border border-white/[0.15] shadow-2xl z-50 overflow-hidden animate-fade-in">
+        <div className="absolute right-0 mt-3 w-80 sm:w-96 max-w-[92vw] bg-white/95 backdrop-blur-3xl rounded-3xl border border-slate-200/90 shadow-2xl z-50 overflow-hidden animate-fade-in text-slate-900">
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.08] bg-white/[0.02]">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/50">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-extrabold text-white tracking-tight">Notificaciones</span>
+              <span className="text-sm font-extrabold text-slate-900 tracking-tight">Notificaciones</span>
               {noLeidas > 0 && (
-                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-white/10 text-neutral-300">
+                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-sky-100 text-sky-700">
                   {noLeidas} nuevas
                 </span>
               )}
@@ -123,14 +123,14 @@ export function NotificationBell({ idUsuario }: { idUsuario: string }) {
                 onClick={recargarManual}
                 disabled={cargando}
                 title="Actualizar"
-                className="text-neutral-400 hover:text-white p-1 rounded-lg transition"
+                className="text-slate-400 hover:text-slate-800 p-1 rounded-lg transition"
               >
                 <RefreshCw size={13} className={cargando ? "animate-spin" : ""} />
               </button>
               {noLeidas > 0 && (
                 <button
                   onClick={leerTodas}
-                  className="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 transition flex items-center gap-1"
+                  className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 transition flex items-center gap-1"
                 >
                   <Check size={12} /> Marcar leídas
                 </button>
@@ -139,40 +139,40 @@ export function NotificationBell({ idUsuario }: { idUsuario: string }) {
           </div>
 
           {/* Listado */}
-          <div className="max-h-[380px] overflow-y-auto divide-y divide-white/[0.06] scrollbar-thin">
+          <div className="max-h-[380px] overflow-y-auto divide-y divide-slate-100 scrollbar-thin">
             {items.length === 0 ? (
               <div className="p-8 text-center space-y-2">
-                <div className="h-10 w-10 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-neutral-500 flex items-center justify-center mx-auto">
+                <div className="h-10 w-10 rounded-2xl bg-slate-100 border border-slate-200/60 text-slate-400 flex items-center justify-center mx-auto">
                   <Bell size={18} />
                 </div>
-                <p className="text-xs font-semibold text-neutral-400">Sin notificaciones por ahora</p>
-                <p className="text-[10px] text-neutral-600">Te avisaremos sobre tus transferencias y accesos.</p>
+                <p className="text-xs font-semibold text-slate-600">Sin notificaciones por ahora</p>
+                <p className="text-[10px] text-slate-400">Te avisaremos sobre tus transferencias y accesos.</p>
               </div>
             ) : (
               items.map((n) => (
                 <button
                   key={n.id_notificacion}
                   onClick={() => leer(n)}
-                  className={`w-full text-left px-5 py-3.5 flex gap-3.5 hover:bg-white/[0.04] transition-all ${
-                    n.leida ? "opacity-60" : "bg-white/[0.02]"
+                  className={`w-full text-left px-5 py-3.5 flex gap-3.5 hover:bg-slate-50/80 transition-all ${
+                    n.leida ? "opacity-60" : "bg-white"
                   }`}
                 >
-                  <div className="mt-0.5 h-8 w-8 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center flex-shrink-0">
+                  <div className="mt-0.5 h-8 w-8 rounded-xl bg-slate-100 border border-slate-200/80 flex items-center justify-center flex-shrink-0">
                     {icono(n.tipo)}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-xs font-bold text-white truncate">{n.titulo}</p>
-                      <span className="text-[10px] text-neutral-500 font-mono whitespace-nowrap">
+                      <p className="text-xs font-bold text-slate-900 truncate">{n.titulo}</p>
+                      <span className="text-[10px] text-slate-400 font-mono whitespace-nowrap">
                         {hace(n.fecha)}
                       </span>
                     </div>
-                    <p className="text-[11px] text-neutral-300 mt-0.5 leading-relaxed break-words">
+                    <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed break-words">
                       {n.mensaje}
                     </p>
                   </div>
                   {!n.leida && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0 self-center" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0 self-center" />
                   )}
                 </button>
               ))

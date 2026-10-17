@@ -87,21 +87,21 @@ export function ClaveDinamicaWidget({ idUsuario }: { idUsuario: string }) {
 
   return (
     <div className="relative" ref={widgetRef}>
-      {/* Pill estilo Nequi / Apple Titanium en la barra superior */}
+      {/* Pill estilo Apple White Glass Glow */}
       <div
         onClick={() => setAbierto((prev) => !prev)}
-        className="group flex items-center gap-1.5 sm:gap-2.5 bg-white/[0.06] hover:bg-white/[0.10] border border-white/[0.12] hover:border-amber-400/40 rounded-full px-2.5 sm:px-3.5 py-1.5 transition-all cursor-pointer shadow-sm active:scale-95 select-none"
+        className="group flex items-center gap-1.5 sm:gap-2.5 bg-white/90 hover:bg-white border border-slate-200/80 hover:border-amber-400/50 rounded-full px-2.5 sm:px-3.5 py-1.5 transition-all cursor-pointer shadow-sm active:scale-[0.97] select-none text-slate-800"
         title="Clave Dinámica Nequi Style"
       >
-        <div className="flex items-center gap-1.5 text-amber-400 font-extrabold text-xs">
+        <div className="flex items-center gap-1.5 text-amber-500 font-extrabold text-xs">
           <KeyRound size={15} className="flex-shrink-0 animate-pulse" />
-          <span className="hidden md:inline text-[11px] uppercase tracking-wider text-neutral-400 font-bold">
+          <span className="hidden md:inline text-[11px] uppercase tracking-wider text-slate-500 font-bold">
             Dinámica
           </span>
         </div>
 
         {/* Código o puntos */}
-        <span className="font-mono text-xs sm:text-sm font-black text-white tracking-widest px-1">
+        <span className="font-mono text-xs sm:text-sm font-black text-slate-900 tracking-widest px-1">
           {claveFormateada}
         </span>
 
@@ -109,7 +109,7 @@ export function ClaveDinamicaWidget({ idUsuario }: { idUsuario: string }) {
         <button
           type="button"
           onClick={handleToggleVisibilidad}
-          className="p-1 rounded-lg text-neutral-400 hover:text-white hover:bg-white/10 transition"
+          className="p-1 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition active:scale-[0.95]"
           title={visible ? "Ocultar clave" : "Mostrar clave"}
         >
           {visible ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -119,14 +119,14 @@ export function ClaveDinamicaWidget({ idUsuario }: { idUsuario: string }) {
         <button
           type="button"
           onClick={handleCopiar}
-          className="p-1 rounded-lg text-neutral-400 hover:text-white hover:bg-white/10 transition"
+          className="p-1 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition active:scale-[0.95]"
           title="Copiar clave dinámica"
         >
-          {copiado ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+          {copiado ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
         </button>
 
         {/* Temporizador circular o badge */}
-        <div className="flex items-center gap-1 text-[10px] font-mono font-bold text-amber-400 bg-amber-500/10 border border-amber-400/20 px-2 py-0.5 rounded-full ml-0.5">
+        <div className="flex items-center gap-1 text-[10px] font-mono font-bold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full ml-0.5">
           <Clock size={11} className="hidden sm:inline" />
           <span>{segundos}s</span>
         </div>
@@ -134,23 +134,23 @@ export function ClaveDinamicaWidget({ idUsuario }: { idUsuario: string }) {
 
       {/* Popover flotante desplegable con detalles y acciones adicionales */}
       {abierto && (
-        <div className="absolute right-0 mt-3 w-72 sm:w-80 bg-neutral-950/95 backdrop-blur-3xl rounded-3xl border border-white/[0.15] shadow-2xl z-50 p-5 space-y-4 animate-fade-in text-left">
-          <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
+        <div className="absolute right-0 mt-3 w-72 sm:w-80 bg-white/95 backdrop-blur-3xl rounded-3xl border border-slate-200/90 shadow-2xl z-50 p-5 space-y-4 animate-fade-in text-left text-slate-900">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2">
-              <KeyRound size={16} className="text-amber-400" />
-              <span className="text-xs font-extrabold text-white uppercase tracking-wider">
+              <KeyRound size={16} className="text-amber-500" />
+              <span className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
                 Clave Dinámica Nequi
               </span>
             </div>
-            <span className="text-[10px] font-mono text-neutral-400">
-              Vence en <strong className="text-amber-400">{segundos}s</strong>
+            <span className="text-[10px] font-mono text-slate-500">
+              Vence en <strong className="text-amber-600">{segundos}s</strong>
             </span>
           </div>
 
           <div className="text-center py-2 space-y-2">
-            <p className="text-[11px] text-neutral-400">Tu código de seguridad temporal es:</p>
-            <div className="p-3 bg-white/[0.05] border border-white/10 rounded-2xl flex items-center justify-center gap-2">
-              <span className="font-mono text-2xl font-black text-white tracking-[0.25em]">
+            <p className="text-[11px] text-slate-500">Tu código de seguridad temporal es:</p>
+            <div className="p-3 bg-slate-50 border border-slate-200/70 rounded-2xl flex items-center justify-center gap-2 shadow-inner">
+              <span className="font-mono text-2xl font-black text-slate-900 tracking-[0.25em]">
                 {visible && claveReal ? claveReal : "••••••"}
               </span>
             </div>
@@ -159,39 +159,37 @@ export function ClaveDinamicaWidget({ idUsuario }: { idUsuario: string }) {
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={handleToggleVisibilidad}
-              className="apple-glass-button py-2 px-3 rounded-xl text-xs font-bold text-neutral-300 hover:text-white flex items-center justify-center gap-1.5 transition"
+              className="apple-glass-button py-2 px-3 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-950 flex items-center justify-center gap-1.5 transition active:scale-[0.97]"
             >
               {visible ? <EyeOff size={14} /> : <Eye size={14} />}
               {visible ? "Ocultar" : "Revelar"}
             </button>
             <button
               onClick={handleCopiar}
-              className="py-2 px-3 rounded-xl text-xs font-bold bg-white hover:bg-neutral-100 text-black flex items-center justify-center gap-1.5 transition active:scale-95 shadow"
+              className="py-2 px-3 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white flex items-center justify-center gap-1.5 transition active:scale-[0.97] shadow"
             >
-              {copiado ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+              {copiado ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
               {copiado ? "¡Copiada!" : "Copiar"}
             </button>
           </div>
 
-          <div className="flex items-center justify-between pt-2 border-t border-white/[0.08] text-[11px]">
+          <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px]">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 cargarNuevaClave();
               }}
               disabled={cargando}
-              className="text-neutral-400 hover:text-white flex items-center gap-1 transition"
+              className="text-slate-500 hover:text-slate-900 flex items-center gap-1 transition"
             >
               <RefreshCw size={12} className={cargando ? "animate-spin" : ""} />
-              Nueva clave
+              <span>Regenerar ahora</span>
             </button>
-
             <Link
               href="/cliente/clave-dinamica"
-              onClick={() => setAbierto(false)}
-              className="text-amber-400 hover:text-amber-300 font-bold hover:underline"
+              className="font-bold text-sky-600 hover:text-sky-700 transition"
             >
-              Ver completa →
+              Configurar 2FA →
             </Link>
           </div>
         </div>

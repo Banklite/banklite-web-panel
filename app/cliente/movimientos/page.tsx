@@ -189,25 +189,25 @@ export default function ClienteMovimientosPage() {
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-24 gap-4">
-      <Loader2 size={40} className="text-white animate-spin" />
-      <p className="text-sm text-neutral-400 font-semibold">Cargando movimientos…</p>
+      <Loader2 size={40} className="text-sky-600 animate-spin" />
+      <p className="text-sm text-slate-500 font-semibold">Cargando movimientos…</p>
     </div>
   );
 
   if (error) return (
-    <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-8 flex items-center gap-4">
-      <AlertCircle size={28} className="text-red-400 flex-shrink-0" />
-      <p className="text-red-400 font-semibold">{error}</p>
+    <div className="bg-red-50 border border-red-200 rounded-2xl p-8 flex items-center gap-4">
+      <AlertCircle size={28} className="text-red-600 flex-shrink-0" />
+      <p className="text-red-600 font-semibold">{error}</p>
     </div>
   );
 
   if (cuentas.length === 0) return (
     <div className="apple-glass-card rounded-3xl p-16 text-center space-y-4">
-      <div className="inline-flex p-5 rounded-3xl bg-white/[0.04] border border-white/[0.08]">
-        <Wallet size={40} className="text-neutral-600" />
+      <div className="inline-flex p-5 rounded-3xl bg-slate-50 border border-slate-200/80">
+        <Wallet size={40} className="text-slate-400" />
       </div>
-      <h2 className="text-lg font-extrabold text-white">Aún no tienes cuentas</h2>
-      <p className="text-sm text-neutral-500">Comunícate con un asesor para abrir tu cuenta.</p>
+      <h2 className="text-lg font-extrabold text-slate-900">Aún no tienes cuentas</h2>
+      <p className="text-sm text-slate-400">Comunícate con un asesor para abrir tu cuenta.</p>
     </div>
   );
 
@@ -216,18 +216,18 @@ export default function ClienteMovimientosPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+          <div className="h-12 w-12 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center">
             <FileText size={24} />
           </div>
           <div>
-            <h1 className="text-2xl font-extrabold text-white tracking-tight">Mis Movimientos</h1>
-            <p className="text-sm text-neutral-400">Historial contable en doble partida</p>
+            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Mis Movimientos</h1>
+            <p className="text-sm text-slate-500">Historial contable en doble partida</p>
           </div>
         </div>
         <button
           onClick={() => generarExtractoPDF(filtradas.map(toPdfMov), nombreUsuario, desde, hasta, cuentas[0]?.numero_cuenta ?? undefined)}
           disabled={filtradas.length === 0}
-          className="apple-glass-button rounded-2xl px-4 py-2.5 text-sm font-bold text-white flex items-center gap-2 disabled:opacity-40"
+          className="apple-glass-button rounded-2xl px-4 py-2.5 text-sm font-bold text-slate-700 hover:text-slate-950 flex items-center gap-2 disabled:opacity-40"
         >
           <Download size={16} /> Descargar extracto
         </button>
@@ -240,15 +240,15 @@ export default function ClienteMovimientosPage() {
           return (
             <div key={c.id_cuenta} className="apple-glass-card rounded-3xl p-6 relative overflow-hidden">
               <div className="absolute top-4 right-4 opacity-[0.06]"><Wallet size={60} /></div>
-              <p className="text-[11px] font-bold uppercase tracking-widest text-neutral-500 mb-1 capitalize">{c.tipo_cuenta} · {c.moneda}</p>
-              <p className="text-xs font-mono text-neutral-600 mb-3">{c.numero_cuenta ?? "Sin número"}</p>
-              <p className="text-xs text-neutral-500 mb-0.5">Saldo Disponible</p>
+              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-1 capitalize">{c.tipo_cuenta} · {c.moneda}</p>
+              <p className="text-xs font-mono text-slate-400 mb-3">{c.numero_cuenta ?? "Sin número"}</p>
+              <p className="text-xs text-slate-400 mb-0.5">Saldo Disponible</p>
               {s ? (
-                <p className="text-3xl font-black text-white">${Number(s.saldo_actual).toLocaleString()}</p>
+                <p className="text-3xl font-black text-slate-900">${Number(s.saldo_actual).toLocaleString()}</p>
               ) : (
-                <p className="text-lg font-bold text-neutral-500">No disponible</p>
+                <p className="text-lg font-bold text-slate-400">No disponible</p>
               )}
-              <div className="mt-4 flex items-center gap-1.5 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+              <div className="mt-4 flex items-center gap-1.5 text-emerald-600 text-xs font-bold uppercase tracking-wider">
                 <TrendingUp size={14} /> {c.estado}
               </div>
             </div>
@@ -259,23 +259,23 @@ export default function ClienteMovimientosPage() {
       {/* Filtros + tabla */}
       <div className="apple-glass-card rounded-3xl overflow-hidden">
         {/* Filtros */}
-        <div className="px-6 py-4 border-b border-white/[0.06] flex flex-wrap items-end gap-4">
-          <div className="flex items-center gap-2 text-neutral-400">
+        <div className="px-6 py-4 border-b border-slate-200/70 flex flex-wrap items-end gap-4">
+          <div className="flex items-center gap-2 text-slate-500">
             <Filter size={14} />
             <span className="text-xs font-bold uppercase tracking-wider">Filtrar por fecha</span>
           </div>
-          <label className="text-xs font-semibold text-neutral-500 flex flex-col gap-1">
+          <label className="text-xs font-semibold text-slate-500 flex flex-col gap-1">
             <span className="flex items-center gap-1"><Calendar size={12} /> Desde</span>
             <input type="date" value={desde} max={hasta || undefined} onChange={(e) => setDesde(e.target.value)}
-              className="bg-white/[0.06] border border-white/[0.12] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/30 transition" />
+              className="bg-slate-50 border border-slate-200/90 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-sky-500 focus:bg-white shadow-sm transition" />
           </label>
-          <label className="text-xs font-semibold text-neutral-500 flex flex-col gap-1">
+          <label className="text-xs font-semibold text-slate-500 flex flex-col gap-1">
             <span className="flex items-center gap-1"><Calendar size={12} /> Hasta</span>
             <input type="date" value={hasta} min={desde || undefined} onChange={(e) => setHasta(e.target.value)}
-              className="bg-white/[0.06] border border-white/[0.12] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white/30 transition" />
+              className="bg-slate-50 border border-slate-200/90 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-sky-500 focus:bg-white shadow-sm transition" />
           </label>
           {(desde || hasta) && (
-            <button onClick={() => { setDesde(""); setHasta(""); }} className="text-xs text-neutral-500 hover:text-white font-semibold transition pb-0.5">
+            <button onClick={() => { setDesde(""); setHasta(""); }} className="text-xs text-slate-500 hover:text-slate-900 font-semibold transition pb-0.5">
               Limpiar
             </button>
           )}
@@ -284,40 +284,40 @@ export default function ClienteMovimientosPage() {
         {/* Lista */}
         {filtradas.length === 0 ? (
           <div className="p-12 text-center">
-            <p className="text-neutral-500 text-sm">
+            <p className="text-slate-500 text-sm">
               {transferencias.length === 0 ? "No has realizado ninguna transferencia todavía." : "No hay movimientos en el rango de fechas seleccionado."}
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-white/[0.05]">
+          <div className="divide-y divide-slate-200/70">
             {filtradas.map(t => {
               const benef = t.benefInfo;
               const isError = t.estado === "error" || t.estado === "fallida" || t.estado === "rechazada";
               return (
                 <div key={t.id_transferencia} onClick={() => setSelectedTx(t)}
-                  className="px-5 py-4 flex items-center justify-between gap-4 hover:bg-white/[0.03] transition cursor-pointer">
+                  className="px-5 py-4 flex items-center justify-between gap-4 hover:bg-slate-50 transition cursor-pointer">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className={`h-10 w-10 rounded-xl flex-shrink-0 flex items-center justify-center ${isError ? "bg-red-500/10 text-red-400" : t.esIngreso ? "bg-emerald-500/10 text-emerald-400" : "bg-white/[0.06] text-neutral-400"}`}>
+                    <div className={`h-10 w-10 rounded-xl flex-shrink-0 flex items-center justify-center ${isError ? "bg-red-50 text-red-600" : t.esIngreso ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"}`}>
                       {t.esIngreso ? <ArrowDownLeft size={18} /> : <ArrowUpRight size={18} />}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-semibold text-white text-sm truncate">
+                      <p className="font-semibold text-slate-900 text-sm truncate">
                         {t.esIngreso ? `De: Cuenta ${short(t.id_cuenta_origen)}` : `A: ${benef ? benef.nombre : "Desconocido"}`}
                       </p>
-                      <p className="text-xs text-neutral-500 truncate">
+                      <p className="text-xs text-slate-500 truncate">
                         Ref: {t.referencia || short(t.id_transferencia)} · {new Date(t.fecha_solicitud).toLocaleDateString("es-CO")}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 flex-shrink-0">
                     <div className="text-right">
-                      <p className={`text-sm font-extrabold ${isError ? "text-neutral-500 line-through" : t.esIngreso ? "text-emerald-400" : "text-white"}`}>
+                      <p className={`text-sm font-extrabold ${isError ? "text-slate-400 line-through" : t.esIngreso ? "text-emerald-600" : "text-slate-900"}`}>
                         {t.esIngreso ? "+" : "-"}${Number(t.monto).toLocaleString()}
                       </p>
-                      <p className={`text-[10px] font-bold uppercase tracking-wider mt-0.5 ${isError ? "text-red-400" : "text-neutral-500"}`}>{t.estado}</p>
+                      <p className={`text-[10px] font-bold uppercase tracking-wider mt-0.5 ${isError ? "text-red-600" : "text-slate-500"}`}>{t.estado}</p>
                     </div>
                     <button onClick={(e) => { e.stopPropagation(); generarComprobantePDF(toPdfMov(t), nombreUsuario); }}
-                      className="apple-glass-button rounded-xl p-2 text-neutral-400 hover:text-white transition" title="Comprobante">
+                      className="apple-glass-button rounded-xl p-2 text-slate-500 hover:text-slate-900 transition" title="Comprobante">
                       <FileText size={14} />
                     </button>
                   </div>
@@ -330,50 +330,50 @@ export default function ClienteMovimientosPage() {
 
       {/* MODAL COMPROBANTE ESTILO NEQUI EN GRANDE CON QR DE TRANSACCIÓN */}
       {selectedTx && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3 sm:p-4 backdrop-blur-md overflow-y-auto animate-fade-in">
-          <div className="apple-glass-card rounded-3xl max-w-lg w-full overflow-hidden border border-white/20 shadow-2xl my-auto relative">
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-3 sm:p-4 backdrop-blur-md overflow-y-auto animate-fade-in">
+          <div className="apple-glass-card rounded-3xl max-w-lg w-full overflow-hidden border border-slate-200/90 shadow-2xl my-auto relative">
             {/* Botón cerrar */}
             <button
               onClick={() => setSelectedTx(null)}
-              className="absolute top-4 right-4 text-neutral-400 hover:text-white transition p-2 rounded-2xl bg-white/[0.06] hover:bg-white/[0.12] z-10"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition p-2 rounded-2xl bg-slate-100 hover:bg-slate-200/80 z-10"
             >
               <X size={18} />
             </button>
 
             {/* Encabezado Nequi */}
-            <div className="p-6 sm:p-8 text-center space-y-4 border-b border-white/[0.08]">
-              <div className="inline-flex p-3.5 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+            <div className="p-6 sm:p-8 text-center space-y-4 border-b border-slate-200/80">
+              <div className="inline-flex p-3.5 rounded-3xl bg-emerald-50 border border-emerald-200 text-emerald-600">
                 <CheckCircle size={44} />
               </div>
 
               <div>
-                <span className="text-[11px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-3 py-1 rounded-full">
+                <span className="text-[11px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
                   ¡Listo! Transacción Exitosa
                 </span>
-                <h2 className="text-xl sm:text-2xl font-black text-white mt-2.5">
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-2.5">
                   {selectedTx.esIngreso
                     ? "Te llegó plata a tu cuenta"
                     : `Enviaste a ${selectedTx.benefInfo?.nombre || "Destinatario"}`}
                 </h2>
-                <p className="text-4xl sm:text-5xl font-black text-white mt-2 font-mono tracking-tight">
-                  ${formatNumber(selectedTx.monto)} <span className="text-base text-neutral-400 font-sans">COP</span>
+                <p className="text-4xl sm:text-5xl font-black text-slate-900 mt-2 font-mono tracking-tight">
+                  ${formatNumber(selectedTx.monto)} <span className="text-base text-slate-400 font-sans">COP</span>
                 </p>
               </div>
 
               {/* QR DINÁMICO DE VERIFICACIÓN DE TRANSACCIÓN */}
               {qrModalUrl && (
                 <div className="pt-2">
-                  <div className="inline-block p-4 bg-white rounded-3xl shadow-2xl mx-auto">
+                  <div className="inline-block p-4 bg-white rounded-3xl border border-slate-100 shadow-xl mx-auto">
                     <img
                       src={qrModalUrl}
                       alt="Código QR de Verificación de Transacción"
                       className="w-40 h-40 sm:w-48 sm:h-48 mx-auto rounded-xl"
                     />
                     <div className="mt-2 text-center">
-                      <p className="text-[10px] font-black text-black tracking-widest uppercase">
+                      <p className="text-[10px] font-black text-slate-900 tracking-widest uppercase">
                         Comprobante Verificado Bre-B
                       </p>
-                      <p className="text-[9px] font-mono text-neutral-600">
+                      <p className="text-[9px] font-mono text-slate-500">
                         Ref: {(selectedTx.referencia || selectedTx.id_transferencia).slice(-10)}
                       </p>
                     </div>
@@ -384,7 +384,7 @@ export default function ClienteMovimientosPage() {
 
             {/* DETALLES DE LA TRANSACCIÓN */}
             <div className="p-6 sm:p-8 space-y-4">
-              <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4 sm:p-5 space-y-3">
+              <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 sm:p-5 space-y-3">
                 {[
                   {
                     label: selectedTx.esIngreso ? "¿Quién te envió?" : "¿Para quién?",
@@ -419,23 +419,23 @@ export default function ClienteMovimientosPage() {
                 ].map((item) => (
                   <div
                     key={item.label}
-                    className="flex justify-between items-center text-xs border-b border-white/[0.06] pb-2.5 last:border-0 last:pb-0"
+                    className="flex justify-between items-center text-xs border-b border-slate-200/70 pb-2.5 last:border-0 last:pb-0"
                   >
-                    <span className="text-neutral-400">{item.label}</span>
-                    <div className="flex items-center gap-1.5 font-bold text-white text-right max-w-[60%]">
+                    <span className="text-slate-500">{item.label}</span>
+                    <div className="flex items-center gap-1.5 font-bold text-slate-900 text-right max-w-[60%]">
                       <span className="truncate">{item.value}</span>
                       {item.canCopy && (
                         <button
                           type="button"
                           onClick={() => {
-                            navigator.clipboard.writeText(item.value);
+                              navigator.clipboard.writeText(item.value);
                             setCopiadoRef(true);
                             setTimeout(() => setCopiadoRef(false), 2000);
                           }}
-                          className="text-neutral-400 hover:text-white p-1"
+                          className="text-slate-400 hover:text-slate-700 p-1"
                           title="Copiar referencia"
                         >
-                          {copiadoRef ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                          {copiadoRef ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
                         </button>
                       )}
                     </div>
@@ -444,11 +444,11 @@ export default function ClienteMovimientosPage() {
               </div>
 
               {/* Distintivo de seguridad Fogafín */}
-              <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.06] text-[11px] text-neutral-400">
+              <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-50 border border-slate-200/70 text-[11px] text-slate-500">
                 <span className="flex items-center gap-1.5 font-semibold">
-                  <ShieldCheck size={14} className="text-emerald-400" /> Certificado de pago electrónico
+                  <ShieldCheck size={14} className="text-emerald-600" /> Certificado de pago electrónico
                 </span>
-                <span className="font-bold text-neutral-500 uppercase tracking-widest text-[10px]">
+                <span className="font-bold text-slate-400 uppercase tracking-widest text-[10px]">
                   Fogafín Respaldado
                 </span>
               </div>
@@ -473,7 +473,7 @@ export default function ClienteMovimientosPage() {
                       `🔐 Transacción respaldada por Red Bre-B & Fogafín.`;
                     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`, "_blank");
                   }}
-                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold py-3.5 rounded-2xl text-xs flex justify-center items-center gap-2 transition active:scale-95 shadow-lg shadow-emerald-500/20"
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3.5 rounded-2xl text-xs flex justify-center items-center gap-2 transition active:scale-95 shadow-lg shadow-emerald-600/20"
                 >
                   <Share2 size={15} /> Compartir en WhatsApp
                 </button>
@@ -481,7 +481,7 @@ export default function ClienteMovimientosPage() {
                 <button
                   type="button"
                   onClick={() => generarComprobantePDF(toPdfMov(selectedTx), nombreUsuario)}
-                  className="w-full apple-glass-button text-white font-extrabold py-3.5 rounded-2xl text-xs flex justify-center items-center gap-2 transition active:scale-95"
+                  className="w-full apple-glass-button text-slate-700 hover:text-slate-900 font-extrabold py-3.5 rounded-2xl text-xs flex justify-center items-center gap-2 transition active:scale-95"
                 >
                   <Download size={15} /> Descargar PDF / Imprimir
                 </button>

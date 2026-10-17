@@ -110,15 +110,15 @@ export default function ClienteTarjetasPage() {
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-24 gap-4">
-      <Loader2 size={40} className="text-white animate-spin" />
-      <p className="text-sm text-neutral-400 font-semibold">Cargando tus tarjetas…</p>
+      <Loader2 size={40} className="text-sky-600 animate-spin" />
+      <p className="text-sm text-slate-500 font-semibold">Cargando tus tarjetas…</p>
     </div>
   );
 
   if (error) return (
-    <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-8 flex items-center gap-4">
-      <AlertCircle size={28} className="text-red-400 flex-shrink-0" />
-      <p className="text-red-400 font-semibold">{error}</p>
+    <div className="bg-red-50 border border-red-200 rounded-2xl p-8 flex items-center gap-4">
+      <AlertCircle size={28} className="text-red-600 flex-shrink-0" />
+      <p className="text-red-600 font-semibold">{error}</p>
     </div>
   );
 
@@ -127,17 +127,17 @@ export default function ClienteTarjetasPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center">
+          <div className="h-12 w-12 rounded-2xl bg-purple-50 border border-purple-200 text-purple-600 flex items-center justify-center">
             <CreditCard size={24} />
           </div>
           <div>
-            <h1 className="text-2xl font-extrabold text-white tracking-tight">Mis Tarjetas</h1>
-            <p className="text-sm text-neutral-400">Gestiona y controla tus tarjetas bancarias</p>
+            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Mis Tarjetas</h1>
+            <p className="text-sm text-slate-500">Gestiona y controla tus tarjetas bancarias</p>
           </div>
         </div>
         {!emitiendo && (
           <button onClick={() => { setEmitiendo(true); setResultadoEmision(null); setErrorEmision(null); }}
-            className="flex items-center gap-2 apple-glass-button rounded-2xl px-5 py-2.5 text-sm font-bold text-white">
+            className="flex items-center gap-2 apple-glass-button rounded-2xl px-5 py-2.5 text-sm font-bold text-slate-700 hover:text-slate-950">
             <Plus size={18} /> Solicitar Tarjeta
           </button>
         )}
@@ -146,39 +146,39 @@ export default function ClienteTarjetasPage() {
       {/* Panel de solicitud */}
       {emitiendo && (
         <div className="apple-glass-card rounded-3xl p-6 sm:p-8 space-y-5">
-          <h2 className="text-base font-extrabold text-white">Solicitar Nueva Tarjeta</h2>
+          <h2 className="text-base font-extrabold text-slate-900">Solicitar Nueva Tarjeta</h2>
 
           {estadoUsuario !== "verificado" && (
-            <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 flex gap-3">
-              <ShieldX size={24} className="text-amber-400 flex-shrink-0" />
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex gap-3">
+              <ShieldX size={24} className="text-amber-700 flex-shrink-0" />
               <div>
-                <p className="font-bold text-amber-400">Identidad no verificada</p>
-                <p className="text-xs text-neutral-400 mt-1">No puedes solicitar una tarjeta hasta completar la verificación de identidad con tu cédula.</p>
+                <p className="font-bold text-amber-700">Identidad no verificada</p>
+                <p className="text-xs text-slate-500 mt-1">No puedes solicitar una tarjeta hasta completar la verificación de identidad con tu cédula.</p>
               </div>
             </div>
           )}
 
           {estadoUsuario === "verificado" && cuentasActivas.length === 0 && (
-            <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 flex gap-3">
-              <AlertCircle size={24} className="text-amber-400 flex-shrink-0" />
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex gap-3">
+              <AlertCircle size={24} className="text-amber-700 flex-shrink-0" />
               <div>
-                <p className="font-bold text-amber-400">Sin cuenta activa</p>
-                <p className="text-xs text-neutral-400 mt-1">Necesitas una cuenta activa para solicitar una tarjeta. Contacta al administrador.</p>
+                <p className="font-bold text-amber-700">Sin cuenta activa</p>
+                <p className="text-xs text-slate-500 mt-1">Necesitas una cuenta activa para solicitar una tarjeta. Contacta al administrador.</p>
               </div>
             </div>
           )}
 
           {estadoUsuario === "verificado" && cuentasActivas.length > 0 && !resultadoEmision && (
             <div className="space-y-5">
-              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 flex gap-2 items-center">
-                <ShieldCheck size={18} className="text-emerald-400 flex-shrink-0" />
-                <p className="text-emerald-400 text-sm font-semibold">Identidad verificada. Puedes emitir tu tarjeta.</p>
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex gap-2 items-center">
+                <ShieldCheck size={18} className="text-emerald-600 flex-shrink-0" />
+                <p className="text-emerald-600 text-sm font-semibold">Identidad verificada. Puedes emitir tu tarjeta.</p>
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-widest text-neutral-500 mb-2">Cuenta bancaria asociada</label>
+                <label className="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">Cuenta bancaria asociada</label>
                 <select value={cuentaSeleccionada} onChange={(e) => setCuentaSeleccionada(e.target.value)}
-                  className="w-full bg-white/[0.06] border border-white/[0.12] rounded-2xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-white/30 transition appearance-none">
+                  className="w-full bg-slate-50 border border-slate-200/90 rounded-2xl px-4 py-3.5 text-sm text-slate-900 focus:outline-none focus:border-sky-500 focus:bg-white transition appearance-none shadow-sm">
                   {cuentasActivas.map((c) => (
                     <option key={c.id_cuenta} value={c.id_cuenta}>{c.tipo_cuenta.charAt(0).toUpperCase() + c.tipo_cuenta.slice(1)} — {maskNumeroCuenta(c.numero_cuenta)} · {c.moneda}</option>
                   ))}
@@ -186,29 +186,29 @@ export default function ClienteTarjetasPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-widest text-neutral-500 mb-2">Tipo de tarjeta</label>
+                <label className="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">Tipo de tarjeta</label>
                 <div className="grid grid-cols-2 gap-3">
                   {(["virtual", "fisica"] as const).map((tipo) => (
                     <button key={tipo} type="button" onClick={() => setTipoSeleccionado(tipo)}
-                      className={`p-4 rounded-2xl border text-left transition-all ${tipoSeleccionado === tipo ? "border-white/30 bg-white/[0.08]" : "border-white/[0.08] hover:border-white/20 bg-white/[0.03]"}`}>
-                      <p className="font-bold text-white capitalize text-sm">{tipo}</p>
-                      <p className="text-xs text-neutral-500 mt-1">{tipo === "virtual" ? "Para compras en línea y pagos digitales" : "Tarjeta física con chip y contactless"}</p>
+                      className={`p-4 rounded-2xl border text-left transition-all ${tipoSeleccionado === tipo ? "border-sky-500 bg-sky-50 shadow-sm" : "border-slate-200/80 hover:border-slate-300 bg-white/70"}`}>
+                      <p className="font-bold text-slate-900 capitalize text-sm">{tipo}</p>
+                      <p className="text-xs text-slate-500 mt-1">{tipo === "virtual" ? "Para compras en línea y pagos digitales" : "Tarjeta física con chip y contactless"}</p>
                     </button>
                   ))}
                 </div>
               </div>
 
               {errorEmision && (
-                <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex gap-3 text-red-400">
+                <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex gap-3 text-red-600">
                   <AlertCircle size={18} className="flex-shrink-0" />
                   <p className="text-sm font-semibold">{errorEmision}</p>
                 </div>
               )}
 
               <div className="flex gap-3">
-                <button onClick={() => setEmitiendo(false)} className="flex-1 border border-white/[0.12] hover:border-white/25 text-neutral-400 hover:text-white font-bold py-3.5 rounded-2xl text-sm transition">Cancelar</button>
+                <button onClick={() => setEmitiendo(false)} className="flex-1 apple-glass-button text-slate-600 hover:text-slate-900 font-bold py-3.5 rounded-2xl text-sm transition">Cancelar</button>
                 <button onClick={handleSolicitarTarjeta} disabled={solicitando || !cuentaSeleccionada}
-                  className="flex-1 bg-white hover:bg-neutral-100 disabled:opacity-40 text-black font-extrabold py-3.5 rounded-2xl text-sm flex items-center justify-center gap-2 transition active:scale-[0.98]">
+                  className="flex-1 apple-primary-button disabled:opacity-40 font-extrabold py-3.5 rounded-2xl text-sm flex items-center justify-center gap-2 transition active:scale-[0.98]">
                   {solicitando ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
                   {solicitando ? "Emitiendo…" : "Emitir Tarjeta"}
                 </button>
@@ -219,25 +219,25 @@ export default function ClienteTarjetasPage() {
           {resultadoEmision && (
             <div className="space-y-5">
               <div className="text-center space-y-2">
-                <div className="inline-flex p-4 rounded-3xl bg-emerald-500/10 border border-emerald-500/20">
-                  <CheckCircle size={40} className="text-emerald-400" />
+                <div className="inline-flex p-4 rounded-3xl bg-emerald-50 border border-emerald-200">
+                  <CheckCircle size={40} className="text-emerald-600" />
                 </div>
-                <h3 className="text-lg font-extrabold text-white">¡Tarjeta emitida correctamente!</h3>
+                <h3 className="text-lg font-extrabold text-slate-900">¡Tarjeta emitida correctamente!</h3>
               </div>
-              <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-5 space-y-3">
+              <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 space-y-3">
                 {[
                   { label: "Número de tarjeta", value: maskNumeroTarjeta(resultadoEmision.numero_tarjeta) },
                   { label: "Tipo", value: resultadoEmision.tipo_tarjeta.charAt(0).toUpperCase() + resultadoEmision.tipo_tarjeta.slice(1) },
                   { label: "Estado", value: "Activa" },
                   { label: "Fecha de emisión", value: new Date(resultadoEmision.fecha_emision).toLocaleDateString("es-CO") },
                 ].map((item) => (
-                  <div key={item.label} className="flex justify-between text-sm border-b border-white/[0.06] pb-2 last:border-0 last:pb-0">
-                    <span className="text-neutral-400">{item.label}</span>
-                    <span className="font-bold text-white">{item.value}</span>
+                  <div key={item.label} className="flex justify-between text-sm border-b border-slate-200/70 pb-2 last:border-0 last:pb-0">
+                    <span className="text-slate-500">{item.label}</span>
+                    <span className="font-bold text-slate-900">{item.value}</span>
                   </div>
                 ))}
               </div>
-              <button onClick={() => setEmitiendo(false)} className="w-full bg-white hover:bg-neutral-100 text-black font-extrabold py-3.5 rounded-2xl text-sm transition active:scale-[0.98]">
+              <button onClick={() => setEmitiendo(false)} className="w-full apple-primary-button font-extrabold py-3.5 rounded-2xl text-sm transition active:scale-[0.98]">
                 Ver mis tarjetas
               </button>
             </div>
@@ -249,18 +249,18 @@ export default function ClienteTarjetasPage() {
       {!emitiendo && (
         <>
           {errorCongelar && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex gap-3 text-red-400">
+            <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex gap-3 text-red-600">
               <AlertCircle size={18} /> <p className="text-sm font-semibold">{errorCongelar}</p>
             </div>
           )}
 
           {tarjetas.length === 0 ? (
             <div className="apple-glass-card rounded-3xl p-16 text-center space-y-4">
-              <div className="inline-flex p-5 rounded-3xl bg-white/[0.04] border border-white/[0.08]">
-                <CreditCard size={40} className="text-neutral-600" />
+              <div className="inline-flex p-5 rounded-3xl bg-slate-50 border border-slate-200/80">
+                <CreditCard size={40} className="text-slate-400" />
               </div>
-              <h2 className="text-lg font-extrabold text-white">Aún no tienes tarjetas</h2>
-              <p className="text-sm text-neutral-500">Usa el botón "Solicitar Tarjeta" para emitir la tuya.</p>
+              <h2 className="text-lg font-extrabold text-slate-900">Aún no tienes tarjetas</h2>
+              <p className="text-sm text-slate-500">Usa el botón "Solicitar Tarjeta" para emitir la tuya.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -272,78 +272,78 @@ export default function ClienteTarjetasPage() {
                 const congelada = tarjeta.estado === "congelada";
 
                 return (
-                  <div key={tarjeta.id_tarjeta} className="space-y-0 rounded-3xl overflow-hidden">
+                  <div key={tarjeta.id_tarjeta} className="space-y-0 rounded-3xl overflow-hidden shadow-sm">
                     {/* Cara de la tarjeta */}
-                    <div className={`relative text-white p-7 rounded-3xl overflow-hidden select-none ${congelada ? "bg-gradient-to-br from-neutral-700 to-neutral-900" : tarjeta.estado === "activa" ? "bg-gradient-to-br from-neutral-800 to-neutral-950" : "bg-gradient-to-br from-neutral-700 to-neutral-900"}`}>
+                    <div className={`relative p-7 rounded-3xl overflow-hidden select-none ${congelada ? "bg-slate-100 border border-slate-200/80 text-slate-500" : "apple-white-titanium text-slate-900"}`}>
                       <div className="absolute inset-0 titanium-shimmer pointer-events-none" />
-                      <div className="absolute top-0 right-0 bottom-0 w-40 bg-white/[0.03] rounded-full translate-x-16" />
+                      <div className="absolute top-0 right-0 bottom-0 w-40 bg-sky-500/[0.04] rounded-full translate-x-16" />
 
                       <div className="flex justify-between items-start mb-8 relative z-10">
                         <div>
-                          <p className="font-extrabold tracking-tight text-white text-base">BankLite</p>
-                          <p className="text-[10px] text-white/50 mt-0.5 uppercase tracking-widest capitalize">{tarjeta.tipo_tarjeta}</p>
+                          <p className="font-extrabold tracking-tight text-slate-900 text-base">BankLite</p>
+                          <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-widest capitalize">{tarjeta.tipo_tarjeta}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="h-6 w-8 rounded bg-gradient-to-br from-amber-300 via-amber-400 to-amber-600 shadow-inner" />
-                          <span className="text-white/40 text-sm font-bold">))</span>
+                          <span className="text-slate-400 text-sm font-bold">))</span>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-3 mb-6 relative z-10">
-                        <p className="text-xl font-mono font-bold tracking-[0.15em] flex-1 text-white/90">
+                        <p className="text-xl font-mono font-bold tracking-[0.15em] flex-1 text-slate-800">
                           {verNumero && numeroCompleto ? numeroCompleto : maskNumeroTarjeta(tarjeta.numero_tarjeta)}
                         </p>
                         <button onClick={() => toggleNumero(tarjeta.id_tarjeta)} disabled={numeroCargando}
-                          className="bg-white/10 hover:bg-white/20 rounded-xl p-2 transition flex-shrink-0">
-                          {numeroCargando ? <Loader2 size={16} className="animate-spin" /> : verNumero ? <EyeOff size={16} /> : <Eye size={16} />}
+                          className="apple-glass hover:bg-white rounded-xl p-2 transition flex-shrink-0 text-slate-600 hover:text-slate-900 border border-slate-200 shadow-sm">
+                          {numeroCargando ? <Loader2 size={16} className="animate-spin text-sky-600" /> : verNumero ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
                       </div>
 
                       <div className="flex justify-between items-end relative z-10">
                         <div>
-                          <p className="text-[10px] text-white/40 uppercase tracking-widest mb-0.5">Titular</p>
-                          <p className="font-bold uppercase tracking-wide text-sm text-white">{titular || "TITULAR"}</p>
+                          <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-0.5">Titular</p>
+                          <p className="font-bold uppercase tracking-wide text-sm text-slate-800">{titular || "TITULAR"}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-[10px] text-white/40 uppercase tracking-widest mb-0.5">Cuenta</p>
-                          <p className="text-xs text-white/70 font-mono">{maskNumeroCuenta(cuenta?.numero_cuenta)}</p>
+                          <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-0.5">Cuenta</p>
+                          <p className="text-xs text-slate-600 font-mono">{maskNumeroCuenta(cuenta?.numero_cuenta)}</p>
                         </div>
                       </div>
 
                       {congelada && (
-                        <div className="absolute inset-0 rounded-3xl bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center gap-2">
-                          <Lock size={36} className="text-white" />
-                          <p className="font-bold text-white text-sm">Tarjeta congelada</p>
+                        <div className="absolute inset-0 rounded-3xl bg-white/85 backdrop-blur-md flex flex-col items-center justify-center gap-2">
+                          <Lock size={36} className="text-slate-800" />
+                          <p className="font-bold text-slate-900 text-sm">Tarjeta congelada</p>
                         </div>
                       )}
                     </div>
 
                     {/* Panel de control */}
-                    <div className="apple-glass rounded-b-3xl px-5 py-4 border-t border-white/[0.06] space-y-3">
+                    <div className="apple-glass rounded-b-3xl px-5 py-4 border-t border-slate-200/80 space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           {tarjeta.estado === "activa" ? (
-                            <CheckCircle size={16} className="text-emerald-400" />
+                            <CheckCircle size={16} className="text-emerald-600" />
                           ) : (
-                            <Lock size={16} className="text-neutral-500" />
+                            <Lock size={16} className="text-slate-400" />
                           )}
-                          <span className={`text-sm font-bold ${tarjeta.estado === "activa" ? "text-emerald-400" : congelada ? "text-neutral-400" : "text-neutral-500"}`}>
+                          <span className={`text-sm font-bold ${tarjeta.estado === "activa" ? "text-emerald-600" : congelada ? "text-slate-500" : "text-slate-400"}`}>
                             {tarjeta.estado === "activa" ? "Activa" : congelada ? "Congelada" : tarjeta.estado}
                           </span>
                         </div>
-                        <span className="text-[11px] text-neutral-500 font-semibold">{tipoLabel(tarjeta.tipo_tarjeta)}</span>
+                        <span className="text-[11px] text-slate-500 font-semibold">{tipoLabel(tarjeta.tipo_tarjeta)}</span>
                       </div>
 
                       {tarjeta.estado !== "vencida" && (
                         <button onClick={() => handleToggleFreeze(tarjeta.id_tarjeta)} disabled={congelando[tarjeta.id_tarjeta]}
-                          className={`w-full flex items-center justify-center gap-2 font-bold py-2.5 rounded-xl text-sm transition disabled:opacity-50 ${congelada ? "bg-white/10 hover:bg-white/15 text-white" : "border border-white/[0.12] hover:border-white/25 text-neutral-300 hover:text-white"}`}>
-                          {congelando[tarjeta.id_tarjeta] ? <Loader2 size={16} className="animate-spin" /> : congelada ? <Sun size={16} /> : <Snowflake size={16} />}
+                          className={`w-full flex items-center justify-center gap-2 font-bold py-2.5 rounded-xl text-sm transition disabled:opacity-50 ${congelada ? "apple-primary-button" : "apple-glass-button text-slate-600 hover:text-slate-900"}`}>
+                          {congelando[tarjeta.id_tarjeta] ? <Loader2 size={16} className="animate-spin text-current" /> : congelada ? <Sun size={16} /> : <Snowflake size={16} />}
                           {congelada ? "Descongelar tarjeta" : "Congelar tarjeta"}
                         </button>
                       )}
 
                       {verNumero && (
-                        <p className="text-[11px] text-amber-400 font-semibold flex items-center gap-1">
+                        <p className="text-[11px] text-amber-600 font-semibold flex items-center gap-1">
                           <Eye size={12} /> Número visible — pulsa el ojo para ocultar
                         </p>
                       )}
