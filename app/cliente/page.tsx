@@ -268,7 +268,7 @@ export default function ClienteAppleDashboard() {
         <h2 className="text-lg font-bold text-neutral-300 mb-4 tracking-tight">
           Operaciones y Servicios
         </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-4">
           <Link
             href="/cliente/clave-dinamica"
             className="apple-glass-card rounded-2xl p-5 hover:border-amber-400/40 active:scale-[0.98] transition-all group flex flex-col justify-between gap-4"
@@ -286,12 +286,25 @@ export default function ClienteAppleDashboard() {
             href="/cliente/transferencias"
             className="apple-glass-card rounded-2xl p-5 hover:border-white/25 active:scale-[0.98] transition-all group flex flex-col justify-between gap-4"
           >
-            <div className="h-11 w-11 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <div className="h-11 w-11 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
               <ArrowRightLeft size={22} />
             </div>
             <div>
               <p className="font-bold text-sm text-white">Transferir</p>
-              <p className="text-xs text-neutral-400 mt-0.5">A cualquier cuenta</p>
+              <p className="text-xs text-neutral-400 mt-0.5">Por celular Bre-B</p>
+            </div>
+          </Link>
+
+          <Link
+            href="/cliente/qr"
+            className="apple-glass-card rounded-2xl p-5 hover:border-cyan-400/40 active:scale-[0.98] transition-all group flex flex-col justify-between gap-4"
+          >
+            <div className="h-11 w-11 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <QrCode size={22} />
+            </div>
+            <div>
+              <p className="font-bold text-sm text-white">QR & Bre-B</p>
+              <p className="text-xs text-neutral-400 mt-0.5">Pagar por foto</p>
             </div>
           </Link>
 

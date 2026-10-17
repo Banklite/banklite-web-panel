@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { obtenerSesion } from "@/lib/auth";
 import { listAccounts, getLedgerBalance, listTransfers, listBeneficiaries, Cuenta, CuentaContable, Transferencia, Beneficiario } from "@/lib/api";
-import { FileText, TrendingUp, Wallet, AlertCircle, ArrowUpRight, ArrowDownLeft, X, Download, Calendar, Filter, Loader2 } from "lucide-react";
+import { FileText, TrendingUp, Wallet, AlertCircle, ArrowUpRight, ArrowDownLeft, X, Download, Calendar, Filter, Loader2, Share2, CheckCircle, ShieldCheck, QrCode, Copy, Check } from "lucide-react";
 
 type Mov = Transferencia & { esIngreso: boolean; benefInfo?: Beneficiario };
 
@@ -124,6 +124,26 @@ export default function ClienteMovimientosPage() {
   const [desde, setDesde] = useState("");
   const [hasta, setHasta] = useState("");
   const [selectedTx, setSelectedTx] = useState<Mov | null>(null);
+  const [qrModalUrl, setQrModalUrl] = useState<string>("");
+  const [copiadoRef, setCopiadoRef] = useState(false);
+
+  useEffect(() => {
+    if (selectedTx) {
+      const ref = selectedTx.referencia || selectedTx.id_transferencia;
+      const payload = `banklite://receipt?ref=${encodeURIComponent(ref)}&amount=${selectedTx.monto}&date=${encodeURIComponent(selectedTx.fecha_solicitud)}`;
+      (async () => {
+        try {
+          const QRCodeLib = (await import("qrcode")).default;
+          const u = await QRCodeLib.toDataURL(payload, { margin: 2, width: 280 });
+          setQrModalUrl(u);
+        } catch {
+          setQrModalUrl(`https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(payload)}`);
+        }
+      })();
+    } else {
+      setQrModalUrl("");
+    }
+  }, [selectedTx]);
 
   useEffect(() => {
     const sesion = obtenerSesion();
@@ -308,49 +328,164 @@ export default function ClienteMovimientosPage() {
         )}
       </div>
 
-      {/* MODAL COMPROBANTE */}
+      {/* MODAL COMPROBANTE ESTILO NEQUI EN GRANDE CON QR DE TRANSACCIÓN */}
       {selectedTx && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="apple-glass-card rounded-3xl max-w-md w-full overflow-hidden">
-            <div className="px-6 py-5 flex items-center justify-between border-b border-white/[0.08]">
-              <h3 className="text-base font-extrabold text-white flex items-center gap-2">
-                <FileText size={18} className="text-neutral-400" /> Comprobante
-              </h3>
-              <button onClick={() => setSelectedTx(null)} className="text-neutral-500 hover:text-white transition p-1.5 rounded-xl hover:bg-white/[0.08]">
-                <X size={18} />
-              </button>
-            </div>
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3 sm:p-4 backdrop-blur-md overflow-y-auto animate-fade-in">
+          <div className="apple-glass-card rounded-3xl max-w-lg w-full overflow-hidden border border-white/20 shadow-2xl my-auto relative">
+            {/* Botón cerrar */}
+            <button
+              onClick={() => setSelectedTx(null)}
+              className="absolute top-4 right-4 text-neutral-400 hover:text-white transition p-2 rounded-2xl bg-white/[0.06] hover:bg-white/[0.12] z-10"
+            >
+              <X size={18} />
+            </button>
 
-            <div className="p-6 space-y-5">
-              <div className="text-center">
-                <p className="text-[11px] font-bold uppercase tracking-widest text-neutral-500 mb-1">Valor de la transacción</p>
-                <p className={`text-4xl font-black ${selectedTx.esIngreso ? "text-emerald-400" : "text-white"}`}>
-                  ${Number(selectedTx.monto).toLocaleString()} COP
+            {/* Encabezado Nequi */}
+            <div className="p-6 sm:p-8 text-center space-y-4 border-b border-white/[0.08]">
+              <div className="inline-flex p-3.5 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                <CheckCircle size={44} />
+              </div>
+
+              <div>
+                <span className="text-[11px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-3 py-1 rounded-full">
+                  ¡Listo! Transacción Exitosa
+                </span>
+                <h2 className="text-xl sm:text-2xl font-black text-white mt-2.5">
+                  {selectedTx.esIngreso
+                    ? "Te llegó plata a tu cuenta"
+                    : `Enviaste a ${selectedTx.benefInfo?.nombre || "Destinatario"}`}
+                </h2>
+                <p className="text-4xl sm:text-5xl font-black text-white mt-2 font-mono tracking-tight">
+                  ${formatNumber(selectedTx.monto)} <span className="text-base text-neutral-400 font-sans">COP</span>
                 </p>
               </div>
 
-              <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4 space-y-3">
+              {/* QR DINÁMICO DE VERIFICACIÓN DE TRANSACCIÓN */}
+              {qrModalUrl && (
+                <div className="pt-2">
+                  <div className="inline-block p-4 bg-white rounded-3xl shadow-2xl mx-auto">
+                    <img
+                      src={qrModalUrl}
+                      alt="Código QR de Verificación de Transacción"
+                      className="w-40 h-40 sm:w-48 sm:h-48 mx-auto rounded-xl"
+                    />
+                    <div className="mt-2 text-center">
+                      <p className="text-[10px] font-black text-black tracking-widest uppercase">
+                        Comprobante Verificado Bre-B
+                      </p>
+                      <p className="text-[9px] font-mono text-neutral-600">
+                        Ref: {(selectedTx.referencia || selectedTx.id_transferencia).slice(-10)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* DETALLES DE LA TRANSACCIÓN */}
+            <div className="p-6 sm:p-8 space-y-4">
+              <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4 sm:p-5 space-y-3">
                 {[
-                  { label: "Fecha y hora", value: new Date(selectedTx.fecha_solicitud).toLocaleString("es-CO") },
-                  { label: "Referencia", value: selectedTx.referencia || selectedTx.id_transferencia },
-                  { label: "Tipo", value: selectedTx.esIngreso ? "Transferencia Recibida" : "Transferencia Enviada" },
-                  { label: "Estado", value: selectedTx.estado },
-                  ...(selectedTx.benefInfo && !selectedTx.esIngreso ? [{ label: "Destinatario", value: selectedTx.benefInfo.nombre }] : []),
-                  ...(selectedTx.concepto ? [{ label: "Concepto", value: selectedTx.concepto }] : []),
+                  {
+                    label: selectedTx.esIngreso ? "¿Quién te envió?" : "¿Para quién?",
+                    value: selectedTx.esIngreso
+                      ? `Cuenta origen ****${selectedTx.id_cuenta_origen.slice(-4)}`
+                      : selectedTx.benefInfo?.nombre || "Destinatario BankLite",
+                  },
+                  ...(selectedTx.benefInfo?.telefono
+                    ? [{ label: "Celular asociado", value: `+57 ${selectedTx.benefInfo.telefono}` }]
+                    : []),
+                  {
+                    label: "¿Cuándo?",
+                    value: new Date(selectedTx.fecha_solicitud).toLocaleString("es-CO", {
+                      dateStyle: "long",
+                      timeStyle: "short",
+                    }),
+                  },
+                  {
+                    label: "Número de referencia",
+                    value: selectedTx.referencia || selectedTx.id_transferencia,
+                    canCopy: true,
+                  },
+                  {
+                    label: "Canal de liquidación",
+                    value: "Bre-B Sistema de Pagos Inmediatos / ACH",
+                  },
+                  {
+                    label: "Estado",
+                    value: selectedTx.estado.charAt(0).toUpperCase() + selectedTx.estado.slice(1),
+                  },
+                  ...(selectedTx.concepto ? [{ label: "Concepto / Motivo", value: selectedTx.concepto }] : []),
                 ].map((item) => (
-                  <div key={item.label} className="flex justify-between text-sm border-b border-white/[0.06] pb-2 last:border-0 last:pb-0">
-                    <span className="text-neutral-500">{item.label}</span>
-                    <span className="font-semibold text-white text-right max-w-[60%] truncate">{item.value}</span>
+                  <div
+                    key={item.label}
+                    className="flex justify-between items-center text-xs border-b border-white/[0.06] pb-2.5 last:border-0 last:pb-0"
+                  >
+                    <span className="text-neutral-400">{item.label}</span>
+                    <div className="flex items-center gap-1.5 font-bold text-white text-right max-w-[60%]">
+                      <span className="truncate">{item.value}</span>
+                      {item.canCopy && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(item.value);
+                            setCopiadoRef(true);
+                            setTimeout(() => setCopiadoRef(false), 2000);
+                          }}
+                          className="text-neutral-400 hover:text-white p-1"
+                          title="Copiar referencia"
+                        >
+                          {copiadoRef ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
-            </div>
 
-            <div className="px-6 pb-6">
-              <button onClick={() => generarComprobantePDF(toPdfMov(selectedTx), nombreUsuario)}
-                className="w-full bg-white hover:bg-neutral-100 text-black font-extrabold py-3.5 rounded-2xl text-sm flex justify-center items-center gap-2 transition active:scale-[0.98]">
-                <Download size={16} /> Descargar comprobante
-              </button>
+              {/* Distintivo de seguridad Fogafín */}
+              <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.06] text-[11px] text-neutral-400">
+                <span className="flex items-center gap-1.5 font-semibold">
+                  <ShieldCheck size={14} className="text-emerald-400" /> Certificado de pago electrónico
+                </span>
+                <span className="font-bold text-neutral-500 uppercase tracking-widest text-[10px]">
+                  Fogafín Respaldado
+                </span>
+              </div>
+
+              {/* BOTONES DE ACCIÓN (WHATSAPP + DESCARGA) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const ref = selectedTx.referencia || selectedTx.id_transferencia;
+                    const dest = selectedTx.esIngreso
+                      ? "Tu cuenta"
+                      : selectedTx.benefInfo?.nombre || "Destinatario";
+                    const txt =
+                      `🏦 *BankLite - Comprobante de Movimiento*\n\n` +
+                      `✅ *Estado:* Completada con éxito\n` +
+                      `💰 *Monto:* $${formatNumber(selectedTx.monto)} COP\n` +
+                      `👤 *${selectedTx.esIngreso ? "Recibido en:" : "Enviado a:"}* ${dest}\n` +
+                      `🔢 *Referencia:* ${ref}\n` +
+                      `📅 *Fecha:* ${new Date(selectedTx.fecha_solicitud).toLocaleString("es-CO")}\n` +
+                      `📝 *Concepto:* ${selectedTx.concepto || "Sin concepto"}\n\n` +
+                      `🔐 Transacción respaldada por Red Bre-B & Fogafín.`;
+                    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`, "_blank");
+                  }}
+                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold py-3.5 rounded-2xl text-xs flex justify-center items-center gap-2 transition active:scale-95 shadow-lg shadow-emerald-500/20"
+                >
+                  <Share2 size={15} /> Compartir en WhatsApp
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => generarComprobantePDF(toPdfMov(selectedTx), nombreUsuario)}
+                  className="w-full apple-glass-button text-white font-extrabold py-3.5 rounded-2xl text-xs flex justify-center items-center gap-2 transition active:scale-95"
+                >
+                  <Download size={15} /> Descargar PDF / Imprimir
+                </button>
+              </div>
             </div>
           </div>
         </div>

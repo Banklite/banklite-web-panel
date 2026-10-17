@@ -15,6 +15,7 @@ import {
   X,
   Sparkles,
   KeyRound,
+  QrCode,
 } from "lucide-react";
 import Link from "next/link";
 import { Sesion, cerrarSesion, obtenerSesion } from "@/lib/auth";
@@ -25,6 +26,7 @@ const CLIENTE_LINKS = [
   { href: "/cliente", label: "Inicio", icon: Home },
   { href: "/cliente/clave-dinamica", label: "Clave Dinámica", icon: KeyRound },
   { href: "/cliente/transferencias", label: "Transferir", icon: ArrowRightLeft },
+  { href: "/cliente/qr", label: "QR & Bre-B", icon: QrCode },
   { href: "/cliente/tarjetas", label: "Mis Tarjetas", icon: CreditCard },
   { href: "/cliente/movimientos", label: "Movimientos", icon: FileText },
   { href: "/cliente/perfil", label: "Mi Perfil", icon: User },
