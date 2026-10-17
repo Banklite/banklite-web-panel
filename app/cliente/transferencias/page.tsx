@@ -3,13 +3,15 @@ import { useEffect, useState } from "react";
 import { obtenerSesion } from "@/lib/auth";
 import {
   listAccounts, listRails, createBeneficiary, createTransfer,
-  getLedgerBalance, buscarCuentaPorNumero, listBeneficiaries, updateBeneficiary, getCuentaPublica,
+  getLedgerBalance, buscarCuentaPorNumero, buscarCuentaPorTelefono,
+  listBeneficiaries, updateBeneficiary, deleteBeneficiary, getCuentaPublica,
   Cuenta, RielPago, CuentaContable, DestinatarioPublico, Beneficiario,
 } from "@/lib/api";
 import {
   ArrowRightLeft, CheckCircle, AlertCircle, Send,
   ChevronRight, ChevronLeft, Loader2, RefreshCw, Search, User, Star,
   Copy, Check, Share2, KeyRound, ShieldCheck, Wallet, Sparkles,
+  Phone, BookUser, Plus, Trash2, Smartphone, Building2, X,
 } from "lucide-react";
 
 const RIEL_INTERNO_ID = "00000000-0000-0000-0000-000000000101";
@@ -28,6 +30,15 @@ function maskNumeroCuenta(nc: string | null | undefined) {
   return "****" + nc.slice(-4);
 }
 
+function formatTelefono(tel: string | null | undefined) {
+  if (!tel) return "";
+  const clean = tel.replace(/\D/g, "");
+  if (clean.length === 10) {
+    return `${clean.slice(0, 3)} ${clean.slice(3, 6)} ${clean.slice(6)}`;
+  }
+  return tel;
+}
+
 const PASOS_LABELS = ["Cuenta", "Destinatario", "Monto", "Confirmar"];
 const PASOS_KEYS: Paso[] = ["elegir_cuenta", "buscar_destinatario", "detalles", "confirmar"];
 
@@ -40,29 +51,47 @@ export default function ClienteTransferenciasPage() {
   const [paso, setPaso] = useState<Paso>("elegir_cuenta");
 
   const [cuentaOrigen, setCuentaOrigen] = useState("");
+  
+  // Método de búsqueda: "telefono" (Nequi / Bre-B) o "cuenta"
+  const [metodoBusqueda, setMetodoBusqueda] = useState<"telefono" | "cuenta">("telefono");
+  const [telefonoDest, setTelefonoDest] = useState("");
   const [numeroCuentaDest, setNumeroCuentaDest] = useState("");
+  
   const [buscando, setBuscando] = useState(false);
   const [destinatario, setDestinatario] = useState<DestinatarioPublico | null>(null);
   const [errorBusqueda, setErrorBusqueda] = useState<string | null>(null);
+  
+  // Agenda de contactos
+  const [contactos, setContactos] = useState<Beneficiario[]>([]);
   const [favoritos, setFavoritos] = useState<Beneficiario[]>([]);
+  const [filtroContacto, setFiltroContacto] = useState("");
   const [idBeneficiarioUsado, setIdBeneficiarioUsado] = useState<string | null>(null);
   const [esFavorito, setEsFavorito] = useState(false);
 
+  // Modal / Drawer de nuevo contacto
+  const [mostrarModalContacto, setMostrarModalContacto] = useState(false);
+  const [nuevoNombre, setNuevoNombre] = useState("");
+  const [nuevoTelefono, setNuevoTelefono] = useState("");
+  const [guardandoContacto, setGuardandoContacto] = useState(false);
+  const [errorNuevoContacto, setErrorNuevoContacto] = useState<string | null>(null);
+
   const [monto, setMonto] = useState("");
   const [concepto, setConcepto] = useState("");
-  const [claveDinamicaAuth, setClaveDinamicaAuth] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [resultado, setResultado] = useState<{ monto: string; destinatario: string; referencia: string; fecha: string; montoNum: number } | null>(null);
+  const [resultado, setResultado] = useState<{ monto: string; destinatario: string; telefono?: string; referencia: string; fecha: string; montoNum: number } | null>(null);
   const [copiadoRef, setCopiadoRef] = useState(false);
 
   useEffect(() => {
     const sesion = obtenerSesion();
     async function cargar() {
       try {
-        const [todasCuentas, r] = await Promise.all([listAccounts(), listRails().catch(() => [] as RielPago[])]);
+        const [todasCuentas, r] = await Promise.all([
+          listAccounts(),
+          listRails().catch(() => [] as RielPago[])
+        ]);
         const misCuentas = todasCuentas.filter((c) => c.id_usuario === sesion?.usuario.id_usuario && c.estado === "activa");
         setCuentas(misCuentas);
         setRieles(r);
@@ -73,9 +102,14 @@ export default function ClienteTransferenciasPage() {
         setLedgers(ledgerMap);
         if (sesion) {
           const bs = await listBeneficiaries(sesion.usuario.id_usuario).catch(() => [] as Beneficiario[]);
+          setContactos(bs);
           setFavoritos(bs.filter((b) => b.favorito));
         }
-      } catch { setError("No pudimos cargar tu información."); } finally { setLoading(false); }
+      } catch {
+        setError("No pudimos cargar tu información.");
+      } finally {
+        setLoading(false);
+      }
     }
     cargar();
   }, []);
@@ -85,77 +119,254 @@ export default function ClienteTransferenciasPage() {
     return rielApi ? rielApi.id_riel : RIEL_INTERNO_ID;
   }
 
-  async function handleBuscarDestinatario() {
+  // Búsqueda por celular (Nequi / Bre-B)
+  async function handleBuscarPorTelefono() {
+    const clean = telefonoDest.replace(/\D/g, "");
+    if (clean.length < 10) {
+      setErrorBusqueda("Ingresa un número de celular de 10 dígitos (ej: 300 123 4567)");
+      return;
+    }
+    setBuscando(true);
+    setErrorBusqueda(null);
+    setDestinatario(null);
+    try {
+      const dest = await buscarCuentaPorTelefono(clean);
+      const cuentaOrig = cuentas.find((c) => c.id_cuenta === cuentaOrigen);
+      if (cuentaOrig?.id_cuenta === dest.id_cuenta) {
+        setErrorBusqueda("No puedes transferir a tu propia cuenta.");
+      } else {
+        setDestinatario(dest);
+      }
+    } catch (err: unknown) {
+      setErrorBusqueda(err instanceof Error ? err.message : "No se encontró ningún usuario con ese número de celular.");
+    } finally {
+      setBuscando(false);
+    }
+  }
+
+  // Búsqueda por número de cuenta (tradicional)
+  async function handleBuscarPorCuenta() {
     if (!numeroCuentaDest.trim()) return;
-    setBuscando(true); setErrorBusqueda(null); setDestinatario(null);
+    setBuscando(true);
+    setErrorBusqueda(null);
+    setDestinatario(null);
     try {
       const dest = await buscarCuentaPorNumero(numeroCuentaDest.trim());
-      if (!dest) { setErrorBusqueda("No se encontró ninguna cuenta activa con ese número."); }
-      else {
+      if (!dest) {
+        setErrorBusqueda("No se encontró ninguna cuenta activa con ese número.");
+      } else {
         const cuentaOrig = cuentas.find((c) => c.id_cuenta === cuentaOrigen);
-        if (cuentaOrig?.numero_cuenta === numeroCuentaDest.trim()) { setErrorBusqueda("No puedes transferir a tu propia cuenta."); }
-        else setDestinatario(dest);
+        if (cuentaOrig?.numero_cuenta === numeroCuentaDest.trim()) {
+          setErrorBusqueda("No puedes transferir a tu propia cuenta.");
+        } else {
+          setDestinatario(dest);
+        }
       }
-    } catch { setErrorBusqueda("Error al buscar la cuenta."); } finally { setBuscando(false); }
+    } catch {
+      setErrorBusqueda("Error al buscar la cuenta.");
+    } finally {
+      setBuscando(false);
+    }
   }
 
-  async function elegirFavorito(b: Beneficiario) {
-    setBuscando(true); setErrorBusqueda(null);
-    try { const dest = await getCuentaPublica(b.cuenta_destino); setDestinatario(dest); setNumeroCuentaDest(""); }
-    catch { setDestinatario(null); setErrorBusqueda("Esta cuenta favorita ya no está disponible."); }
-    finally { setBuscando(false); }
+  // Elegir contacto de la agenda
+  async function elegirContacto(b: Beneficiario) {
+    setBuscando(true);
+    setErrorBusqueda(null);
+    try {
+      let dest: DestinatarioPublico | null = null;
+      if (b.telefono) {
+        try {
+          dest = await buscarCuentaPorTelefono(b.telefono);
+        } catch {
+          dest = null;
+        }
+      }
+      if (!dest) {
+        dest = await getCuentaPublica(b.cuenta_destino);
+      }
+      if (dest) {
+        if (b.telefono && !dest.telefono) dest.telefono = b.telefono;
+        setDestinatario(dest);
+        if (b.telefono) {
+          setTelefonoDest(b.telefono);
+          setMetodoBusqueda("telefono");
+        } else {
+          setNumeroCuentaDest("");
+        }
+      } else {
+        setErrorBusqueda("Este contacto no tiene una cuenta activa disponible.");
+      }
+    } catch {
+      setDestinatario(null);
+      setErrorBusqueda("No se pudo obtener la información de este contacto.");
+    } finally {
+      setBuscando(false);
+    }
   }
 
-  async function alternarFavorito() {
+  // Guardar nuevo contacto en la agenda (Skill de Contactos de Teléfono)
+  async function handleCrearContacto() {
+    const cleanTel = nuevoTelefono.replace(/\D/g, "");
+    if (cleanTel.length < 10) {
+      setErrorNuevoContacto("El número de celular debe tener 10 dígitos.");
+      return;
+    }
+    setGuardandoContacto(true);
+    setErrorNuevoContacto(null);
+    try {
+      const sesion = obtenerSesion();
+      if (!sesion) throw new Error("Sesión no válida");
+      
+      // Valida existencia mediante búsqueda por teléfono
+      const dest = await buscarCuentaPorTelefono(cleanTel);
+      
+      const nuevo = await createBeneficiary({
+        id_usuario: sesion.usuario.id_usuario,
+        nombre: dest.nombre_titular,
+        alias: nuevoNombre.trim() || undefined,
+        cuenta_destino: dest.id_cuenta,
+        banco_destino: "BankLite",
+        telefono: cleanTel,
+        favorito: true,
+      });
+
+      setContactos((prev) => [nuevo, ...prev.filter((c) => c.id_beneficiario !== nuevo.id_beneficiario)]);
+      setFavoritos((prev) => [nuevo, ...prev.filter((c) => c.id_beneficiario !== nuevo.id_beneficiario)]);
+      setMostrarModalContacto(false);
+      setNuevoNombre("");
+      setNuevoTelefono("");
+      setDestinatario(dest);
+      setTelefonoDest(cleanTel);
+    } catch (err: unknown) {
+      setErrorNuevoContacto(err instanceof Error ? err.message : "No se encontró ningún usuario registrado con ese celular.");
+    } finally {
+      setGuardandoContacto(false);
+    }
+  }
+
+  // Alternar favorito de un contacto
+  async function alternarFavoritoContacto(c: Beneficiario, e: React.MouseEvent) {
+    e.stopPropagation();
+    const nuevoFav = !c.favorito;
+    try {
+      const updated = await updateBeneficiary(c.id_beneficiario, { favorito: nuevoFav });
+      setContactos((prev) => prev.map((item) => (item.id_beneficiario === c.id_beneficiario ? { ...item, favorito: nuevoFav } : item)));
+      setFavoritos((prev) => nuevoFav ? [updated, ...prev.filter((x) => x.id_beneficiario !== c.id_beneficiario)] : prev.filter((x) => x.id_beneficiario !== c.id_beneficiario));
+    } catch {
+      // fallo no critico
+    }
+  }
+
+  // Eliminar contacto de la agenda
+  async function eliminarContacto(c: Beneficiario, e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!confirm(`¿Eliminar a ${c.alias || c.nombre || "este contacto"} de tu agenda?`)) return;
+    try {
+      await deleteBeneficiary(c.id_beneficiario);
+      setContactos((prev) => prev.filter((item) => item.id_beneficiario !== c.id_beneficiario));
+      setFavoritos((prev) => prev.filter((item) => item.id_beneficiario !== c.id_beneficiario));
+    } catch {
+      // fallo no critico
+    }
+  }
+
+  async function alternarFavoritoTransaccion() {
     if (!idBeneficiarioUsado) return;
     const nuevo = !esFavorito;
     try {
       const b = await updateBeneficiary(idBeneficiarioUsado, { favorito: nuevo });
       setEsFavorito(nuevo);
       setFavoritos((prev) => nuevo ? [b, ...prev.filter((x) => x.id_beneficiario !== b.id_beneficiario)] : prev.filter((x) => x.id_beneficiario !== b.id_beneficiario));
-    } catch { /* no crítico */ }
+    } catch {
+      // no crítico
+    }
   }
 
   async function handleTransferir() {
     if (!destinatario) return;
-    setEnviando(true); setPaso("procesando"); setError(null);
+    setEnviando(true);
+    setPaso("procesando");
+    setError(null);
     const idRiel = getRielInternoId();
     try {
       const sesion = obtenerSesion();
-      const beneficiario = await createBeneficiary({ id_usuario: sesion!.usuario.id_usuario, nombre: destinatario.nombre_titular, cuenta_destino: destinatario.id_cuenta, banco_destino: "BankLite" });
+      const celAsociado = destinatario.telefono ?? (metodoBusqueda === "telefono" ? telefonoDest.replace(/\D/g, "") : null);
+      
+      const beneficiario = await createBeneficiary({
+        id_usuario: sesion!.usuario.id_usuario,
+        nombre: destinatario.nombre_titular,
+        cuenta_destino: destinatario.id_cuenta,
+        banco_destino: "BankLite",
+        telefono: celAsociado,
+      });
+
       setIdBeneficiarioUsado(beneficiario.id_beneficiario);
       setEsFavorito(!!beneficiario.favorito);
-      const res = await createTransfer({ id_cuenta_origen: cuentaOrigen, id_beneficiario: beneficiario.id_beneficiario, id_riel: idRiel, monto, concepto, idempotency_key: crypto.randomUUID() });
-      if (res.transferencia.estado !== "completada") throw new Error(`La transferencia no se completó (estado: ${res.transferencia.estado}).`);
+
+      const res = await createTransfer({
+        id_cuenta_origen: cuentaOrigen,
+        id_beneficiario: beneficiario.id_beneficiario,
+        id_riel: idRiel,
+        monto,
+        concepto,
+        idempotency_key: crypto.randomUUID(),
+      });
+
+      if (res.transferencia.estado !== "completada") {
+        throw new Error(`La transferencia no se completó (estado: ${res.transferencia.estado}).`);
+      }
+
       setResultado({
         monto: formatCOP(monto),
         montoNum: Number(monto),
         destinatario: destinatario.nombre_titular,
+        telefono: celAsociado ?? undefined,
         referencia: res.transferencia.referencia ?? "BL-" + Date.now(),
-        fecha: new Date().toLocaleString("es-CO", { dateStyle: "long", timeStyle: "short" })
+        fecha: new Date().toLocaleString("es-CO", { dateStyle: "long", timeStyle: "short" }),
       });
+
+      // Recargar lista de contactos
+      listBeneficiaries(sesion!.usuario.id_usuario).then((bs) => {
+        setContactos(bs);
+        setFavoritos(bs.filter((b) => b.favorito));
+      }).catch(() => {});
+
       setPaso("exito");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Error desconocido");
       setPaso("error_final");
-    } finally { setEnviando(false); }
+    } finally {
+      setEnviando(false);
+    }
   }
 
   function reiniciar() {
-    setPaso("elegir_cuenta"); setMonto(""); setConcepto(""); setCuentaOrigen(""); setNumeroCuentaDest("");
-    setDestinatario(null); setErrorBusqueda(null); setError(null); setResultado(null); setIdBeneficiarioUsado(null); setEsFavorito(false);
-    setClaveDinamicaAuth("");
+    setPaso("elegir_cuenta");
+    setMonto("");
+    setConcepto("");
+    setCuentaOrigen("");
+    setNumeroCuentaDest("");
+    setTelefonoDest("");
+    setDestinatario(null);
+    setErrorBusqueda(null);
+    setError(null);
+    setResultado(null);
+    setIdBeneficiarioUsado(null);
+    setEsFavorito(false);
   }
 
   function compartirWhatsApp() {
     if (!resultado) return;
+    const celTexto = resultado.telefono ? `📱 *Celular:* ${formatTelefono(resultado.telefono)}\n` : "";
     const texto = `🏦 *BankLite - Comprobante de Transferencia*\n\n` +
       `✅ *Estado:* Completada con éxito\n` +
       `💰 *Monto:* ${resultado.monto} COP\n` +
       `👤 *Destinatario:* ${resultado.destinatario}\n` +
+      celTexto +
       `🔢 *Referencia:* ${resultado.referencia}\n` +
       `📅 *Fecha:* ${resultado.fecha}\n\n` +
-      `🔐 Transacción respaldada por Fogafín & BankLite Core Banking.`;
+      `🔐 Transacción respaldada por Fogafín & Red Inmediata Bre-B BankLite.`;
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, "_blank");
   }
 
@@ -168,6 +379,15 @@ export default function ClienteTransferenciasPage() {
 
   const cuentaSelect = cuentas.find((c) => c.id_cuenta === cuentaOrigen);
   const pasoIndex = PASOS_KEYS.indexOf(paso);
+
+  const contactosFiltrados = contactos.filter((c) => {
+    if (!filtroContacto.trim()) return true;
+    const term = filtroContacto.toLowerCase();
+    const nom = (c.nombre || "").toLowerCase();
+    const alias = (c.alias || "").toLowerCase();
+    const tel = (c.telefono || "").replace(/\D/g, "");
+    return nom.includes(term) || alias.includes(term) || tel.includes(term);
+  });
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-24 gap-4">
@@ -185,7 +405,7 @@ export default function ClienteTransferenciasPage() {
         </div>
         <div>
           <h1 className="text-2xl font-extrabold text-white tracking-tight">Transferir Dinero</h1>
-          <p className="text-sm text-neutral-400">Paso a paso, con Clave Dinámica y protección Fogafín</p>
+          <p className="text-sm text-neutral-400">Pasa plata por celular, guarda contactos o usa cuenta bancaria</p>
         </div>
       </div>
 
@@ -214,11 +434,11 @@ export default function ClienteTransferenciasPage() {
         <div className="apple-glass-card rounded-3xl p-16 text-center space-y-4">
           <Loader2 size={56} className="text-white animate-spin mx-auto" />
           <h2 className="text-xl font-extrabold text-white">Procesando de forma segura…</h2>
-          <p className="text-sm text-neutral-400">Aplicando doble partida contable por Ledger y evaluando riesgo.</p>
+          <p className="text-sm text-neutral-400">Validando en riel de pagos inmediatos y aplicando doble partida contable por Ledger.</p>
         </div>
       )}
 
-      {/* ÉXITO (SKILL COMPARTIR POR WHATSAPP Y COPIAR REFERENCIA) */}
+      {/* ÉXITO */}
       {paso === "exito" && resultado && (
         <div className="apple-glass-card rounded-3xl p-8 space-y-6 animate-fade-in">
           <div className="text-center space-y-3">
@@ -226,16 +446,17 @@ export default function ClienteTransferenciasPage() {
               <CheckCircle size={48} className="text-emerald-400" />
             </div>
             <h2 className="text-2xl font-extrabold text-white">¡Transferencia exitosa!</h2>
-            <p className="text-sm text-neutral-400">Tu dinero fue enviado y notificado al instante.</p>
+            <p className="text-sm text-neutral-400">Tu dinero fue enviado y acreditado al instante.</p>
           </div>
 
           <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-5 space-y-3">
             {[
               { label: "Monto", value: resultado.monto },
               { label: "Destinatario", value: resultado.destinatario },
+              ...(resultado.telefono ? [{ label: "Celular asociado", value: `+57 ${formatTelefono(resultado.telefono)}` }] : []),
               { label: "Referencia", value: resultado.referencia },
               { label: "Fecha y hora", value: resultado.fecha },
-              { label: "Canal", value: "Riel Interno ACH Inmediato" },
+              { label: "Canal", value: resultado.telefono ? "Bre-B / Transferencia Celular Inmediata" : "Riel Interno ACH Inmediato" },
               { label: "Estado", value: "Completada" },
             ].map((item) => (
               <div key={item.label} className="flex justify-between items-center border-b border-white/[0.06] pb-3 last:border-0 last:pb-0">
@@ -245,7 +466,7 @@ export default function ClienteTransferenciasPage() {
             ))}
           </div>
 
-          {/* SKILLS DE ACCIÓN: COMPARTIR POR WHATSAPP & COPIAR */}
+          {/* ACCIONES: COMPARTIR POR WHATSAPP & COPIAR */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
               onClick={compartirWhatsApp}
@@ -262,7 +483,7 @@ export default function ClienteTransferenciasPage() {
             </button>
           </div>
 
-          <button onClick={alternarFavorito} className={`w-full flex items-center justify-center gap-2 font-bold px-6 py-3 rounded-2xl border transition-all text-xs ${esFavorito ? "border-amber-400/30 bg-amber-500/10 text-amber-400" : "border-white/10 bg-white/[0.03] text-neutral-400 hover:text-white"}`}>
+          <button onClick={alternarFavoritoTransaccion} className={`w-full flex items-center justify-center gap-2 font-bold px-6 py-3 rounded-2xl border transition-all text-xs ${esFavorito ? "border-amber-400/30 bg-amber-500/10 text-amber-400" : "border-white/10 bg-white/[0.03] text-neutral-400 hover:text-white"}`}>
             <Star size={15} className={esFavorito ? "fill-amber-400" : ""} />
             {esFavorito ? "Contacto guardado en favoritos" : "Guardar destinatario en favoritos"}
           </button>
@@ -334,88 +555,398 @@ export default function ClienteTransferenciasPage() {
         </div>
       )}
 
-      {/* PASO 2: BUSCAR DESTINATARIO */}
+      {/* PASO 2: BUSCAR DESTINATARIO (NEQUI / BRE-B POR CELULAR + AGENDA DE CONTACTOS) */}
       {paso === "buscar_destinatario" && (
-        <div className="apple-glass-card rounded-3xl p-6 sm:p-8 space-y-5">
-          <button onClick={() => { setPaso("elegir_cuenta"); setDestinatario(null); setErrorBusqueda(null); }} className="text-xs font-semibold text-neutral-400 hover:text-white flex items-center gap-1 transition">
-            <ChevronLeft size={14} /> Volver
-          </button>
-          <div>
-            <h2 className="text-base font-extrabold text-white mb-1">¿A quién vas a enviar?</h2>
-            <p className="text-xs text-neutral-500">Ingresa el número de cuenta o selecciona un favorito.</p>
-          </div>
+        <div className="space-y-5">
+          <div className="apple-glass-card rounded-3xl p-6 sm:p-8 space-y-6">
+            <button onClick={() => { setPaso("elegir_cuenta"); setDestinatario(null); setErrorBusqueda(null); }} className="text-xs font-semibold text-neutral-400 hover:text-white flex items-center gap-1 transition">
+              <ChevronLeft size={14} /> Volver a cuentas
+            </button>
 
-          {favoritos.length > 0 && (
             <div>
-              <p className="text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-2 flex items-center gap-1">
-                <Star size={12} className="fill-amber-400 text-amber-400" /> Contactos favoritos
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {favoritos.map((f) => (
-                  <button key={f.id_beneficiario} type="button" onClick={() => elegirFavorito(f)}
-                    className="px-3.5 py-2 rounded-2xl border border-amber-400/20 bg-amber-500/10 text-amber-300 text-xs font-semibold hover:border-amber-400/40 transition flex items-center gap-2">
-                    <div className="h-5 w-5 rounded-full bg-amber-400/20 text-amber-300 flex items-center justify-center font-bold text-[10px]">
-                      {(f.alias || f.nombre || "F").charAt(0).toUpperCase()}
-                    </div>
-                    {f.alias || f.nombre || "Favorito"}
-                  </button>
-                ))}
-              </div>
+              <h2 className="text-lg font-extrabold text-white mb-1">¿A quién vas a enviar dinero?</h2>
+              <p className="text-xs text-neutral-400">Pasa plata al instante por número de teléfono o cuenta bancaria.</p>
             </div>
-          )}
 
-          <div className="flex gap-2">
-            <input type="text" inputMode="numeric" maxLength={10} placeholder="Número de cuenta (10 dígitos)" value={numeroCuentaDest}
-              onChange={(e) => { setNumeroCuentaDest(e.target.value.replace(/\D/g, "")); setDestinatario(null); setErrorBusqueda(null); }}
-              className="flex-1 bg-white/[0.06] border border-white/[0.12] rounded-2xl px-4 py-3.5 text-base font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30 transition"
-            />
-            <button onClick={handleBuscarDestinatario} disabled={buscando || numeroCuentaDest.length < 6}
-              className="apple-glass-button rounded-2xl px-5 py-3.5 text-white font-bold flex items-center gap-2 text-sm disabled:opacity-40">
-              {buscando ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
-            </button>
+            {/* SELECTOR DE MÉTODO: POR CELULAR vs POR NÚMERO DE CUENTA */}
+            <div className="grid grid-cols-2 gap-2 p-1.5 bg-black/40 border border-white/[0.08] rounded-2xl">
+              <button
+                type="button"
+                onClick={() => { setMetodoBusqueda("telefono"); setErrorBusqueda(null); }}
+                className={`flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-all ${
+                  metodoBusqueda === "telefono"
+                    ? "bg-white text-black shadow-lg"
+                    : "text-neutral-400 hover:text-white"
+                }`}
+              >
+                <Smartphone size={16} />
+                <span>Por Celular (Bre-B)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => { setMetodoBusqueda("cuenta"); setErrorBusqueda(null); }}
+                className={`flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-all ${
+                  metodoBusqueda === "cuenta"
+                    ? "bg-white text-black shadow-lg"
+                    : "text-neutral-400 hover:text-white"
+                }`}
+              >
+                <Building2 size={16} />
+                <span>Por Cuenta</span>
+              </button>
+            </div>
+
+            {/* FORMULARIO DE BÚSQUEDA SEGÚN MÉTODO */}
+            {metodoBusqueda === "telefono" ? (
+              <div className="space-y-2">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-400">
+                  Número de celular del destinatario
+                </label>
+                <div className="flex gap-2">
+                  <div className="flex items-center gap-1.5 px-3.5 bg-white/[0.04] border border-white/[0.12] rounded-2xl text-xs font-bold text-neutral-300">
+                    <span className="text-base">🇨🇴</span>
+                    <span>+57</span>
+                  </div>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={10}
+                    placeholder="Ej: 300 123 4567"
+                    value={telefonoDest}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, "");
+                      setTelefonoDest(val);
+                      setDestinatario(null);
+                      setErrorBusqueda(null);
+                    }}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleBuscarPorTelefono(); }}
+                    className="flex-1 bg-white/[0.06] border border-white/[0.12] rounded-2xl px-4 py-3.5 text-base font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-400/50 transition"
+                  />
+                  <button
+                    onClick={handleBuscarPorTelefono}
+                    disabled={buscando || telefonoDest.length < 10}
+                    className="bg-cyan-500 hover:bg-cyan-400 disabled:opacity-40 text-black font-extrabold px-5 py-3.5 rounded-2xl flex items-center gap-2 text-xs transition active:scale-95"
+                  >
+                    {buscando ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
+                    <span className="hidden sm:inline">Buscar</span>
+                  </button>
+                </div>
+                <p className="text-[11px] text-neutral-500">
+                  El sistema busca la cuenta activa registrada en BankLite vinculada a este número.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-400">
+                  Número de cuenta de ahorros o corriente
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={10}
+                    placeholder="Número de cuenta (10 dígitos)"
+                    value={numeroCuentaDest}
+                    onChange={(e) => {
+                      setNumeroCuentaDest(e.target.value.replace(/\D/g, ""));
+                      setDestinatario(null);
+                      setErrorBusqueda(null);
+                    }}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleBuscarPorCuenta(); }}
+                    className="flex-1 bg-white/[0.06] border border-white/[0.12] rounded-2xl px-4 py-3.5 text-base font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30 transition"
+                  />
+                  <button
+                    onClick={handleBuscarPorCuenta}
+                    disabled={buscando || numeroCuentaDest.length < 6}
+                    className="apple-glass-button rounded-2xl px-5 py-3.5 text-white font-bold flex items-center gap-2 text-xs disabled:opacity-40"
+                  >
+                    {buscando ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
+                    <span className="hidden sm:inline">Buscar</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Error de búsqueda */}
+            {errorBusqueda && (
+              <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex gap-3 text-red-400 animate-fade-in">
+                <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
+                <p className="text-xs font-semibold">{errorBusqueda}</p>
+              </div>
+            )}
+
+            {/* TARJETA DE DESTINATARIO VERIFICADO ENCONTRADO */}
+            {destinatario && (
+              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-5 space-y-4 animate-fade-in">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-black flex items-center justify-center font-black text-lg shadow-lg">
+                      {destinatario.nombre_titular.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-base font-black text-white">{destinatario.nombre_titular}</p>
+                        <ShieldCheck size={16} className="text-emerald-400" />
+                      </div>
+                      <p className="text-xs text-emerald-400 font-semibold">Destinatario Verificado en BankLite</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full">
+                    Listo para enviar
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs pt-3 border-t border-emerald-500/20">
+                  {destinatario.telefono ? (
+                    <div>
+                      <span className="text-neutral-400 block text-[11px]">Celular asociado</span>
+                      <span className="font-mono text-white font-bold flex items-center gap-1 mt-0.5">
+                        <Phone size={12} className="text-cyan-400" /> +57 {formatTelefono(destinatario.telefono)}
+                      </span>
+                    </div>
+                  ) : (
+                    <div>
+                      <span className="text-neutral-400 block text-[11px]">Número de cuenta</span>
+                      <span className="font-mono text-white font-bold">{destinatario.numero_cuenta_enmascarado}</span>
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-neutral-400 block text-[11px]">Tipo de cuenta</span>
+                    <span className="text-white font-bold capitalize">{destinatario.tipo_cuenta} · {destinatario.moneda}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end pt-2">
+              <button
+                disabled={!destinatario}
+                onClick={() => setPaso("detalles")}
+                className="bg-white hover:bg-neutral-100 disabled:opacity-40 text-black font-extrabold px-7 py-3.5 rounded-2xl text-sm flex items-center gap-2 transition active:scale-[0.98] shadow-lg shadow-white/10"
+              >
+                Continuar al monto <ChevronRight size={18} />
+              </button>
+            </div>
           </div>
 
-          {errorBusqueda && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex gap-3 text-red-400">
-              <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
-              <p className="text-sm font-semibold">{errorBusqueda}</p>
-            </div>
-          )}
-
-          {destinatario && (
-            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-5 space-y-3 animate-fade-in">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-black flex items-center justify-center font-black text-base shadow">
-                  {destinatario.nombre_titular.charAt(0).toUpperCase()}
+          {/* ======================================================== */}
+          {/* SKILL: AGENDA DE CONTACTOS DE TELÉFONO (NEQUI STYLE)     */}
+          {/* ======================================================== */}
+          <div className="apple-glass-card rounded-3xl p-6 sm:p-8 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="h-9 w-9 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
+                  <BookUser size={18} />
                 </div>
                 <div>
-                  <p className="text-sm font-black text-white">{destinatario.nombre_titular}</p>
-                  <p className="text-xs text-emerald-400 font-semibold">Cuenta Verificada en BankLite</p>
+                  <h3 className="text-sm font-extrabold text-white flex items-center gap-2">
+                    Mis Contactos Guardados
+                    <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded-full text-neutral-300 font-bold">
+                      {contactos.length}
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-neutral-400">Toca un contacto para pasarle dinero al instante</p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-emerald-500/10">
-                <div>
-                  <span className="text-neutral-500 block">Número de cuenta</span>
-                  <span className="font-mono text-white font-bold">{destinatario.numero_cuenta_enmascarado}</span>
-                </div>
-                <div>
-                  <span className="text-neutral-500 block">Tipo de cuenta</span>
-                  <span className="text-white font-bold capitalize">{destinatario.tipo_cuenta}</span>
-                </div>
-              </div>
-            </div>
-          )}
 
-          <div className="flex justify-end">
-            <button disabled={!destinatario} onClick={() => setPaso("detalles")}
-              className="bg-white hover:bg-neutral-100 disabled:opacity-40 text-black font-extrabold px-6 py-3 rounded-2xl text-sm flex items-center gap-2 transition active:scale-[0.98]">
-              Continuar <ChevronRight size={18} />
-            </button>
+              <button
+                type="button"
+                onClick={() => { setMostrarModalContacto(true); setErrorNuevoContacto(null); }}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/[0.08] hover:bg-white/[0.15] border border-white/[0.12] text-xs font-bold text-white transition active:scale-95"
+              >
+                <Plus size={14} />
+                <span>Nuevo</span>
+              </button>
+            </div>
+
+            {/* Barra de búsqueda de contactos si hay más de 2 */}
+            {contactos.length > 2 && (
+              <div className="relative">
+                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500" />
+                <input
+                  type="text"
+                  placeholder="Filtrar por nombre, alias o celular…"
+                  value={filtroContacto}
+                  onChange={(e) => setFiltroContacto(e.target.value)}
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-white/20 transition"
+                />
+              </div>
+            )}
+
+            {/* LISTADO DE CONTACTOS */}
+            {contactos.length === 0 ? (
+              <div className="text-center py-6 border border-dashed border-white/10 rounded-2xl p-6 space-y-2">
+                <Smartphone size={28} className="text-neutral-600 mx-auto" />
+                <p className="text-xs text-neutral-400 font-semibold">No tienes contactos guardados todavía</p>
+                <p className="text-[11px] text-neutral-500 max-w-sm mx-auto">
+                  Agrega a tus amigos o familiares con su número de celular para transferirles en un solo clic.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setMostrarModalContacto(true)}
+                  className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 text-xs font-bold transition"
+                >
+                  <Plus size={14} /> Agregar primer contacto
+                </button>
+              </div>
+            ) : contactosFiltrados.length === 0 ? (
+              <p className="text-xs text-neutral-500 text-center py-4">No hay contactos que coincidan con la búsqueda.</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-72 overflow-y-auto pr-1">
+                {contactosFiltrados.map((c) => {
+                  const initial = (c.alias || c.nombre || "C").charAt(0).toUpperCase();
+                  const isFav = !!c.favorito;
+                  const isCurrentDest = destinatario?.id_cuenta === c.cuenta_destino;
+                  return (
+                    <div
+                      key={c.id_beneficiario}
+                      onClick={() => elegirContacto(c)}
+                      className={`group p-3 rounded-2xl border transition-all text-left flex items-center justify-between cursor-pointer active:scale-[0.98] ${
+                        isCurrentDest
+                          ? "border-emerald-500/50 bg-emerald-500/10 shadow-md"
+                          : "border-white/[0.08] hover:border-white/25 bg-white/[0.03] hover:bg-white/[0.06]"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-white/10 to-white/5 border border-white/10 text-white font-extrabold text-sm flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                          {initial}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-white truncate">
+                            {c.alias || c.nombre || "Contacto"}
+                          </p>
+                          {c.telefono ? (
+                            <p className="text-[11px] font-mono text-cyan-400 flex items-center gap-1 mt-0.5">
+                              <Smartphone size={11} /> {formatTelefono(c.telefono)}
+                            </p>
+                          ) : (
+                            <p className="text-[11px] font-mono text-neutral-500">
+                              {c.banco_destino || "BankLite"}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={(e) => alternarFavoritoContacto(c, e)}
+                          title={isFav ? "Quitar de favoritos" : "Marcar favorito"}
+                          className={`p-1.5 rounded-lg transition ${
+                            isFav ? "text-amber-400 hover:text-amber-300" : "text-neutral-600 hover:text-neutral-400"
+                          }`}
+                        >
+                          <Star size={14} className={isFav ? "fill-amber-400" : ""} />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={(e) => eliminarContacto(c, e)}
+                          title="Eliminar contacto"
+                          className="p-1.5 rounded-lg text-neutral-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* PASO 3: MONTO CON SKILL DE CHIPS RÁPIDOS Y CALCULADORA DE SALDO REMANENTE */}
+      {/* MODAL PARA AGREGAR NUEVO CONTACTO DE TELÉFONO */}
+      {mostrarModalContacto && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
+          <div className="apple-glass-card border border-white/20 rounded-3xl p-6 sm:p-7 max-w-md w-full space-y-5 shadow-2xl relative">
+            <button
+              onClick={() => { setMostrarModalContacto(false); setErrorNuevoContacto(null); }}
+              className="absolute top-5 right-5 text-neutral-400 hover:text-white p-1 rounded-xl transition"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center">
+                <BookUser size={20} />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-white">Nuevo Contacto</h3>
+                <p className="text-xs text-neutral-400">Guarda a alguien con su número de teléfono</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-400 mb-1.5">
+                  Nombre o Alias (opcional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ej: Mamá, Carlos Amigo, Arriendo…"
+                  value={nuevoNombre}
+                  onChange={(e) => setNuevoNombre(e.target.value)}
+                  className="w-full bg-white/[0.06] border border-white/[0.12] rounded-2xl px-4 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-400/50 transition"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-400 mb-1.5">
+                  Número de celular
+                </label>
+                <div className="flex gap-2">
+                  <div className="flex items-center gap-1 px-3 bg-white/[0.04] border border-white/[0.12] rounded-2xl text-xs font-bold text-neutral-300">
+                    <span>🇨🇴</span> +57
+                  </div>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={10}
+                    placeholder="300 123 4567"
+                    value={nuevoTelefono}
+                    onChange={(e) => setNuevoTelefono(e.target.value.replace(/\D/g, ""))}
+                    className="flex-1 bg-white/[0.06] border border-white/[0.12] rounded-2xl px-4 py-3 text-sm font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-cyan-400/50 transition"
+                  />
+                </div>
+                <p className="text-[10px] text-neutral-500 mt-1">
+                  Se buscará la cuenta BankLite vinculada a este número de celular.
+                </p>
+              </div>
+
+              {errorNuevoContacto && (
+                <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-3 text-red-400 text-xs flex gap-2">
+                  <AlertCircle size={15} className="flex-shrink-0 mt-0.5" />
+                  <span>{errorNuevoContacto}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => { setMostrarModalContacto(false); setErrorNuevoContacto(null); }}
+                className="flex-1 py-3 rounded-2xl border border-white/10 text-xs font-bold text-neutral-400 hover:text-white transition"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={guardandoContacto || nuevoTelefono.length < 10}
+                onClick={handleCrearContacto}
+                className="flex-1 py-3 rounded-2xl bg-white hover:bg-neutral-100 disabled:opacity-40 text-black text-xs font-extrabold flex items-center justify-center gap-1.5 transition active:scale-95 shadow-lg shadow-white/10"
+              >
+                {guardandoContacto ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                <span>Guardar contacto</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PASO 3: MONTO CON CHIPS RÁPIDOS Y CALCULADORA DE SALDO REMANENTE */}
       {paso === "detalles" && (() => {
         const saldoRaw = cuentaSelect ? ledgers[cuentaSelect.id_cuenta]?.saldo_actual : null;
         const saldoDisponible = saldoRaw != null ? parseFloat(String(saldoRaw)) : 0;
@@ -426,7 +957,7 @@ export default function ClienteTransferenciasPage() {
         return (
           <div className="apple-glass-card rounded-3xl p-6 sm:p-8 space-y-5 animate-fade-in">
             <button onClick={() => setPaso("buscar_destinatario")} className="text-xs font-semibold text-neutral-400 hover:text-white flex items-center gap-1 transition">
-              <ChevronLeft size={14} /> Volver
+              <ChevronLeft size={14} /> Volver a destinatario
             </button>
             <div className="flex items-center justify-between">
               <div>
@@ -455,7 +986,7 @@ export default function ClienteTransferenciasPage() {
                 />
               </div>
 
-              {/* SKILL: SELECTOR RÁPIDO DE MONTOS (QUICK CHIPS) */}
+              {/* SELECTOR RÁPIDO DE MONTOS (QUICK CHIPS) */}
               <div className="flex flex-wrap gap-2 mt-3">
                 {MONTOS_RAPIDOS.map((m) => (
                   <button
@@ -478,7 +1009,7 @@ export default function ClienteTransferenciasPage() {
                 )}
               </div>
 
-              {/* SKILL: CALCULADORA DE SALDO REMANENTE */}
+              {/* CALCULADORA DE SALDO REMANENTE */}
               {montoNum > 0 && (
                 <div className="mt-3 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-between text-xs">
                   <span className="text-neutral-400">Te quedará en tu cuenta:</span>
@@ -513,11 +1044,11 @@ export default function ClienteTransferenciasPage() {
         );
       })()}
 
-      {/* PASO 4: CONFIRMAR CON SKILL DE AUTORIZACIÓN POR CLAVE DINÁMICA */}
+      {/* PASO 4: CONFIRMAR CON SEGURIDAD FOGAFÍN Y CANAL INMEDIATO */}
       {paso === "confirmar" && destinatario && (
         <div className="apple-glass-card rounded-3xl p-6 sm:p-8 space-y-5 animate-fade-in">
           <button onClick={() => setPaso("detalles")} className="text-xs font-semibold text-neutral-400 hover:text-white flex items-center gap-1 transition">
-            <ChevronLeft size={14} /> Volver
+            <ChevronLeft size={14} /> Volver a monto
           </button>
           <div className="flex items-center justify-between">
             <h2 className="text-base font-extrabold text-white">Confirma tu transferencia</h2>
@@ -529,9 +1060,11 @@ export default function ClienteTransferenciasPage() {
           <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-5 space-y-3">
             {[
               { label: "Monto a enviar", value: formatCOP(monto), big: true },
-              { label: "Destinatario", value: `${destinatario.nombre_titular} · ${destinatario.numero_cuenta_enmascarado}` },
-              { label: "Tipo de cuenta destino", value: destinatario.tipo_cuenta.charAt(0).toUpperCase() + destinatario.tipo_cuenta.slice(1) },
+              { label: "Destinatario", value: destinatario.nombre_titular },
+              ...(destinatario.telefono ? [{ label: "Celular receptor", value: `+57 ${formatTelefono(destinatario.telefono)}` }] : []),
+              { label: "Cuenta acreditada", value: `${destinatario.tipo_cuenta.toUpperCase()} · ${destinatario.numero_cuenta_enmascarado}` },
               { label: "Desde tu cuenta", value: `${cuentaSelect?.tipo_cuenta ?? ""} · ${maskNumeroCuenta(cuentaSelect?.numero_cuenta)}` },
+              { label: "Canal de liquidación", value: destinatario.telefono ? "Bre-B Celular Inmediato" : "ACH Riel Interno Inmediato" },
               { label: "Concepto", value: concepto || "Sin concepto" },
             ].map((item) => (
               <div key={item.label} className="flex justify-between items-center border-b border-white/[0.06] pb-3 last:border-0 last:pb-0">
@@ -541,7 +1074,6 @@ export default function ClienteTransferenciasPage() {
             ))}
           </div>
 
-          {/* SKILL: AUTORIZACIÓN DE SEGURIDAD 2FA / CLAVE DINÁMICA */}
           <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0">
               <KeyRound size={20} />
@@ -549,7 +1081,7 @@ export default function ClienteTransferenciasPage() {
             <div className="text-xs">
               <p className="font-extrabold text-white">Autorización Protegida</p>
               <p className="text-neutral-400 mt-0.5">
-                Esta transacción se valida mediante tu Clave Dinámica activa y genera comprobante contable automático.
+                Esta transacción se valida mediante tu Clave Dinámica activa y genera comprobante contable automático en Ledger.
               </p>
             </div>
           </div>

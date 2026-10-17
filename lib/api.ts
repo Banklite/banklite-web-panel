@@ -346,6 +346,7 @@ export type Beneficiario = {
   banco_destino: string | null;
   favorito?: boolean;
   alias?: string | null;
+  telefono?: string | null;
 };
 
 export function createBeneficiary(data: {
@@ -355,6 +356,7 @@ export function createBeneficiary(data: {
   banco_destino?: string;
   favorito?: boolean;
   alias?: string;
+  telefono?: string | null;
 }) {
   return request<Beneficiario>(`${TRANSFER_URL}/beneficiaries`, {
     method: "POST",
@@ -653,6 +655,7 @@ export type DestinatarioPublico = {
   tipo_cuenta: string;
   moneda: string;
   nombre_titular: string;
+  telefono?: string | null;
 };
 
 export function getCuentaPublica(idCuenta: string) {
@@ -1015,3 +1018,7 @@ export function solicitarCodigoConPIN(identificador: string, pin: string) {
   });
 }
 
+// 8. Búsqueda de cuenta por número de celular (transferencias Nequi style)
+export function buscarCuentaPorTelefono(telefono: string) {
+  return request<DestinatarioPublico>(`${ACCOUNT_URL}/accounts/by-telefono/${telefono}`);
+}
