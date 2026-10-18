@@ -802,22 +802,30 @@ export default function ClienteTransferenciasPage() {
                     <div
                       key={c.id_beneficiario}
                       onClick={() => elegirContacto(c)}
-                      className={`group p-3 rounded-2xl border transition-all text-left flex items-center justify-between cursor-pointer active:scale-[0.98] ${
+                      className={`group p-3.5 rounded-2xl border transition-all text-left flex items-center justify-between cursor-pointer apple-spring ${
                         isCurrentDest
-                          ? "border-emerald-500/50 bg-emerald-50 shadow-sm"
-                          : "border-slate-200/80 hover:border-slate-300 bg-white/70 hover:bg-slate-50"
+                          ? "border-emerald-500/80 bg-emerald-50/80 shadow-md scale-[1.01]"
+                          : "border-slate-200/80 hover:border-slate-300 bg-white/80 hover:bg-slate-50 shadow-sm"
                       }`}
                     >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-slate-100 to-slate-200 border border-slate-200 text-slate-700 font-extrabold text-sm flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                          {initial}
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        <div className="relative flex-shrink-0">
+                          <div className={`h-11 w-11 rounded-2xl bg-gradient-to-tr ${
+                            ["from-sky-400 to-blue-600", "from-purple-400 to-indigo-600", "from-emerald-400 to-teal-600", "from-amber-400 to-orange-500", "from-rose-400 to-pink-600"][
+                              (c.nombre || c.alias || "C").charCodeAt(0) % 5
+                            ]
+                          } text-white font-black text-sm flex items-center justify-center shadow-md shadow-slate-900/10 group-hover:scale-105 transition-transform`}>
+                            {initial}
+                          </div>
+                          <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white shadow-xs" title="En línea para recibir" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-xs font-bold text-slate-900 truncate">
+                          <p className="text-xs font-bold text-slate-900 truncate flex items-center gap-1.5">
                             {c.alias || c.nombre || "Contacto"}
+                            {isFav && <span className="text-[10px] text-amber-500">★</span>}
                           </p>
                           {c.telefono ? (
-                            <p className="text-[11px] font-mono text-sky-600 flex items-center gap-1 mt-0.5">
+                            <p className="text-[11px] font-mono text-sky-600 flex items-center gap-1 mt-0.5 font-semibold">
                               <Smartphone size={11} /> {formatTelefono(c.telefono)}
                             </p>
                           ) : (
@@ -987,13 +995,17 @@ export default function ClienteTransferenciasPage() {
               </div>
 
               {/* SELECTOR RÁPIDO DE MONTOS (QUICK CHIPS) */}
-              <div className="flex flex-wrap gap-2 mt-3">
+              <div className="flex flex-wrap gap-2.5 mt-3.5">
                 {MONTOS_RAPIDOS.map((m) => (
                   <button
                     key={m}
                     type="button"
                     onClick={() => setMonto(m.toString())}
-                    className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white/70 hover:bg-slate-100 hover:border-slate-300 text-xs font-bold text-slate-700 transition active:scale-95"
+                    className={`px-3.5 py-2 rounded-xl border text-xs font-bold transition-all apple-spring ${
+                      monto === m.toString()
+                        ? "border-sky-500 bg-sky-50 text-sky-700 shadow-sm shadow-sky-500/15 font-extrabold scale-105"
+                        : "border-slate-200/90 bg-white hover:bg-slate-50 text-slate-700 shadow-2xs"
+                    }`}
                   >
                     ${(m / 1000).toFixed(0)}k
                   </button>
@@ -1002,7 +1014,7 @@ export default function ClienteTransferenciasPage() {
                   <button
                     type="button"
                     onClick={() => setMonto(Math.floor(saldoDisponible).toString())}
-                    className="px-3 py-1.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-xs font-bold text-amber-700 transition active:scale-95"
+                    className="px-3.5 py-2 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-xs font-extrabold text-amber-800 transition active:scale-95 apple-spring shadow-2xs"
                   >
                     Todo mi saldo
                   </button>

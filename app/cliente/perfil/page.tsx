@@ -4,6 +4,7 @@ import { obtenerSesion, Sesion, guardarSesion } from "@/lib/auth";
 import {
   User, Mail, Phone, MapPin, Calendar, CheckCircle, Clock,
   AlertTriangle, Save, CreditCard, Lock, ShieldCheck, KeyRound, Edit3, X,
+  Sparkles, Check, Camera,
 } from "lucide-react";
 import {
   updateUsuario, listAccounts, cambiarClave, configurarPIN, obtenerStatusPIN, Cuenta,
@@ -218,6 +219,46 @@ export default function ClientePerfilPage() {
           <span>{errorPerfil}</span>
         </div>
       )}
+
+      {/* TARJETA HERO DE PERFIL CON FOTICO / AVATAR INTERACTIVO */}
+      <div className="apple-glass-card rounded-[32px] p-6 sm:p-7 flex flex-col sm:flex-row items-center sm:items-start gap-6 border border-white/95 shadow-lg relative overflow-hidden apple-spring">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-sky-400/10 via-emerald-400/5 to-transparent rounded-full pointer-events-none" />
+
+        {/* Fotico / Avatar con halo y estado activo */}
+        <div className="relative flex-shrink-0 group">
+          <div className="w-20 h-20 sm:w-22 sm:h-22 rounded-full bg-gradient-to-tr from-sky-500 via-indigo-600 to-slate-900 text-white font-black text-3xl flex items-center justify-center shadow-xl shadow-slate-900/15 border-4 border-white transition-transform group-hover:scale-105 select-none">
+            {(u.nombre || "C").charAt(0).toUpperCase()}
+          </div>
+          <span className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-emerald-500 border-2 border-white shadow-sm flex items-center justify-center" title="Identidad Verificada">
+            <Check size={12} className="text-white stroke-[3]" />
+          </span>
+        </div>
+
+        {/* Datos clave del titular */}
+        <div className="flex-1 text-center sm:text-left space-y-2">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+            <h2 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight">
+              {[u.nombre, u.apellido].filter(Boolean).join(" ")}
+            </h2>
+            <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+              <ShieldCheck size={12} /> Fogafín
+            </span>
+          </div>
+
+          <p className="text-xs font-mono text-slate-500">
+            📱 Celular & Cuenta: +57 {formatTelefono(u.telefono)}
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1 text-[11px]">
+            <span className="px-3 py-1 rounded-xl bg-slate-100/90 border border-slate-200 text-slate-700 font-bold flex items-center gap-1.5">
+              <Sparkles size={12} className="text-sky-500" /> Bre-B Interoperable
+            </span>
+            <span className="px-3 py-1 rounded-xl bg-slate-100/90 border border-slate-200 text-slate-700 font-bold flex items-center gap-1.5">
+              <Lock size={12} className="text-purple-500" /> {tienePin ? "PIN 4 Dígitos Activo" : "Sin PIN Rápido"}
+            </span>
+          </div>
+        </div>
+      </div>
 
       {/* Estado KYC */}
       <div className={`rounded-2xl p-4 flex items-center gap-4 shadow-sm ${verificado ? "bg-emerald-50/80 border border-emerald-200" : "bg-sky-50/80 border border-sky-200"}`}>

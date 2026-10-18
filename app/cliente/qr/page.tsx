@@ -705,22 +705,22 @@ export default function ClienteQRBreBPage() {
                   {/* Tarjeta 1: Abrir Cámara en Vivo */}
                   <div
                     onClick={() => iniciarCamara()}
-                    className="border-2 border-sky-200 hover:border-sky-400 bg-sky-50/50 hover:bg-sky-50/80 rounded-3xl p-6 text-center cursor-pointer transition-all space-y-3 group shadow-sm flex flex-col justify-between"
+                    className="border-2 border-sky-200/90 hover:border-sky-400 bg-sky-50/50 hover:bg-sky-50/80 rounded-3xl p-6 text-center cursor-pointer transition-all space-y-3.5 group shadow-sm flex flex-col justify-between apple-spring"
                   >
-                    <div className="h-14 w-14 rounded-2xl bg-sky-100 text-sky-600 border border-sky-200/80 flex items-center justify-center mx-auto group-hover:scale-105 transition-transform shadow-sm">
-                      <Camera size={28} />
+                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-tr from-sky-400 to-blue-600 text-white flex items-center justify-center mx-auto group-hover:scale-110 transition-transform shadow-md shadow-sky-500/20">
+                      <Camera size={30} />
                     </div>
                     <div>
-                      <p className="text-sm font-extrabold text-slate-900">
+                      <p className="text-sm font-black text-slate-900">
                         Abrir Cámara en Vivo
                       </p>
-                      <p className="text-xs text-slate-500 mt-1">
+                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                         Apunta tu cámara web o del celular para escanear en tiempo real
                       </p>
                     </div>
                     <button
                       type="button"
-                      className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl apple-primary-button text-xs font-bold transition shadow"
+                      className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl apple-primary-button text-xs font-bold transition shadow-sm"
                     >
                       <Camera size={14} /> Escanear con cámara
                     </button>
@@ -729,16 +729,16 @@ export default function ClienteQRBreBPage() {
                   {/* Tarjeta 2: Subir Foto o Captura */}
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-slate-300 hover:border-emerald-500 bg-slate-50 hover:bg-slate-100/70 rounded-3xl p-6 text-center cursor-pointer transition-all space-y-3 group flex flex-col justify-between"
+                    className="border-2 border-dashed border-emerald-300 hover:border-emerald-500 bg-emerald-50/40 hover:bg-emerald-50/70 rounded-3xl p-6 text-center cursor-pointer transition-all space-y-3.5 group flex flex-col justify-between apple-spring shadow-sm"
                   >
-                    <div className="h-14 w-14 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto group-hover:scale-105 transition-transform shadow-sm">
-                      {analizandoFoto ? <Loader2 size={28} className="animate-spin" /> : <Upload size={28} />}
+                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-tr from-emerald-400 to-teal-600 text-white flex items-center justify-center mx-auto group-hover:scale-110 transition-transform shadow-md shadow-emerald-500/20">
+                      {analizandoFoto ? <Loader2 size={30} className="animate-spin" /> : <Upload size={30} />}
                     </div>
                     <div>
-                      <p className="text-sm font-extrabold text-slate-900">
+                      <p className="text-sm font-black text-slate-900">
                         {analizandoFoto ? "Analizando imagen…" : "Subir Foto o Captura"}
                       </p>
-                      <p className="text-xs text-slate-500 mt-1">
+                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                         Sube una foto de galería o captura de pantalla con código QR
                       </p>
                     </div>

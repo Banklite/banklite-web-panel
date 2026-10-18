@@ -840,19 +840,21 @@ export default function ClienteMovimientosPage() {
               <div
                 key={t.id_transferencia}
                 onClick={() => setSelectedTx(t)}
-                className="apple-glass-card rounded-3xl p-5 sm:p-6 transition-all duration-200 cursor-pointer hover:border-sky-300 hover:shadow-lg active:scale-[0.99] flex flex-col sm:flex-row sm:items-center justify-between gap-4 group border border-white/95"
+                className="apple-glass-card rounded-[28px] p-5 sm:p-6 transition-all duration-200 cursor-pointer apple-spring hover:border-sky-300 hover:shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 group border border-white/95"
               >
                 {/* Lado izquierdo: Ícono grande + Información */}
                 <div className="flex items-center gap-4 min-w-0">
-                  {/* Ícono grande Nequi */}
+                  {/* Ícono grande Nequi / Avatar personalizado */}
                   <div
-                    className={`h-14 w-14 rounded-2xl flex-shrink-0 flex items-center justify-center shadow-md transition-transform group-hover:scale-105 ${
+                    className={`h-14 w-14 rounded-2xl flex-shrink-0 flex items-center justify-center shadow-md transition-transform group-hover:scale-105 apple-spring ${
                       isError
                         ? "bg-red-50 text-red-600 border border-red-200"
                         : t.esQR
-                        ? "bg-gradient-to-tr from-purple-500 to-indigo-500 text-white shadow-purple-500/20"
+                        ? "bg-gradient-to-tr from-purple-500 to-indigo-600 text-white shadow-purple-500/25"
                         : t.esIngreso
-                        ? "bg-gradient-to-tr from-emerald-500 to-teal-400 text-white shadow-emerald-500/20"
+                        ? "bg-gradient-to-tr from-emerald-500 to-teal-400 text-white shadow-emerald-500/25"
+                        : t.benefInfo?.nombre
+                        ? "bg-gradient-to-tr from-sky-500 to-blue-600 text-white font-black text-xl shadow-sky-500/25"
                         : "bg-slate-900 text-white shadow-slate-900/15"
                     }`}
                   >
@@ -862,6 +864,8 @@ export default function ClienteMovimientosPage() {
                       <QrCode size={26} />
                     ) : t.esIngreso ? (
                       <ArrowDownLeft size={28} />
+                    ) : t.benefInfo?.nombre ? (
+                      <span>{t.benefInfo.nombre.charAt(0).toUpperCase()}</span>
                     ) : t.benefInfo?.telefono ? (
                       <Smartphone size={26} />
                     ) : (

@@ -15,10 +15,14 @@ import {
   Info,
   Clock,
   ArrowRight,
+  Shield,
+  Zap,
+  Fingerprint,
 } from "lucide-react";
 
 export default function ClaveDinamicaPage() {
   const [idUsuario, setIdUsuario] = useState<string | null>(null);
+  const [nombreUsuario, setNombreUsuario] = useState<string>("Cliente");
   const [clave, setClave] = useState<string>("••••••");
   const [segundosRestantes, setSegundosRestantes] = useState<number>(60);
   const [cargandoClave, setCargandoClave] = useState<boolean>(true);
@@ -42,14 +46,12 @@ export default function ClaveDinamicaPage() {
       if (res.codigo_debug) {
         setClave(res.codigo_debug);
       } else {
-        // En caso de que no venga en debug, generar visualmente para la app
         const codigoVisual = Math.floor(100000 + Math.random() * 900000).toString();
         setClave(codigoVisual);
       }
       setSegundosRestantes(60);
-      setMensajeInfo("Clave dinámica sincronizada y enviada a tus canales de seguridad.");
+      setMensajeInfo("Clave dinámica sincronizada y cifrada en tiempo real.");
     } catch {
-      // Fallback local seguro
       const codigoFallback = Math.floor(100000 + Math.random() * 900000).toString();
       setClave(codigoFallback);
       setSegundosRestantes(60);
@@ -63,10 +65,10 @@ export default function ClaveDinamicaPage() {
     if (!s) return;
     const uid = s.usuario.id_usuario;
     setIdUsuario(uid);
+    setNombreUsuario(s.usuario.nombre || "Cliente");
 
     solicitarNuevaClave(uid);
 
-    // Consultar estado del PIN
     obtenerStatusPIN(uid)
       .then((res) => setTienePin(res.tiene_pin))
       .catch(() => setTienePin(false));
@@ -114,7 +116,7 @@ export default function ClaveDinamicaPage() {
 
     setGuardandoPin(true);
     try {
-      const res = await configurarPIN(idUsuario, nuevoPin);
+      await configurarPIN(idUsuario, nuevoPin);
       setTienePin(true);
       setPinMensaje({ tipo: "ok", texto: "¡Tu PIN de 4 dígitos ha sido configurado! Ahora puedes iniciar sesión con él." });
       setNuevoPin("");
@@ -127,101 +129,181 @@ export default function ClaveDinamicaPage() {
     }
   }
 
-  // Progreso circular
-  const porcentaje = (segundosRestantes / 60) * 100;
+  // Animación del anillo de tiempo circular
+  const radio = 36;
+  const circunferencia = 2 * Math.PI * radio;
+  const strokeDashoffset = circunferencia - (segundosRestantes / 60) * circunferencia;
+  const colorAlerta = segundosRestantes <= 10 ? "stroke-rose-500 text-rose-500" : segundosRestantes <= 25 ? "stroke-amber-500 text-amber-500" : "stroke-sky-500 text-sky-600";
 
   return (
-    <div className="space-y-8 max-w-2xl mx-auto pb-12 font-sans text-slate-900">
-      {/* Encabezado */}
-      <div className="flex items-center gap-4 pt-2 border-b border-slate-200/80 pb-6">
-        <div className="h-12 w-12 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center shadow-sm">
-          <KeyRound size={24} />
-        </div>
-        <div>
-          <div className="inline-flex items-center gap-1.5 text-xs text-amber-600 font-semibold uppercase tracking-wider">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-            Seguridad Bancaria Nequi Style
+    <div className="space-y-8 max-w-2xl mx-auto pb-14 font-sans text-slate-900">
+      {/* ======================================================== */}
+      {/* ENCABEZADO CON BADGE Y FOTICO DE SEGURIDAD BIOMÉTRICA    */}
+      {/* ======================================================== */}
+      <div className="apple-glass-card rounded-3xl p-6 sm:p-7 flex flex-wrap items-center justify-between gap-4 border border-white/95 shadow-md">
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <div className="h-14 w-14 rounded-2xl bg-gradient-to-tr from-amber-400 via-amber-500 to-amber-600 text-white flex items-center justify-center shadow-lg shadow-amber-500/25 apple-spring">
+              <KeyRound size={26} />
+            </div>
+            <span className="absolute -bottom-1 -right-1 flex h-4 w-4">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-white" />
+            </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight apple-text-gradient">
-            Clave Dinámica
-          </h1>
+
+          <div>
+            <div className="inline-flex items-center gap-1.5 text-xs text-amber-700 font-bold uppercase tracking-wider">
+              <Sparkles size={13} className="text-amber-500" />
+              Token Criptográfico Activo
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">
+              Clave Dinámica
+            </h1>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Protección continua estilo Nequi para autorizar tus movimientos
+            </p>
+          </div>
+        </div>
+
+        {/* Fotico / Avatar de Seguridad del Usuario */}
+        <div className="flex items-center gap-2.5 bg-slate-50/80 border border-slate-200/80 px-3.5 py-2 rounded-2xl">
+          <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-slate-900 to-slate-700 text-white font-black text-xs flex items-center justify-center shadow-sm">
+            {nombreUsuario.charAt(0).toUpperCase()}
+          </div>
+          <div className="text-left text-xs">
+            <p className="font-bold text-slate-900 leading-tight truncate max-w-[110px]">
+              {nombreUsuario}
+            </p>
+            <p className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+              <ShieldCheck size={11} /> Cifrado 256-bit
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* TARJETA PRINCIPAL: Clave Dinámica Nequi Style */}
-      <div className="apple-glass-card rounded-3xl p-6 sm:p-8 relative overflow-hidden text-center space-y-6">
+      {/* ======================================================== */}
+      {/* TARJETA PRINCIPAL: ANILLO CIRCULAR + DÍGITOS DINÁMICOS   */}
+      {/* ======================================================== */}
+      <div className="apple-glass-card rounded-[32px] p-7 sm:p-9 relative overflow-hidden text-center space-y-7 border border-white/95 shadow-xl">
         <div className="absolute inset-0 titanium-shimmer pointer-events-none opacity-40" />
 
+        {/* Barra superior con anillo de cuenta regresiva y botón de refresco */}
         <div className="flex justify-between items-center relative z-10">
-          <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-1.5">
-            <Clock size={13} className="text-amber-600" /> Válida por {segundosRestantes}s
-          </span>
+          <div className="flex items-center gap-2.5">
+            {/* SVG Circular Countdown Ring */}
+            <div className="relative w-11 h-11 flex items-center justify-center">
+              <svg className="w-11 h-11 transform -rotate-90">
+                <circle
+                  cx="22"
+                  cy="22"
+                  r={radio}
+                  stroke="#e2e8f0"
+                  strokeWidth="3.5"
+                  fill="transparent"
+                />
+                <circle
+                  cx="22"
+                  cy="22"
+                  r={radio}
+                  className={`${colorAlerta} transition-all duration-1000 ease-linear`}
+                  strokeWidth="3.5"
+                  strokeDasharray={circunferencia}
+                  strokeDashoffset={strokeDashoffset}
+                  strokeLinecap="round"
+                  fill="transparent"
+                />
+              </svg>
+              <span className={`absolute text-[11px] font-mono font-black ${colorAlerta}`}>
+                {segundosRestantes}s
+              </span>
+            </div>
+
+            <div className="text-left">
+              <p className="text-xs font-bold text-slate-900">Válida por {segundosRestantes} segundos</p>
+              <p className="text-[10px] text-slate-400">Se actualiza automáticamente</p>
+            </div>
+          </div>
+
           <button
             onClick={() => idUsuario && solicitarNuevaClave(idUsuario)}
             disabled={cargandoClave}
-            className="apple-glass-button px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1.5 transition"
+            className="apple-glass-button px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-950 flex items-center gap-1.5 transition active:scale-95 shadow-sm"
           >
-            <RefreshCw size={13} className={cargandoClave ? "animate-spin" : ""} />
-            Actualizar
+            <RefreshCw size={14} className={cargandoClave ? "animate-spin text-sky-600" : "text-slate-500"} />
+            <span>Generar nueva</span>
           </button>
         </div>
 
-        {/* Dígitos de la Clave Dinámica */}
-        <div className="py-4 relative z-10 space-y-3">
-          <div className="inline-flex items-center justify-center gap-3 sm:gap-4 p-4 rounded-3xl bg-slate-50 border border-slate-200 shadow-sm">
+        {/* DÍGITOS DE LA CLAVE DINÁMICA CON ANIMACIÓN POP-IN */}
+        <div className="py-2 relative z-10 space-y-4">
+          <div className="inline-flex items-center justify-center gap-2.5 sm:gap-4 p-4 sm:p-5 rounded-[28px] bg-gradient-to-b from-slate-50/90 to-slate-100/70 border border-slate-200/90 shadow-inner">
             {clave.split("").map((digito, idx) => (
-              <span
+              <div
                 key={idx}
-                className="w-10 sm:w-12 h-14 sm:h-16 rounded-2xl bg-white border border-slate-200/80 text-2xl sm:text-3xl font-mono font-black text-slate-900 flex items-center justify-center shadow-sm tracking-wider"
+                className="w-11 sm:w-14 h-16 sm:h-20 rounded-2xl bg-white border border-slate-200 text-3xl sm:text-4xl font-mono font-black text-slate-950 flex items-center justify-center shadow-md tracking-wider transition-all duration-200 hover:scale-105 select-none"
               >
-                {digito}
-              </span>
+                {cargandoClave ? (
+                  <span className="w-2.5 h-2.5 rounded-full bg-slate-300 animate-ping" />
+                ) : (
+                  digito
+                )}
+              </div>
             ))}
           </div>
 
-          {/* Barra de progreso de tiempo */}
-          <div className="w-full max-w-xs mx-auto bg-slate-200 h-1.5 rounded-full overflow-hidden mt-4">
+          {/* Barra de progreso multicolor */}
+          <div className="w-full max-w-sm mx-auto bg-slate-200/80 h-2 rounded-full overflow-hidden shadow-inner">
             <div
-              className="bg-gradient-to-r from-amber-400 to-emerald-400 h-full transition-all duration-1000 ease-linear rounded-full"
-              style={{ width: `${porcentaje}%` }}
+              className={`h-full transition-all duration-1000 ease-linear rounded-full ${
+                segundosRestantes <= 10
+                  ? "bg-gradient-to-r from-rose-500 to-amber-500"
+                  : "bg-gradient-to-r from-sky-500 to-emerald-400"
+              }`}
+              style={{ width: `${(segundosRestantes / 60) * 100}%` }}
             />
           </div>
         </div>
 
-        {/* Acciones de la Clave */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 relative z-10 pt-2">
+        {/* ACCIÓN PRINCIPAL: COPIAR CLAVE CON SPRING FEEDBACK */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 relative z-10 pt-1">
           <button
             onClick={copiarClave}
-            className="w-full sm:w-auto px-6 py-3 rounded-2xl apple-primary-button font-extrabold text-sm flex items-center justify-center gap-2 transition active:scale-95 shadow-md shadow-sky-500/20"
+            className={`w-full sm:w-auto px-8 py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2.5 transition-all apple-spring shadow-lg ${
+              copiado
+                ? "bg-emerald-600 text-white shadow-emerald-600/25 scale-105"
+                : "apple-primary-button shadow-sky-500/25"
+            }`}
           >
-            {copiado ? <Check size={16} className="text-emerald-600" /> : <Copy size={16} />}
-            {copiado ? "¡Clave copiada!" : "Copiar clave dinámica"}
+            {copiado ? <Check size={18} className="text-white" /> : <Copy size={18} />}
+            <span>{copiado ? "¡Clave copiada en portapapeles!" : "Copiar Clave Dinámica"}</span>
           </button>
         </div>
 
-        {/* Banner informativo */}
-        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs text-slate-500 text-left flex items-start gap-3 relative z-10">
-          <Info size={16} className="text-slate-400 flex-shrink-0 mt-0.5" />
-          <p>
-            Usa esta clave dinámica de 6 dígitos para autorizar transferencias de alto valor,
-            pagos por internet y retiros en cajeros automáticos sin tarjeta. Cambia automáticamente
-            cada 60 segundos por tu seguridad.
+        {/* Banner informativo de seguridad */}
+        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs text-slate-600 text-left flex items-start gap-3 relative z-10">
+          <Info size={16} className="text-sky-600 flex-shrink-0 mt-0.5" />
+          <p className="leading-relaxed">
+            Usa esta clave de 6 dígitos para validar pagos con QR, transferencias por celular y retiros.
+            Funciona como tu factor de seguridad 2FA bancario en cada operación.
           </p>
         </div>
       </div>
 
-      {/* SECCIÓN PIN DE 4 DÍGITOS PARA INICIO DE SESIÓN */}
-      <div className="apple-glass-card rounded-3xl p-6 sm:p-8 space-y-6">
+      {/* ======================================================== */}
+      {/* SECCIÓN PIN DE 4 DÍGITOS (NEQUI STYLE)                  */}
+      {/* ======================================================== */}
+      <div className="apple-glass-card rounded-[32px] p-6 sm:p-8 space-y-6 border border-white/95 shadow-md">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-purple-50 border border-purple-200 text-purple-600 flex items-center justify-center">
-              <Lock size={20} />
+          <div className="flex items-center gap-3.5">
+            <div className="h-12 w-12 rounded-2xl bg-purple-50 border border-purple-200 text-purple-600 flex items-center justify-center shadow-sm">
+              <Lock size={22} />
             </div>
             <div>
-              <h2 className="text-base font-extrabold text-slate-900">PIN de Entrada Rápida (4 Dígitos)</h2>
+              <h2 className="text-base font-black text-slate-900">PIN de Entrada Rápida (4 Dígitos)</h2>
               <p className="text-xs text-slate-500 mt-0.5">
                 {tienePin
-                  ? "Tienes un PIN activo. Puedes entrar con él en lugar de contraseña."
+                  ? "Tienes un PIN activo. Puedes ingresar a BankLite con él sin usar contraseña larga."
                   : "Configura tu PIN de 4 números para entrar rápido como en Nequi."}
               </p>
             </div>
@@ -229,7 +311,7 @@ export default function ClaveDinamicaPage() {
 
           <button
             onClick={() => setMostrarFormPin(!mostrarFormPin)}
-            className="apple-glass-button px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-700 hover:text-slate-900 transition active:scale-95"
+            className="apple-glass-button px-4 py-2.5 rounded-2xl text-xs font-extrabold text-slate-700 hover:text-slate-900 transition active:scale-95 shadow-sm"
           >
             {mostrarFormPin ? "Cancelar" : tienePin ? "Cambiar PIN" : "Configurar PIN"}
           </button>
@@ -237,23 +319,23 @@ export default function ClaveDinamicaPage() {
 
         {pinMensaje && (
           <div
-            className={`p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 border ${
+            className={`p-4 rounded-2xl text-xs font-bold flex items-center gap-2 border animate-fade-in ${
               pinMensaje.tipo === "ok"
-                ? "bg-emerald-50 border-emerald-200 text-emerald-600"
-                : "bg-rose-50 border-rose-200 text-rose-600"
+                ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                : "bg-rose-50 border-rose-200 text-rose-700"
             }`}
           >
-            {pinMensaje.tipo === "ok" ? <Check size={14} /> : <Info size={14} />}
+            {pinMensaje.tipo === "ok" ? <Check size={16} /> : <Info size={16} />}
             {pinMensaje.texto}
           </div>
         )}
 
-        {/* Formulario para configurar PIN */}
+        {/* Formulario animado para configurar PIN */}
         {mostrarFormPin && (
-          <form onSubmit={handleGuardarPIN} className="space-y-4 pt-2 border-t border-slate-200/80 animate-fade-in">
+          <form onSubmit={handleGuardarPIN} className="space-y-5 pt-3 border-t border-slate-200/80 animate-fade-in">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-2">
+                <label className="block text-[11px] font-black uppercase tracking-widest text-slate-600 mb-2">
                   Nuevo PIN (4 números)
                 </label>
                 <input
@@ -270,8 +352,8 @@ export default function ClaveDinamicaPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-2">
-                  Confirma tu PIN (4 números)
+                <label className="block text-[11px] font-black uppercase tracking-widest text-slate-600 mb-2">
+                  Confirma tu PIN
                 </label>
                 <input
                   type="password"
@@ -287,39 +369,45 @@ export default function ClaveDinamicaPage() {
               </div>
             </div>
 
-            <div className="flex justify-end pt-2">
+            <div className="flex justify-end pt-1">
               <button
                 type="submit"
                 disabled={guardandoPin || nuevoPin.length !== 4 || confirmarPin.length !== 4}
-                className="apple-primary-button disabled:opacity-40 font-extrabold px-6 py-3 rounded-2xl text-sm flex items-center gap-2 transition active:scale-95 shadow-md shadow-sky-500/20"
+                className="apple-primary-button disabled:opacity-40 font-extrabold px-7 py-3.5 rounded-2xl text-xs flex items-center gap-2 transition active:scale-95 shadow-md shadow-sky-500/20"
               >
                 {guardandoPin ? "Guardando..." : "Guardar mi PIN"}
-                <ArrowRight size={16} />
+                <ArrowRight size={15} />
               </button>
             </div>
           </form>
         )}
       </div>
 
-      {/* CANALES DE SEGURIDAD ASOCIADOS */}
+      {/* ======================================================== */}
+      {/* CANALES DE SEGURIDAD ASOCIADOS CON ICONOS TEMÁTICOS      */}
+      {/* ======================================================== */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="p-5 rounded-3xl bg-slate-50 border border-slate-200/80 space-y-2">
-          <div className="flex items-center gap-2 text-emerald-600 text-xs font-bold uppercase tracking-wider">
-            <Smartphone size={16} /> WhatsApp Protegido
+        <div className="apple-glass-card rounded-3xl p-5 space-y-2 border border-slate-200/80 shadow-sm apple-spring">
+          <div className="flex items-center gap-2.5 text-emerald-600 text-xs font-black uppercase tracking-wider">
+            <div className="h-8 w-8 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
+              <Smartphone size={16} />
+            </div>
+            <span>WhatsApp Protegido</span>
           </div>
           <p className="text-xs text-slate-500 leading-relaxed">
-            Las confirmaciones 2FA y los comprobantes se envían de forma cifrada a tu número de WhatsApp
-            registrado mediante Green API.
+            Las confirmaciones 2FA y los comprobantes se envían de forma cifrada a tu número celular registrado mediante Green API.
           </p>
         </div>
 
-        <div className="p-5 rounded-3xl bg-slate-50 border border-slate-200/80 space-y-2">
-          <div className="flex items-center gap-2 text-sky-600 text-xs font-bold uppercase tracking-wider">
-            <ShieldCheck size={16} /> Antifraude en Tiempo Real
+        <div className="apple-glass-card rounded-3xl p-5 space-y-2 border border-slate-200/80 shadow-sm apple-spring">
+          <div className="flex items-center gap-2.5 text-sky-600 text-xs font-black uppercase tracking-wider">
+            <div className="h-8 w-8 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600">
+              <ShieldCheck size={16} />
+            </div>
+            <span>Antifraude en Tiempo Real</span>
           </div>
           <p className="text-xs text-slate-500 leading-relaxed">
-            Tu cuenta cuenta con evaluación de riesgo instantánea en cada transacción, protegiendo
-            tu saldo ante anomalías o accesos no reconocidos.
+            Tu cuenta cuenta con evaluación de riesgo instantánea en cada transacción, protegiendo tu saldo ante anomalías.
           </p>
         </div>
       </div>

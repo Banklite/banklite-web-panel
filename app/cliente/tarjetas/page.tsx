@@ -272,48 +272,83 @@ export default function ClienteTarjetasPage() {
                 const congelada = tarjeta.estado === "congelada";
 
                 return (
-                  <div key={tarjeta.id_tarjeta} className="space-y-0 rounded-3xl overflow-hidden shadow-sm">
+                  <div key={tarjeta.id_tarjeta} className="space-y-0 rounded-[32px] overflow-hidden shadow-lg border border-white/95 apple-spring">
                     {/* Cara de la tarjeta */}
-                    <div className={`relative p-7 rounded-3xl overflow-hidden select-none ${congelada ? "bg-slate-100 border border-slate-200/80 text-slate-500" : "apple-white-titanium text-slate-900"}`}>
+                    <div className={`relative p-7 sm:p-8 rounded-[32px] overflow-hidden select-none transition-all duration-300 ${
+                      congelada
+                        ? "bg-gradient-to-br from-slate-100 to-slate-200 border border-slate-300 text-slate-500"
+                        : "apple-white-titanium text-slate-900"
+                    }`}>
                       <div className="absolute inset-0 titanium-shimmer pointer-events-none" />
-                      <div className="absolute top-0 right-0 bottom-0 w-40 bg-sky-500/[0.04] rounded-full translate-x-16" />
+                      <div className="absolute top-0 right-0 bottom-0 w-44 bg-gradient-to-bl from-sky-400/10 via-cyan-400/5 to-transparent rounded-full translate-x-12 pointer-events-none" />
 
-                      <div className="flex justify-between items-start mb-8 relative z-10">
+                      {/* Header de la tarjeta con chip EMV dorado */}
+                      <div className="flex justify-between items-start mb-9 relative z-10">
                         <div>
-                          <p className="font-extrabold tracking-tight text-slate-900 text-base">BankLite</p>
-                          <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-widest capitalize">{tarjeta.tipo_tarjeta}</p>
+                          <div className="flex items-center gap-2">
+                            <span className="font-black tracking-tight text-slate-950 text-xl font-sans">BankLite</span>
+                            <span className="text-[9px] font-black uppercase tracking-widest bg-slate-900/10 text-slate-700 px-2 py-0.5 rounded-full">
+                              Titanium
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-widest font-bold">
+                            {tarjeta.tipo_tarjeta === "virtual" ? "Tarjeta Digital" : "Tarjeta Física Contactless"}
+                          </p>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="h-6 w-8 rounded bg-gradient-to-br from-amber-300 via-amber-400 to-amber-600 shadow-inner" />
-                          <span className="text-slate-400 text-sm font-bold">))</span>
+
+                        {/* Chip EMV Dorado con Contactless */}
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-11 rounded-md bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 border border-amber-300/80 shadow-inner flex flex-col justify-around p-1 relative overflow-hidden">
+                            <div className="w-full h-px bg-amber-700/30" />
+                            <div className="w-full h-px bg-amber-700/30" />
+                            <div className="absolute inset-x-2 inset-y-1 border border-amber-700/25 rounded-xs" />
+                          </div>
+                          <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.5 16.5a5 5 0 010-9M12 19a9 9 0 000-14M15.5 21.5a13 13 0 000-19" />
+                          </svg>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 mb-6 relative z-10">
-                        <p className="text-xl font-mono font-bold tracking-[0.15em] flex-1 text-slate-800">
+                      {/* Número de Tarjeta */}
+                      <div className="flex items-center gap-3 mb-8 relative z-10">
+                        <p className="text-xl sm:text-2xl font-mono font-black tracking-[0.16em] flex-1 text-slate-900 drop-shadow-xs">
                           {verNumero && numeroCompleto ? numeroCompleto : maskNumeroTarjeta(tarjeta.numero_tarjeta)}
                         </p>
-                        <button onClick={() => toggleNumero(tarjeta.id_tarjeta)} disabled={numeroCargando}
-                          className="apple-glass hover:bg-white rounded-xl p-2 transition flex-shrink-0 text-slate-600 hover:text-slate-900 border border-slate-200 shadow-sm">
+                        <button
+                          onClick={() => toggleNumero(tarjeta.id_tarjeta)}
+                          disabled={numeroCargando}
+                          className="apple-glass hover:bg-white rounded-xl p-2.5 transition flex-shrink-0 text-slate-700 hover:text-slate-950 border border-slate-200 shadow-sm active:scale-95"
+                          title={verNumero ? "Ocultar número" : "Ver número completo"}
+                        >
                           {numeroCargando ? <Loader2 size={16} className="animate-spin text-sky-600" /> : verNumero ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
                       </div>
 
+                      {/* Titular y Logo Mastercard */}
                       <div className="flex justify-between items-end relative z-10">
                         <div>
-                          <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-0.5">Titular</p>
-                          <p className="font-bold uppercase tracking-wide text-sm text-slate-800">{titular || "TITULAR"}</p>
+                          <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-0.5">Titular</p>
+                          <p className="font-black uppercase tracking-wide text-sm text-slate-900">{titular || "TITULAR BANKLITE"}</p>
+                          <p className="text-[10px] text-slate-500 font-mono mt-0.5">Cuenta: {maskNumeroCuenta(cuenta?.numero_cuenta)}</p>
                         </div>
-                        <div className="text-right">
-                          <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-0.5">Cuenta</p>
-                          <p className="text-xs text-slate-600 font-mono">{maskNumeroCuenta(cuenta?.numero_cuenta)}</p>
+
+                        {/* Mastercard Logo en Cristal */}
+                        <div className="flex items-center -space-x-3 opacity-90">
+                          <div className="w-8 h-8 rounded-full bg-red-500/85 shadow-sm" />
+                          <div className="w-8 h-8 rounded-full bg-amber-400/85 shadow-sm" />
                         </div>
                       </div>
 
+                      {/* Capa de Escarcha para Tarjeta Congelada */}
                       {congelada && (
-                        <div className="absolute inset-0 rounded-3xl bg-white/85 backdrop-blur-md flex flex-col items-center justify-center gap-2">
-                          <Lock size={36} className="text-slate-800" />
-                          <p className="font-bold text-slate-900 text-sm">Tarjeta congelada</p>
+                        <div className="absolute inset-0 rounded-[32px] apple-frost-overlay flex flex-col items-center justify-center gap-3 animate-fade-in z-20">
+                          <div className="h-14 w-14 rounded-2xl bg-white/90 border border-slate-200 text-slate-800 flex items-center justify-center shadow-lg">
+                            <Lock size={28} />
+                          </div>
+                          <div className="text-center">
+                            <p className="font-black text-slate-950 text-base">Tarjeta Congelada</p>
+                            <p className="text-xs text-slate-500 font-medium">Bloqueada temporalmente para compras</p>
+                          </div>
                         </div>
                       )}
                     </div>
