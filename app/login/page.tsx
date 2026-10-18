@@ -6,6 +6,7 @@ import { Building2, Lock, ShieldCheck, Phone, ArrowRight, MessageSquare, Mail, R
 import {
   ApiError,
   createUsuario,
+  configurarPIN,
   solicitarReset,
   resetClave,
   solicitarCodigoLogin,
@@ -222,6 +223,7 @@ function LoginPageInner() {
   const [paisExpedicion, setPaisExpedicion] = useState("CO");
   const [regEmail, setRegEmail] = useState("");
   const [regPassword, setRegPassword] = useState("");
+  const [regPin, setRegPin] = useState("");
   const [representanteNombre, setRepresentanteNombre] = useState("");
   const [representanteDocumento, setRepresentanteDocumento] = useState("");
   const [representanteTipoDoc, setRepresentanteTipoDoc] = useState("cedula");
@@ -351,13 +353,17 @@ function LoginPageInner() {
       setError("El número de teléfono celular es obligatorio y debe tener 10 dígitos (ej: 300 123 4567). Este número será tu cuenta bancaria y donde recibirás tus notificaciones de WhatsApp y SMS.");
       return;
     }
+    if (regPin && (regPin.length !== 4 || !/^\d{4}$/.test(regPin))) {
+      setError("El PIN debe ser exactamente 4 dígitos numéricos.");
+      return;
+    }
     if (esMenor && (!representanteNombre.trim() || representanteDocumento.length < 6 || representanteTelefono.length < 7)) {
       setError("Para menores de 18 años debes ingresar nombre, documento y teléfono del representante legal.");
       return;
     }
     setCargando(true);
     try {
-      await createUsuario({
+      const nuevoUsuario = await createUsuario({
         nombre, apellido: apellido || undefined, email: regEmail,
         telefono: telefonoPrefix + telefonoLocal, pais_residencia: paisResidencia,
         password: regPassword, fecha_nacimiento: fechaNacimiento, servicio_solicitado: servicioSolicitado,
@@ -370,6 +376,14 @@ function LoginPageInner() {
           ...(representanteEmail ? { representante_email: representanteEmail } : {}),
         } : {}),
       });
+      // Configurar PIN si el usuario lo ingresó
+      if (regPin && regPin.length === 4) {
+        try {
+          await configurarPIN(nuevoUsuario.id_usuario, regPin);
+        } catch {
+          // No bloquear el registro si falla el PIN — se puede configurar después
+        }
+      }
       setEmail(regEmail);
       setPassword(regPassword);
       const res = await solicitarCodigoLogin(regEmail, regPassword);
@@ -753,6 +767,19 @@ function LoginPageInner() {
               <div>
                 <AppleLabel>Contraseña</AppleLabel>
                 <AppleInput type="password" required minLength={6} placeholder="Mínimo 6 caracteres" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} />
+              </div>
+              <div>
+                <AppleLabel>PIN de 4 dígitos (para ingreso rápido)</AppleLabel>
+                <AppleInput
+                  type="password"
+                  inputMode="numeric"
+                  maxLength={4}
+                  pattern="\d{4}"
+                  placeholder="Ej: 1234"
+                  value={regPin}
+                  onChange={(e) => setRegPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                />
+                <p className="text-[11px] text-slate-400 mt-1 ml-1">Opcional. Te permite iniciar sesión más rápido, estilo Nequi.</p>
               </div>
 
               {esMenor && (
