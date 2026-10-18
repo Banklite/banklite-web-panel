@@ -563,21 +563,21 @@ export default function ClienteMovimientosPage() {
       {/* ======================================================== */}
       {/* ENCABEZADO Y TARJETA DE SALDO DISPONIBLE ESTILO NEQUI    */}
       {/* ======================================================== */}
-      <div className="apple-glass-card rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl border border-white/95">
+      <div className="apple-glass-card rounded-[32px] p-6 sm:p-8 space-y-6 shadow-xl border border-white/95">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-4">
-            <div className="h-14 w-14 rounded-2xl bg-gradient-to-tr from-sky-500 to-cyan-400 text-white flex items-center justify-center shadow-lg shadow-sky-500/20">
-              <Receipt size={28} />
+            <div className="apple-icon-badge h-14 w-14 rounded-2xl bg-gradient-to-tr from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/25">
+              <Receipt size={26} />
             </div>
             <div>
-              <div className="inline-flex items-center gap-1.5 text-xs text-sky-700 font-bold uppercase tracking-wider">
+              <div className="inline-flex items-center gap-1.5 text-xs text-sky-700 font-extrabold uppercase tracking-wider">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 Historial Contable en Tiempo Real
               </div>
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">
                 Tus Movimientos
               </h1>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5 font-medium">
                 Revisa pagos con QR, envíos a celular Bre-B y descarga tus facturas
               </p>
             </div>
@@ -595,7 +595,7 @@ export default function ClienteMovimientosPage() {
                 )
               }
               disabled={filtradas.length === 0}
-              className="apple-glass-button rounded-2xl px-4 py-2.5 text-xs font-bold text-slate-700 hover:text-slate-950 flex items-center gap-2 transition active:scale-[0.97] disabled:opacity-40 shadow-sm"
+              className="apple-glass-button rounded-2xl px-4 py-2.5 text-xs font-black text-slate-800 hover:text-slate-950 flex items-center gap-2 transition-all duration-200 active:scale-[0.97] hover:scale-[1.02] disabled:opacity-40 shadow-sm"
             >
               <Download size={15} />
               <span>Descargar Extracto</span>
@@ -604,32 +604,32 @@ export default function ClienteMovimientosPage() {
         </div>
 
         {/* Banner de Saldo Total Nequi con Toggle para Ocultar */}
-        <div className="p-5 rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 text-white flex flex-wrap items-center justify-between gap-4 shadow-lg">
+        <div className="p-5 rounded-2xl bg-gradient-to-r from-slate-950 to-slate-900 text-white flex flex-wrap items-center justify-between gap-4 shadow-xl border border-slate-800/80">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs uppercase tracking-widest text-slate-300 font-bold">
+              <span className="text-xs uppercase tracking-widest text-slate-300 font-black">
                 Saldo Total Disponible
               </span>
               <button
                 type="button"
                 onClick={() => setMostrarSaldo(!mostrarSaldo)}
-                className="text-slate-400 hover:text-white transition p-1"
+                className="text-slate-400 hover:text-white transition-all duration-200 active:scale-90 p-1.5 rounded-xl hover:bg-white/10"
                 title={mostrarSaldo ? "Ocultar saldo" : "Mostrar saldo"}
               >
                 {mostrarSaldo ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
             </div>
-            <p className="text-3xl sm:text-4xl font-black font-mono tracking-tight mt-1">
+            <p className="text-3xl sm:text-4xl font-black font-mono tracking-tight mt-1 text-white">
               {mostrarSaldo ? formatCOP(saldoTotal) : "••••••••••"}
             </p>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="text-right">
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+              <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">
                 {cuentas.length} {cuentas.length === 1 ? "Cuenta Activa" : "Cuentas Activas"}
               </p>
-              <p className="text-xs font-semibold text-emerald-400 flex items-center gap-1 justify-end mt-0.5">
+              <p className="text-xs font-bold text-emerald-400 flex items-center gap-1 justify-end mt-0.5">
                 <ShieldCheck size={14} /> Red Bre-B Conectada
               </p>
             </div>
@@ -644,24 +644,24 @@ export default function ClienteMovimientosPage() {
         <button
           type="button"
           onClick={() => setTabFiltro("todos")}
-          className={`p-3.5 rounded-2xl border text-left transition-all active:scale-[0.97] flex items-center justify-between ${
+          className={`p-3.5 rounded-2xl border text-left transition-all duration-200 active:scale-[0.97] hover:scale-[1.01] flex items-center justify-between ${
             tabFiltro === "todos"
-              ? "bg-slate-900 text-white border-slate-900 shadow-md shadow-slate-900/15"
-              : "bg-white border-slate-200/80 hover:border-slate-300 text-slate-700 shadow-sm"
+              ? "bg-slate-950 text-white border-slate-950 shadow-md shadow-slate-950/20"
+              : "bg-white border-slate-200/80 hover:border-slate-300 text-slate-700 shadow-xs"
           }`}
         >
           <div className="flex items-center gap-2.5">
             <Receipt size={18} className={tabFiltro === "todos" ? "text-sky-300" : "text-slate-500"} />
             <div>
               <p className="text-xs font-black">Todos</p>
-              <p className={`text-[10px] ${tabFiltro === "todos" ? "text-slate-300" : "text-slate-400"}`}>
+              <p className={`text-[10px] ${tabFiltro === "todos" ? "text-slate-300 font-medium" : "text-slate-400 font-medium"}`}>
                 Historial completo
               </p>
             </div>
           </div>
           <span
             className={`text-xs font-mono font-black px-2 py-0.5 rounded-full ${
-              tabFiltro === "todos" ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+              tabFiltro === "todos" ? "bg-white/20 text-white" : "bg-slate-100 text-slate-700 font-black"
             }`}
           >
             {transferencias.length}
@@ -671,24 +671,24 @@ export default function ClienteMovimientosPage() {
         <button
           type="button"
           onClick={() => setTabFiltro("qr")}
-          className={`p-3.5 rounded-2xl border text-left transition-all active:scale-[0.97] flex items-center justify-between ${
+          className={`p-3.5 rounded-2xl border text-left transition-all duration-200 active:scale-[0.97] hover:scale-[1.01] flex items-center justify-between ${
             tabFiltro === "qr"
-              ? "bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-600/20"
-              : "bg-white border-slate-200/80 hover:border-slate-300 text-slate-700 shadow-sm"
+              ? "bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-600/25"
+              : "bg-white border-slate-200/80 hover:border-slate-300 text-slate-700 shadow-xs"
           }`}
         >
           <div className="flex items-center gap-2.5">
             <QrCode size={18} className={tabFiltro === "qr" ? "text-purple-200" : "text-purple-600"} />
             <div>
               <p className="text-xs font-black">Pagos QR</p>
-              <p className={`text-[10px] ${tabFiltro === "qr" ? "text-purple-200" : "text-slate-400"}`}>
+              <p className={`text-[10px] ${tabFiltro === "qr" ? "text-purple-200 font-medium" : "text-slate-400 font-medium"}`}>
                 Bre-B & Comercios
               </p>
             </div>
           </div>
           <span
             className={`text-xs font-mono font-black px-2 py-0.5 rounded-full ${
-              tabFiltro === "qr" ? "bg-white/20 text-white" : "bg-purple-50 text-purple-700"
+              tabFiltro === "qr" ? "bg-white/20 text-white" : "bg-purple-50 text-purple-700 font-black"
             }`}
           >
             {conteoQR}
@@ -698,24 +698,24 @@ export default function ClienteMovimientosPage() {
         <button
           type="button"
           onClick={() => setTabFiltro("envios")}
-          className={`p-3.5 rounded-2xl border text-left transition-all active:scale-[0.97] flex items-center justify-between ${
+          className={`p-3.5 rounded-2xl border text-left transition-all duration-200 active:scale-[0.97] hover:scale-[1.01] flex items-center justify-between ${
             tabFiltro === "envios"
-              ? "bg-slate-900 text-white border-slate-900 shadow-md shadow-slate-900/15"
-              : "bg-white border-slate-200/80 hover:border-slate-300 text-slate-700 shadow-sm"
+              ? "bg-slate-950 text-white border-slate-950 shadow-md shadow-slate-950/20"
+              : "bg-white border-slate-200/80 hover:border-slate-300 text-slate-700 shadow-xs"
           }`}
         >
           <div className="flex items-center gap-2.5">
             <ArrowUpRight size={18} className={tabFiltro === "envios" ? "text-rose-300" : "text-rose-500"} />
             <div>
               <p className="text-xs font-black">Plata enviada</p>
-              <p className={`text-[10px] ${tabFiltro === "envios" ? "text-slate-300" : "text-slate-400"}`}>
+              <p className={`text-[10px] ${tabFiltro === "envios" ? "text-slate-300 font-medium" : "text-slate-400 font-medium"}`}>
                 Salidas y transferencias
               </p>
             </div>
           </div>
           <span
             className={`text-xs font-mono font-black px-2 py-0.5 rounded-full ${
-              tabFiltro === "envios" ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+              tabFiltro === "envios" ? "bg-white/20 text-white" : "bg-slate-100 text-slate-700 font-black"
             }`}
           >
             {conteoEnvios}
@@ -725,24 +725,24 @@ export default function ClienteMovimientosPage() {
         <button
           type="button"
           onClick={() => setTabFiltro("entradas")}
-          className={`p-3.5 rounded-2xl border text-left transition-all active:scale-[0.97] flex items-center justify-between ${
+          className={`p-3.5 rounded-2xl border text-left transition-all duration-200 active:scale-[0.97] hover:scale-[1.01] flex items-center justify-between ${
             tabFiltro === "entradas"
-              ? "bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-600/20"
-              : "bg-white border-slate-200/80 hover:border-slate-300 text-slate-700 shadow-sm"
+              ? "bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-600/25"
+              : "bg-white border-slate-200/80 hover:border-slate-300 text-slate-700 shadow-xs"
           }`}
         >
           <div className="flex items-center gap-2.5">
             <ArrowDownLeft size={18} className={tabFiltro === "entradas" ? "text-emerald-200" : "text-emerald-600"} />
             <div>
               <p className="text-xs font-black">Plata recibida</p>
-              <p className={`text-[10px] ${tabFiltro === "entradas" ? "text-emerald-200" : "text-slate-400"}`}>
+              <p className={`text-[10px] ${tabFiltro === "entradas" ? "text-emerald-200 font-medium" : "text-slate-400 font-medium"}`}>
                 Abonos en cuenta
               </p>
             </div>
           </div>
           <span
             className={`text-xs font-mono font-black px-2 py-0.5 rounded-full ${
-              tabFiltro === "entradas" ? "bg-white/20 text-white" : "bg-emerald-50 text-emerald-700"
+              tabFiltro === "entradas" ? "bg-white/20 text-white" : "bg-emerald-50 text-emerald-700 font-black"
             }`}
           >
             {conteoEntradas}
@@ -1127,17 +1127,17 @@ export default function ClienteMovimientosPage() {
                       `🔐 Verificado por Red Bre-B y respaldado por Fogafín.`;
                     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`, "_blank");
                   }}
-                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3.5 rounded-2xl text-xs flex justify-center items-center gap-2 transition active:scale-95 shadow-md shadow-emerald-600/20"
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl text-xs sm:text-sm flex justify-center items-center gap-2 transition-all duration-200 active:scale-[0.97] hover:scale-[1.02] shadow-md shadow-emerald-600/20"
                 >
-                  <Share2 size={15} /> Compartir por WhatsApp
+                  <Share2 size={16} /> Compartir por WhatsApp
                 </button>
 
                 <button
                   type="button"
                   onClick={() => generarFacturaPDF(selectedTx, nombreUsuario, qrModalUrl)}
-                  className="w-full apple-primary-button font-extrabold py-3.5 rounded-2xl text-xs flex justify-center items-center gap-2 transition active:scale-95 shadow-md shadow-sky-500/20"
+                  className="w-full apple-primary-button font-black py-4 rounded-2xl text-xs sm:text-sm flex justify-center items-center gap-2 transition-all duration-200 active:scale-[0.97] hover:scale-[1.02] shadow-md shadow-sky-500/25"
                 >
-                  <Printer size={15} /> Imprimir / Guardar Factura
+                  <Printer size={16} /> Imprimir / Guardar Factura
                 </button>
               </div>
             </div>

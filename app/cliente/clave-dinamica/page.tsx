@@ -140,10 +140,13 @@ export default function ClaveDinamicaPage() {
       {/* ======================================================== */}
       {/* ENCABEZADO CON BADGE Y FOTICO DE SEGURIDAD BIOMÉTRICA    */}
       {/* ======================================================== */}
-      <div className="apple-glass-card rounded-3xl p-6 sm:p-7 flex flex-wrap items-center justify-between gap-4 border border-white/95 shadow-md">
+      {/* ======================================================== */}
+      {/* ENCABEZADO CON BADGE Y FOTICO DE SEGURIDAD BIOMÉTRICA    */}
+      {/* ======================================================== */}
+      <div className="apple-glass-card rounded-[32px] p-6 sm:p-7 flex flex-wrap items-center justify-between gap-4 border border-white/95 shadow-lg">
         <div className="flex items-center gap-4">
           <div className="relative">
-            <div className="h-14 w-14 rounded-2xl bg-gradient-to-tr from-amber-400 via-amber-500 to-amber-600 text-white flex items-center justify-center shadow-lg shadow-amber-500/25 apple-spring">
+            <div className="apple-icon-badge h-14 w-14 rounded-2xl bg-gradient-to-tr from-amber-400 via-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/25">
               <KeyRound size={26} />
             </div>
             <span className="absolute -bottom-1 -right-1 flex h-4 w-4">
@@ -153,7 +156,7 @@ export default function ClaveDinamicaPage() {
           </div>
 
           <div>
-            <div className="inline-flex items-center gap-1.5 text-xs text-amber-700 font-bold uppercase tracking-wider">
+            <div className="inline-flex items-center gap-1.5 text-xs text-amber-700 font-extrabold uppercase tracking-wider">
               <Sparkles size={13} className="text-amber-500" />
               Token Criptográfico Activo
             </div>
@@ -167,16 +170,19 @@ export default function ClaveDinamicaPage() {
         </div>
 
         {/* Fotico / Avatar de Seguridad del Usuario */}
-        <div className="flex items-center gap-2.5 bg-slate-50/80 border border-slate-200/80 px-3.5 py-2 rounded-2xl">
-          <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-slate-900 to-slate-700 text-white font-black text-xs flex items-center justify-center shadow-sm">
-            {nombreUsuario.charAt(0).toUpperCase()}
+        <div className="flex items-center gap-3 bg-white/90 border border-slate-200/80 px-3.5 py-2 rounded-2xl shadow-xs">
+          <div className="relative">
+            <div className="apple-avatar-badge h-10 w-10 bg-gradient-to-tr from-amber-500 via-slate-800 to-slate-950 text-white font-black text-xs shadow-sm">
+              {nombreUsuario.charAt(0).toUpperCase()}
+            </div>
+            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white shadow-xs" />
           </div>
           <div className="text-left text-xs">
-            <p className="font-bold text-slate-900 leading-tight truncate max-w-[110px]">
+            <p className="font-extrabold text-slate-950 leading-tight truncate max-w-[120px]">
               {nombreUsuario}
             </p>
-            <p className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
-              <ShieldCheck size={11} /> Cifrado 256-bit
+            <p className="text-[10px] text-emerald-600 font-bold flex items-center gap-1 mt-0.5">
+              <ShieldCheck size={12} /> Cifrado 256-bit
             </p>
           </div>
         </div>
@@ -220,17 +226,17 @@ export default function ClaveDinamicaPage() {
             </div>
 
             <div className="text-left">
-              <p className="text-xs font-bold text-slate-900">Válida por {segundosRestantes} segundos</p>
-              <p className="text-[10px] text-slate-400">Se actualiza automáticamente</p>
+              <p className="text-xs font-black text-slate-950">Válida por {segundosRestantes} segundos</p>
+              <p className="text-[10px] text-slate-400 font-medium">Se actualiza automáticamente</p>
             </div>
           </div>
 
           <button
             onClick={() => idUsuario && solicitarNuevaClave(idUsuario)}
             disabled={cargandoClave}
-            className="apple-glass-button px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-950 flex items-center gap-1.5 transition active:scale-95 shadow-sm"
+            className="apple-glass-button px-3.5 py-2 rounded-2xl text-xs font-bold text-slate-700 hover:text-slate-950 flex items-center gap-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.97] shadow-sm disabled:opacity-40"
           >
-            <RefreshCw size={14} className={cargandoClave ? "animate-spin text-sky-600" : "text-slate-500"} />
+            <RefreshCw size={14} className={cargandoClave ? "animate-spin text-sky-600" : "text-slate-600"} />
             <span>Generar nueva</span>
           </button>
         </div>
@@ -269,9 +275,9 @@ export default function ClaveDinamicaPage() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 relative z-10 pt-1">
           <button
             onClick={copiarClave}
-            className={`w-full sm:w-auto px-8 py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2.5 transition-all apple-spring shadow-lg ${
+            className={`w-full sm:w-auto px-8 py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2.5 transition-all duration-200 active:scale-[0.97] hover:scale-[1.02] shadow-lg ${
               copiado
-                ? "bg-emerald-600 text-white shadow-emerald-600/25 scale-105"
+                ? "bg-emerald-600 text-white shadow-emerald-600/25 scale-[1.02]"
                 : "apple-primary-button shadow-sky-500/25"
             }`}
           >
@@ -311,7 +317,7 @@ export default function ClaveDinamicaPage() {
 
           <button
             onClick={() => setMostrarFormPin(!mostrarFormPin)}
-            className="apple-glass-button px-4 py-2.5 rounded-2xl text-xs font-extrabold text-slate-700 hover:text-slate-900 transition active:scale-95 shadow-sm"
+            className="apple-glass-button px-4 py-2.5 rounded-2xl text-xs font-black text-slate-800 hover:text-slate-950 transition-all duration-200 active:scale-[0.97] hover:scale-[1.02] shadow-sm"
           >
             {mostrarFormPin ? "Cancelar" : tienePin ? "Cambiar PIN" : "Configurar PIN"}
           </button>
@@ -373,7 +379,7 @@ export default function ClaveDinamicaPage() {
               <button
                 type="submit"
                 disabled={guardandoPin || nuevoPin.length !== 4 || confirmarPin.length !== 4}
-                className="apple-primary-button disabled:opacity-40 font-extrabold px-7 py-3.5 rounded-2xl text-xs flex items-center gap-2 transition active:scale-95 shadow-md shadow-sky-500/20"
+                className="apple-primary-button disabled:opacity-40 font-extrabold px-7 py-3.5 rounded-2xl text-xs flex items-center gap-2 transition-all duration-200 active:scale-[0.97] hover:scale-[1.02] shadow-md shadow-sky-500/20"
               >
                 {guardandoPin ? "Guardando..." : "Guardar mi PIN"}
                 <ArrowRight size={15} />
@@ -387,26 +393,26 @@ export default function ClaveDinamicaPage() {
       {/* CANALES DE SEGURIDAD ASOCIADOS CON ICONOS TEMÁTICOS      */}
       {/* ======================================================== */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="apple-glass-card rounded-3xl p-5 space-y-2 border border-slate-200/80 shadow-sm apple-spring">
+        <div className="apple-glass-card rounded-[28px] p-5 space-y-2 border border-slate-200/80 shadow-sm apple-spring">
           <div className="flex items-center gap-2.5 text-emerald-600 text-xs font-black uppercase tracking-wider">
-            <div className="h-8 w-8 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
+            <div className="apple-icon-badge h-9 w-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white shadow-xs">
               <Smartphone size={16} />
             </div>
             <span>WhatsApp Protegido</span>
           </div>
-          <p className="text-xs text-slate-500 leading-relaxed">
+          <p className="text-xs text-slate-500 leading-relaxed font-medium">
             Las confirmaciones 2FA y los comprobantes se envían de forma cifrada a tu número celular registrado mediante Green API.
           </p>
         </div>
 
-        <div className="apple-glass-card rounded-3xl p-5 space-y-2 border border-slate-200/80 shadow-sm apple-spring">
+        <div className="apple-glass-card rounded-[28px] p-5 space-y-2 border border-slate-200/80 shadow-sm apple-spring">
           <div className="flex items-center gap-2.5 text-sky-600 text-xs font-black uppercase tracking-wider">
-            <div className="h-8 w-8 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600">
+            <div className="apple-icon-badge h-9 w-9 rounded-xl bg-gradient-to-tr from-sky-500 to-blue-600 text-white shadow-xs">
               <ShieldCheck size={16} />
             </div>
             <span>Antifraude en Tiempo Real</span>
           </div>
-          <p className="text-xs text-slate-500 leading-relaxed">
+          <p className="text-xs text-slate-500 leading-relaxed font-medium">
             Tu cuenta cuenta con evaluación de riesgo instantánea en cada transacción, protegiendo tu saldo ante anomalías.
           </p>
         </div>

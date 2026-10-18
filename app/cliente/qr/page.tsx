@@ -529,25 +529,25 @@ export default function ClienteQRBreBPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-2xl bg-sky-50 border border-sky-200/80 text-sky-600 flex items-center justify-center shadow-md shadow-sky-500/10">
-            <QrCode size={26} />
+          <div className="apple-icon-badge h-12 w-12 rounded-2xl bg-gradient-to-tr from-sky-500 to-blue-600 text-white shadow-md shadow-sky-500/20">
+            <QrCode size={24} />
           </div>
           <div>
-            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+            <h1 className="text-2xl font-black text-slate-950 tracking-tight flex items-center gap-2">
               QR & Bre-B
-              <span className="text-[10px] font-black uppercase tracking-widest bg-sky-100 text-sky-700 border border-sky-200 px-2.5 py-0.5 rounded-full">
+              <span className="text-[10px] font-black uppercase tracking-widest bg-sky-100 text-sky-800 border border-sky-200 px-2.5 py-0.5 rounded-full">
                 Interoperable
               </span>
             </h1>
-            <p className="text-xs text-slate-500">Paga con cámara o foto, genera tu código y administra tu Llave Bre-B</p>
+            <p className="text-xs text-slate-500 font-medium">Paga con cámara o foto, genera tu código y administra tu Llave Bre-B</p>
           </div>
         </div>
 
         {/* Saldo rápido */}
         {cuentaSeleccionadaObj && (
           <div className="text-right">
-            <p className="text-[11px] text-slate-500 uppercase font-bold tracking-wider">Saldo Disponible</p>
-            <p className="text-lg font-black font-mono text-slate-900">{formatCOP(saldoDisponible)}</p>
+            <p className="text-[11px] text-slate-500 uppercase font-black tracking-wider">Saldo Disponible</p>
+            <p className="text-lg font-black font-mono text-slate-950">{formatCOP(saldoDisponible)}</p>
           </div>
         )}
       </div>
@@ -557,10 +557,10 @@ export default function ClienteQRBreBPage() {
         <button
           type="button"
           onClick={() => { setTab("pagar_qr"); setErrorLecturaQR(null); }}
-          className={`py-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all active:scale-[0.97] ${
+          className={`py-3 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.97] hover:scale-[1.01] ${
             tab === "pagar_qr"
-              ? "bg-white text-slate-900 shadow-sm"
-              : "text-slate-600 hover:text-slate-900"
+              ? "bg-white text-slate-950 shadow-sm"
+              : "text-slate-600 hover:text-slate-950"
           }`}
         >
           <Camera size={16} />
@@ -570,10 +570,10 @@ export default function ClienteQRBreBPage() {
         <button
           type="button"
           onClick={() => { setTab("generar_qr"); setErrorLecturaQR(null); }}
-          className={`py-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all active:scale-[0.97] ${
+          className={`py-3 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.97] hover:scale-[1.01] ${
             tab === "generar_qr"
-              ? "bg-white text-slate-900 shadow-sm"
-              : "text-slate-600 hover:text-slate-900"
+              ? "bg-white text-slate-950 shadow-sm"
+              : "text-slate-600 hover:text-slate-950"
           }`}
         >
           <QrCode size={16} />
@@ -583,10 +583,10 @@ export default function ClienteQRBreBPage() {
         <button
           type="button"
           onClick={() => { setTab("llave_breb"); setErrorLecturaQR(null); }}
-          className={`py-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all active:scale-[0.97] ${
+          className={`py-3 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.97] hover:scale-[1.01] ${
             tab === "llave_breb"
-              ? "bg-white text-slate-900 shadow-sm"
-              : "text-slate-600 hover:text-slate-900"
+              ? "bg-white text-slate-950 shadow-sm"
+              : "text-slate-600 hover:text-slate-950"
           }`}
         >
           <KeyRound size={16} />
@@ -600,10 +600,10 @@ export default function ClienteQRBreBPage() {
       {tab === "pagar_qr" && (
         <div className="space-y-6">
           {!comprobantePagoQR ? (
-            <div className="apple-glass-card rounded-3xl p-6 sm:p-8 space-y-6">
+            <div className="apple-glass-card rounded-[32px] p-6 sm:p-8 space-y-6 border border-white/95 shadow-xl">
               <div>
-                <h2 className="text-lg font-extrabold text-slate-900 mb-1">Escanear o Subir Código QR</h2>
-                <p className="text-xs text-slate-500">
+                <h2 className="text-lg font-black text-slate-950 mb-1">Escanear o Subir Código QR</h2>
+                <p className="text-xs text-slate-500 font-medium">
                   Apunta tu cámara web/celular, sube una foto de cualquier QR de BankLite o Bre-B, o pega el código para pagar al instante.
                 </p>
               </div>
@@ -611,7 +611,7 @@ export default function ClienteQRBreBPage() {
               {/* Selector de cuenta origen si tiene varias */}
               {cuentas.length > 1 && (
                 <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-2">
+                  <label className="block text-[11px] font-black uppercase tracking-wider text-slate-600 mb-2">
                     Pagar desde tu cuenta
                   </label>
                   <select
@@ -680,7 +680,7 @@ export default function ClienteQRBreBPage() {
                         <button
                           type="button"
                           onClick={alternarCamara}
-                          className="p-2 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/15 text-white transition flex items-center gap-1 text-xs"
+                          className="p-2 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/15 text-white transition-all duration-200 active:scale-90 flex items-center gap-1 text-xs"
                           title="Cambiar cámara"
                         >
                           <RefreshCw size={14} />
@@ -689,7 +689,7 @@ export default function ClienteQRBreBPage() {
                         <button
                           type="button"
                           onClick={detenerCamara}
-                          className="p-2 rounded-full bg-black/60 hover:bg-red-500/80 backdrop-blur-md border border-white/15 text-white transition flex items-center gap-1 text-xs"
+                          className="p-2 rounded-full bg-black/60 hover:bg-red-500/80 backdrop-blur-md border border-white/15 text-white transition-all duration-200 active:scale-90 flex items-center gap-1 text-xs"
                           title="Cerrar cámara"
                         >
                           <X size={15} />
@@ -705,22 +705,22 @@ export default function ClienteQRBreBPage() {
                   {/* Tarjeta 1: Abrir Cámara en Vivo */}
                   <div
                     onClick={() => iniciarCamara()}
-                    className="border-2 border-sky-200/90 hover:border-sky-400 bg-sky-50/50 hover:bg-sky-50/80 rounded-3xl p-6 text-center cursor-pointer transition-all space-y-3.5 group shadow-sm flex flex-col justify-between apple-spring"
+                    className="border-2 border-sky-200/90 hover:border-sky-400 bg-sky-50/50 hover:bg-sky-50/80 rounded-3xl p-6 text-center cursor-pointer transition-all duration-200 space-y-3.5 group shadow-sm flex flex-col justify-between apple-spring hover:scale-[1.02] active:scale-[0.98]"
                   >
-                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-tr from-sky-400 to-blue-600 text-white flex items-center justify-center mx-auto group-hover:scale-110 transition-transform shadow-md shadow-sky-500/20">
+                    <div className="apple-icon-badge h-16 w-16 rounded-2xl bg-gradient-to-tr from-sky-400 to-blue-600 text-white flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-200 shadow-md shadow-sky-500/25">
                       <Camera size={30} />
                     </div>
                     <div>
-                      <p className="text-sm font-black text-slate-900">
+                      <p className="text-sm font-black text-slate-950">
                         Abrir Cámara en Vivo
                       </p>
-                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                      <p className="text-xs text-slate-500 mt-1 leading-relaxed font-medium">
                         Apunta tu cámara web o del celular para escanear en tiempo real
                       </p>
                     </div>
                     <button
                       type="button"
-                      className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl apple-primary-button text-xs font-bold transition shadow-sm"
+                      className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl apple-primary-button text-xs font-black transition-all duration-200 active:scale-[0.97] hover:scale-[1.02] shadow-sm shadow-sky-500/20"
                     >
                       <Camera size={14} /> Escanear con cámara
                     </button>
@@ -729,22 +729,22 @@ export default function ClienteQRBreBPage() {
                   {/* Tarjeta 2: Subir Foto o Captura */}
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-emerald-300 hover:border-emerald-500 bg-emerald-50/40 hover:bg-emerald-50/70 rounded-3xl p-6 text-center cursor-pointer transition-all space-y-3.5 group flex flex-col justify-between apple-spring shadow-sm"
+                    className="border-2 border-dashed border-emerald-300 hover:border-emerald-500 bg-emerald-50/40 hover:bg-emerald-50/70 rounded-3xl p-6 text-center cursor-pointer transition-all duration-200 space-y-3.5 group flex flex-col justify-between apple-spring hover:scale-[1.02] active:scale-[0.98] shadow-sm"
                   >
-                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-tr from-emerald-400 to-teal-600 text-white flex items-center justify-center mx-auto group-hover:scale-110 transition-transform shadow-md shadow-emerald-500/20">
+                    <div className="apple-icon-badge h-16 w-16 rounded-2xl bg-gradient-to-tr from-emerald-400 to-teal-600 text-white flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-200 shadow-md shadow-emerald-500/25">
                       {analizandoFoto ? <Loader2 size={30} className="animate-spin" /> : <Upload size={30} />}
                     </div>
                     <div>
-                      <p className="text-sm font-black text-slate-900">
+                      <p className="text-sm font-black text-slate-950">
                         {analizandoFoto ? "Analizando imagen…" : "Subir Foto o Captura"}
                       </p>
-                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                      <p className="text-xs text-slate-500 mt-1 leading-relaxed font-medium">
                         Sube una foto de galería o captura de pantalla con código QR
                       </p>
                     </div>
                     <button
                       type="button"
-                      className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl apple-glass-button text-xs font-bold text-slate-700 hover:text-slate-950 transition"
+                      className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl apple-glass-button text-xs font-black text-slate-800 hover:text-slate-950 transition-all duration-200 active:scale-[0.97] hover:scale-[1.02] shadow-xs"
                     >
                       <Upload size={14} /> Seleccionar archivo
                     </button>
@@ -772,7 +772,7 @@ export default function ClienteQRBreBPage() {
                   type="button"
                   disabled={!qrRawInput.trim() || decodificando}
                   onClick={() => procesarPayloadQR(qrRawInput.trim())}
-                  className="apple-primary-button rounded-2xl px-5 py-3 text-xs font-bold flex items-center gap-2 disabled:opacity-40"
+                  className="apple-primary-button rounded-2xl px-5 py-3 text-xs font-black flex items-center gap-2 disabled:opacity-40 transition-all duration-200 active:scale-[0.97] hover:scale-[1.02] shadow-sm shadow-sky-500/20"
                 >
                   {decodificando ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
                   <span>Procesar</span>
@@ -781,7 +781,7 @@ export default function ClienteQRBreBPage() {
 
               {/* Error de lectura */}
               {errorLecturaQR && (
-                <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex gap-3 text-red-400 animate-fade-in">
+                <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex gap-3 text-red-600 animate-fade-in shadow-xs">
                   <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
                   <p className="text-xs font-semibold">{errorLecturaQR}</p>
                 </div>
@@ -789,34 +789,37 @@ export default function ClienteQRBreBPage() {
 
               {/* TARJETA DE RECEPTOR VERIFICADO DEL QR */}
               {datosQRPago && (
-                <div className="bg-emerald-50 border border-emerald-200/80 rounded-3xl p-6 space-y-4 animate-fade-in shadow-sm">
+                <div className="bg-emerald-50/90 border border-emerald-200/90 rounded-[28px] p-6 space-y-4 animate-fade-in shadow-xs">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center font-black text-lg shadow-md shadow-emerald-500/20">
-                        {datosQRPago.nombre_titular.charAt(0).toUpperCase()}
+                    <div className="flex items-center gap-3.5">
+                      <div className="relative">
+                        <div className="apple-avatar-badge h-12 w-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center font-black text-lg shadow-md shadow-emerald-600/20">
+                          {datosQRPago.nombre_titular.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white shadow-xs" />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="text-base font-black text-slate-900">{datosQRPago.nombre_titular}</p>
+                          <p className="text-base font-black text-slate-950">{datosQRPago.nombre_titular}</p>
                           <ShieldCheck size={16} className="text-emerald-600" />
                         </div>
-                        <p className="text-xs text-emerald-700 font-semibold">Destinatario Verificado en Bre-B</p>
+                        <p className="text-xs text-emerald-700 font-bold">Destinatario Verificado en Bre-B</p>
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-full">
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200 px-3 py-1 rounded-full">
                       {datosQRPago.token_qr}
                     </span>
                   </div>
 
                   {datosQRPago.concepto && (
-                    <div className="p-3 rounded-2xl bg-white border border-slate-200/80 text-xs text-slate-600 shadow-sm">
-                      <strong className="text-slate-900">Motivo:</strong> {datosQRPago.concepto}
+                    <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 text-xs text-slate-600 shadow-xs">
+                      <strong className="text-slate-950">Motivo:</strong> {datosQRPago.concepto}
                     </div>
                   )}
 
                   {/* MONTO A PAGAR */}
                   <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                    <label className="block text-[11px] font-black uppercase tracking-wider text-slate-600 mb-1.5">
                       {datosQRPago.monto_sugerido ? "Monto indicado por el QR" : "Ingresa el valor a pagar"}
                     </label>
                     <div className="relative">
@@ -827,7 +830,7 @@ export default function ClienteQRBreBPage() {
                         placeholder="0"
                         value={montoPagoQR}
                         onChange={(e) => setMontoPagoQR(e.target.value)}
-                        className="w-full bg-white border border-slate-200/90 rounded-2xl pl-9 pr-4 py-3.5 text-2xl font-black font-mono text-slate-900 focus:outline-none focus:border-sky-500 transition shadow-sm"
+                        className="w-full bg-white border border-slate-200/90 rounded-2xl pl-9 pr-4 py-3.5 text-2xl font-black font-mono text-slate-950 focus:outline-none focus:border-sky-500 transition shadow-sm"
                       />
                     </div>
                   </div>
@@ -836,7 +839,7 @@ export default function ClienteQRBreBPage() {
                     <button
                       type="button"
                       onClick={reiniciarFlujoPagoQR}
-                      className="flex-1 py-3.5 rounded-2xl apple-glass-button text-xs font-bold text-slate-600 hover:text-slate-900 transition"
+                      className="flex-1 py-3.5 rounded-2xl apple-glass-button text-xs font-black text-slate-700 hover:text-slate-950 transition-all duration-200 active:scale-[0.97] hover:scale-[1.02]"
                     >
                       Cancelar
                     </button>
@@ -844,7 +847,7 @@ export default function ClienteQRBreBPage() {
                       type="button"
                       disabled={procesandoPago || !montoPagoQR || Number(montoPagoQR) <= 0}
                       onClick={handleEjecutarPagoQR}
-                      className="flex-[2] apple-primary-button disabled:opacity-40 font-extrabold py-3.5 rounded-2xl text-xs flex items-center justify-center gap-2 transition active:scale-[0.98] shadow-md shadow-sky-500/20"
+                      className="flex-[2] apple-primary-button disabled:opacity-40 font-black py-3.5 rounded-2xl text-xs flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.97] hover:scale-[1.02] shadow-md shadow-sky-500/25"
                     >
                       {procesandoPago ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
                       <span>Pagar ahora con Clave Dinámica</span>
@@ -857,7 +860,7 @@ export default function ClienteQRBreBPage() {
             /* ======================================================== */
             /* TIQUETE DE COMPROBANTE ESTILO NEQUI (EN GRANDE CON QR)   */
             /* ======================================================== */
-            <div className="apple-glass-card rounded-3xl p-6 sm:p-10 space-y-6 text-center animate-fade-in border border-emerald-200/80 shadow-xl">
+            <div className="apple-glass-card rounded-[32px] p-6 sm:p-10 space-y-6 text-center animate-fade-in border border-emerald-200/80 shadow-xl">
               <div className="inline-flex p-4 rounded-3xl bg-emerald-50 border border-emerald-200 text-emerald-600 shadow-sm">
                 <CheckCircle size={52} />
               </div>
@@ -866,8 +869,8 @@ export default function ClienteQRBreBPage() {
                 <span className="text-xs font-black uppercase tracking-widest text-emerald-800 bg-emerald-100 border border-emerald-200 px-3 py-1 rounded-full">
                   ¡Pago QR Exitoso!
                 </span>
-                <h2 className="text-xl font-black text-slate-900 mt-3">Enviaste a {comprobantePagoQR.destinatario}</h2>
-                <p className="text-4xl sm:text-5xl font-black text-slate-900 mt-2 font-mono">
+                <h2 className="text-xl font-black text-slate-950 mt-3">Enviaste a {comprobantePagoQR.destinatario}</h2>
+                <p className="text-4xl sm:text-5xl font-black text-slate-950 mt-2 font-mono">
                   {formatCOP(comprobantePagoQR.monto)} <span className="text-lg text-slate-500 font-sans">COP</span>
                 </p>
               </div>
@@ -904,14 +907,14 @@ export default function ClienteQRBreBPage() {
                 <button
                   type="button"
                   onClick={compartirWhatsAppComprobante}
-                  className="w-full flex items-center justify-center gap-2 font-bold px-4 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs transition active:scale-95 shadow-md shadow-emerald-600/20"
+                  className="w-full flex items-center justify-center gap-2 font-black px-4 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs transition-all duration-200 active:scale-[0.97] hover:scale-[1.02] shadow-md shadow-emerald-600/20"
                 >
                   <Share2 size={16} /> Compartir por WhatsApp
                 </button>
                 <button
                   type="button"
                   onClick={reiniciarFlujoPagoQR}
-                  className="w-full apple-glass-button text-slate-800 hover:text-slate-950 font-extrabold px-6 py-3.5 rounded-2xl text-xs transition active:scale-[0.98]"
+                  className="w-full apple-glass-button text-slate-800 hover:text-slate-950 font-black px-6 py-3.5 rounded-2xl text-xs transition-all duration-200 active:scale-[0.97] hover:scale-[1.02]"
                 >
                   Hacer otro pago
                 </button>
@@ -969,13 +972,13 @@ export default function ClienteQRBreBPage() {
 
           {/* Chips de montos rápidos */}
           <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-[11px] text-slate-500 font-bold uppercase">Montos rápidos:</span>
+            <span className="text-[11px] text-slate-600 font-black uppercase tracking-wider">Montos rápidos:</span>
             {MONTOS_COBRO_RAPIDO.map((m) => (
               <button
                 key={m}
                 type="button"
                 onClick={() => setMontoCobro(String(m))}
-                className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/70 border border-slate-200 text-xs font-bold text-slate-700 transition active:scale-95"
+                className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200/90 text-xs font-black text-slate-800 transition-all duration-200 active:scale-95 hover:scale-[1.02] shadow-xs"
               >
                 ${(m / 1000).toFixed(0)}k
               </button>
@@ -984,7 +987,7 @@ export default function ClienteQRBreBPage() {
               <button
                 type="button"
                 onClick={() => setMontoCobro("")}
-                className="text-[11px] text-sky-600 hover:underline font-bold"
+                className="text-[11px] text-sky-600 hover:text-sky-800 font-black underline transition-colors"
               >
                 Limpiar monto
               </button>
@@ -996,23 +999,23 @@ export default function ClienteQRBreBPage() {
               type="button"
               disabled={generandoQR}
               onClick={handleGenerarMiQR}
-              className="apple-primary-button disabled:opacity-40 font-extrabold px-6 py-3 rounded-2xl text-xs flex items-center gap-2 transition active:scale-95 shadow-md shadow-sky-500/20"
+              className="apple-primary-button disabled:opacity-40 font-black px-7 py-3.5 rounded-2xl text-xs flex items-center gap-2 transition-all duration-200 active:scale-[0.97] hover:scale-[1.02] shadow-md shadow-sky-500/25"
             >
-              {generandoQR ? <Loader2 size={15} className="animate-spin" /> : <RefreshCw size={15} />}
+              {generandoQR ? <Loader2 size={15} className="animate-spin text-white" /> : <RefreshCw size={15} />}
               <span>Actualizar QR</span>
             </button>
           </div>
 
           {/* VISUALIZADOR DEL CÓDIGO QR */}
           {qrGeneradoData?.dataUrl && (
-            <div className="p-8 rounded-3xl apple-glass-card border border-white/95 text-center space-y-4 animate-fade-in shadow-xl">
+            <div className="p-8 rounded-[32px] apple-glass-card border border-white/95 text-center space-y-4 animate-fade-in shadow-xl">
               <div className="inline-block p-5 bg-white border border-slate-200/80 rounded-3xl shadow-xl mx-auto">
                 <img
                   src={qrGeneradoData.dataUrl}
                   alt="Mi Código QR BankLite Bre-B"
                   className="w-56 h-56 mx-auto rounded-xl"
                 />
-                <div className="mt-3 flex items-center justify-center gap-1.5 text-slate-800 font-black text-xs tracking-wider">
+                <div className="mt-3 flex items-center justify-center gap-1.5 text-slate-900 font-black text-xs tracking-wider">
                   <span>🇨🇴 BRE-B</span>
                   <span>•</span>
                   <span>BANKLITE</span>
@@ -1020,12 +1023,12 @@ export default function ClienteQRBreBPage() {
               </div>
 
               <div>
-                <p className="text-base font-extrabold text-slate-900">{qrGeneradoData.nombre_titular}</p>
-                <p className="text-xs text-sky-700 font-bold mt-0.5">
+                <p className="text-base font-black text-slate-950">{qrGeneradoData.nombre_titular}</p>
+                <p className="text-xs text-sky-700 font-extrabold mt-0.5">
                   {qrGeneradoData.monto ? `Cobro por ${formatCOP(qrGeneradoData.monto)}` : "Cualquier valor"}
                   {qrGeneradoData.concepto ? ` • ${qrGeneradoData.concepto}` : ""}
                 </p>
-                <p className="text-[11px] font-mono text-slate-400 mt-1">
+                <p className="text-[11px] font-mono text-slate-400 mt-1 font-medium">
                   Código de control: {qrGeneradoData.qr_token}
                 </p>
               </div>
@@ -1035,7 +1038,7 @@ export default function ClienteQRBreBPage() {
                 <button
                   type="button"
                   onClick={compartirWhatsAppCobroQR}
-                  className="flex items-center justify-center gap-1.5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition active:scale-95 shadow-md shadow-emerald-600/20"
+                  className="flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black transition-all duration-200 active:scale-[0.97] hover:scale-[1.02] shadow-md shadow-emerald-600/20"
                 >
                   <Share2 size={14} /> Compartir WhatsApp
                 </button>
@@ -1043,7 +1046,7 @@ export default function ClienteQRBreBPage() {
                 <a
                   href={qrGeneradoData.dataUrl}
                   download={`QR-BankLite-${nombreTitular.replace(/\s+/g, "_")}.png`}
-                  className="flex items-center justify-center gap-1.5 py-3 rounded-xl apple-glass-button text-slate-700 hover:text-slate-950 text-xs font-bold transition active:scale-95"
+                  className="flex items-center justify-center gap-1.5 py-3 rounded-2xl apple-glass-button text-slate-800 hover:text-slate-950 text-xs font-black transition-all duration-200 active:scale-[0.97] hover:scale-[1.02] shadow-xs"
                 >
                   <Download size={14} /> Descargar Imagen
                 </a>
@@ -1051,9 +1054,9 @@ export default function ClienteQRBreBPage() {
                 <button
                   type="button"
                   onClick={() => copiarTexto(qrGeneradoData.qr_payload, setCopiadoQR)}
-                  className="flex items-center justify-center gap-1.5 py-3 rounded-xl apple-glass-button text-slate-700 hover:text-slate-950 text-xs font-bold transition active:scale-95"
+                  className="flex items-center justify-center gap-1.5 py-3 rounded-2xl apple-glass-button text-slate-800 hover:text-slate-950 text-xs font-black transition-all duration-200 active:scale-[0.97] hover:scale-[1.02] shadow-xs"
                 >
-                  {copiadoQR ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                  {copiadoQR ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
                   <span>{copiadoQR ? "Copiado" : "Copiar Enlace"}</span>
                 </button>
               </div>
@@ -1068,34 +1071,34 @@ export default function ClienteQRBreBPage() {
       {tab === "llave_breb" && (
         <div className="space-y-6">
           {/* Banner oficial Bre-B */}
-          <div className="apple-glass-card rounded-3xl p-6 sm:p-8 space-y-4 border border-sky-200/80 bg-gradient-to-br from-sky-50/70 to-white shadow-sm">
+          <div className="apple-glass-card rounded-[32px] p-6 sm:p-8 space-y-4 border border-sky-200/80 bg-gradient-to-br from-sky-50/70 to-white shadow-md">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+              <div className="apple-icon-badge h-11 w-11 rounded-2xl bg-gradient-to-tr from-sky-500 to-blue-600 text-white flex-shrink-0 shadow-sm">
                 <Sparkles size={20} />
               </div>
               <div>
-                <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                <h3 className="text-base font-black text-slate-950 flex items-center gap-2">
                   Bre-B · Sistema de Pagos Inmediatos de Colombia
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 font-medium">
                   Operado bajo los estándares del Banco de la República para transferencias inmediatas interbancarias.
                 </p>
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white/80 border border-slate-200/80 text-xs text-slate-600 space-y-1 shadow-sm">
+            <div className="p-4 rounded-2xl bg-white/80 border border-slate-200/80 text-xs text-slate-600 space-y-1 shadow-xs">
               <p>
-                Con tu <strong>Llave Bre-B</strong>, cualquier persona en Colombia puede enviarte dinero desde Nequi,
+                Con tu <strong className="text-slate-900 font-bold">Llave Bre-B</strong>, cualquier persona en Colombia puede enviarte dinero desde Nequi,
                 Daviplata, Bancolombia, Nubank o cualquier entidad financiera usando solamente tu número de celular o documento.
               </p>
             </div>
           </div>
 
           {/* LISTA DE LLAVES REGISTRADAS DEL USUARIO */}
-          <div className="apple-glass-card rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl">
+          <div className="apple-glass-card rounded-[32px] p-6 sm:p-8 space-y-5 border border-white/95 shadow-xl">
             <div>
-              <h3 className="text-base font-extrabold text-slate-900">Tus Llaves Bre-B Registradas</h3>
-              <p className="text-xs text-slate-500">
+              <h3 className="text-base font-black text-slate-950">Tus Llaves Bre-B Registradas</h3>
+              <p className="text-xs text-slate-500 font-medium">
                 Selecciona cuál es tu llave principal para recibir pagos en tu cuenta BankLite.
               </p>
             </div>
@@ -1104,26 +1107,26 @@ export default function ClienteQRBreBPage() {
               {/* Llave 1: Celular */}
               <div
                 onClick={() => setLlavePrincipal("telefono")}
-                className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+                className={`p-4 rounded-2xl border transition-all duration-200 cursor-pointer flex items-center justify-between active:scale-[0.98] ${
                   llavePrincipal === "telefono"
-                    ? "border-2 border-sky-500 bg-sky-50/60 shadow-md shadow-sky-500/10"
-                    : "border-slate-200/80 hover:border-slate-300 bg-white/70"
+                    ? "border-2 border-sky-500 bg-sky-50/70 shadow-md shadow-sky-500/10"
+                    : "border-slate-200/80 hover:border-slate-300 bg-white/80"
                 }`}
               >
                 <div className="flex items-center gap-3.5">
-                  <div className="h-11 w-11 rounded-xl bg-sky-100 text-sky-600 border border-sky-200 flex items-center justify-center shadow-sm">
+                  <div className="apple-icon-badge h-11 w-11 rounded-xl bg-gradient-to-tr from-sky-500 to-blue-600 text-white shadow-xs">
                     <Smartphone size={20} />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-extrabold text-slate-900">Número de Celular</p>
+                      <p className="text-sm font-black text-slate-950">Número de Celular</p>
                       {llavePrincipal === "telefono" && (
-                        <span className="text-[10px] font-black uppercase tracking-wider bg-sky-100 text-sky-700 border border-sky-200 px-2 py-0.5 rounded-full">
+                        <span className="text-[10px] font-black uppercase tracking-wider bg-sky-100 text-sky-800 border border-sky-200 px-2 py-0.5 rounded-full">
                           Principal
                         </span>
                       )}
                     </div>
-                    <p className="text-xs font-mono text-slate-700 font-bold mt-0.5">
+                    <p className="text-xs font-mono text-slate-800 font-black mt-0.5">
                       +57 {formatTelefono(usuarioData?.telefono || "3104433445")}
                     </p>
                   </div>
@@ -1133,33 +1136,33 @@ export default function ClienteQRBreBPage() {
                   <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1 justify-end">
                     <CheckCircle size={13} /> Activa
                   </span>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Directorio Central Bre-B</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5 font-medium">Directorio Central Bre-B</p>
                 </div>
               </div>
 
               {/* Llave 2: Documento de Identidad */}
               <div
                 onClick={() => setLlavePrincipal("documento")}
-                className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+                className={`p-4 rounded-2xl border transition-all duration-200 cursor-pointer flex items-center justify-between active:scale-[0.98] ${
                   llavePrincipal === "documento"
-                    ? "border-2 border-sky-500 bg-sky-50/60 shadow-md shadow-sky-500/10"
-                    : "border-slate-200/80 hover:border-slate-300 bg-white/70"
+                    ? "border-2 border-sky-500 bg-sky-50/70 shadow-md shadow-sky-500/10"
+                    : "border-slate-200/80 hover:border-slate-300 bg-white/80"
                 }`}
               >
                 <div className="flex items-center gap-3.5">
-                  <div className="h-11 w-11 rounded-xl bg-purple-100 text-purple-600 border border-purple-200 flex items-center justify-center shadow-sm">
+                  <div className="apple-icon-badge h-11 w-11 rounded-xl bg-gradient-to-tr from-purple-500 to-indigo-600 text-white shadow-xs">
                     <ShieldCheck size={20} />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-extrabold text-slate-900">Documento de Identidad (Cédula)</p>
+                      <p className="text-sm font-black text-slate-950">Documento de Identidad (Cédula)</p>
                       {llavePrincipal === "documento" && (
-                        <span className="text-[10px] font-black uppercase tracking-wider bg-sky-100 text-sky-700 border border-sky-200 px-2 py-0.5 rounded-full">
+                        <span className="text-[10px] font-black uppercase tracking-wider bg-sky-100 text-sky-800 border border-sky-200 px-2 py-0.5 rounded-full">
                           Principal
                         </span>
                       )}
                     </div>
-                    <p className="text-xs font-mono text-slate-700 font-bold mt-0.5">
+                    <p className="text-xs font-mono text-slate-800 font-black mt-0.5">
                       {usuarioData?.tipo_documento || "CC"} {usuarioData?.numero_documento || "1023456789"}
                     </p>
                   </div>
@@ -1169,33 +1172,33 @@ export default function ClienteQRBreBPage() {
                   <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1 justify-end">
                     <CheckCircle size={13} /> Activa
                   </span>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Registrada</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5 font-medium">Registrada</p>
                 </div>
               </div>
 
               {/* Llave 3: Correo Electrónico */}
               <div
                 onClick={() => setLlavePrincipal("email")}
-                className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+                className={`p-4 rounded-2xl border transition-all duration-200 cursor-pointer flex items-center justify-between active:scale-[0.98] ${
                   llavePrincipal === "email"
-                    ? "border-2 border-sky-500 bg-sky-50/60 shadow-md shadow-sky-500/10"
-                    : "border-slate-200/80 hover:border-slate-300 bg-white/70"
+                    ? "border-2 border-sky-500 bg-sky-50/70 shadow-md shadow-sky-500/10"
+                    : "border-slate-200/80 hover:border-slate-300 bg-white/80"
                 }`}
               >
                 <div className="flex items-center gap-3.5">
-                  <div className="h-11 w-11 rounded-xl bg-amber-100 text-amber-600 border border-amber-200 flex items-center justify-center shadow-sm">
+                  <div className="apple-icon-badge h-11 w-11 rounded-xl bg-gradient-to-tr from-amber-400 to-amber-500 text-white shadow-xs">
                     <FileText size={20} />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-extrabold text-slate-900">Correo Electrónico</p>
+                      <p className="text-sm font-black text-slate-950">Correo Electrónico</p>
                       {llavePrincipal === "email" && (
-                        <span className="text-[10px] font-black uppercase tracking-wider bg-sky-100 text-sky-700 border border-sky-200 px-2 py-0.5 rounded-full">
+                        <span className="text-[10px] font-black uppercase tracking-wider bg-sky-100 text-sky-800 border border-sky-200 px-2 py-0.5 rounded-full">
                           Principal
                         </span>
                       )}
                     </div>
-                    <p className="text-xs font-mono text-slate-700 font-bold mt-0.5">
+                    <p className="text-xs font-mono text-slate-800 font-black mt-0.5">
                       {usuarioData?.email || "usuario@ejemplo.com"}
                     </p>
                   </div>
@@ -1205,7 +1208,7 @@ export default function ClienteQRBreBPage() {
                   <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1 justify-end">
                     <CheckCircle size={13} /> Activa
                   </span>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Registrada</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5 font-medium">Registrada</p>
                 </div>
               </div>
             </div>
@@ -1223,7 +1226,7 @@ export default function ClienteQRBreBPage() {
                       : usuarioData?.email || "usuario@ejemplo.com";
                   copiarTexto(valor, setCopiadoLlave);
                 }}
-                className="w-full apple-primary-button font-extrabold py-3.5 rounded-2xl text-xs flex items-center justify-center gap-2 transition active:scale-[0.98] shadow-md shadow-sky-500/20"
+                className="w-full apple-primary-button font-black py-4 rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.97] hover:scale-[1.02] shadow-md shadow-sky-500/25"
               >
                 {copiadoLlave ? <Check size={16} className="text-white" /> : <Copy size={16} />}
                 <span>

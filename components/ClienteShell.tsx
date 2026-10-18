@@ -102,20 +102,21 @@ export function ClienteShell({ children }: { children: React.ReactNode }) {
         {/* Logo */}
         <div className="px-6 py-6 flex items-center justify-between border-b border-slate-200/70">
           <Link href="/cliente" className="flex items-center gap-3 group">
-            <div className="h-10 w-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-lg shadow-slate-900/15 group-hover:scale-105 transition-transform">
-              <Building2 size={22} />
+            <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-slate-900 to-slate-800 text-white flex items-center justify-center shadow-md shadow-slate-900/20 group-hover:scale-105 transition-all duration-200">
+              <Building2 size={20} className="text-sky-400" />
             </div>
             <div>
-              <h1 className="text-base font-extrabold tracking-tight text-slate-900 leading-none">
+              <h1 className="text-base font-black tracking-tight text-slate-950 leading-none">
                 BankLite
               </h1>
-              <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider block mt-1">
+              <span className="text-[10px] text-emerald-600 font-extrabold uppercase tracking-wider block mt-1 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Cliente Personal
               </span>
             </div>
           </Link>
           <button
-            className="lg:hidden text-slate-400 hover:text-slate-800"
+            className="lg:hidden text-slate-400 hover:text-slate-800 p-1.5 rounded-xl transition-all duration-200 active:scale-[0.97]"
             onClick={() => setMenuAbierto(false)}
             aria-label="Cerrar menú"
           >
@@ -124,7 +125,7 @@ export function ClienteShell({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Navegación Apple Fluid */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1 scrollbar-none">
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1.5 scrollbar-none">
           {CLIENTE_LINKS.map((link) => {
             const isActive =
               pathname === link.href ||
@@ -134,38 +135,50 @@ export function ClienteShell({ children }: { children: React.ReactNode }) {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl font-semibold text-sm transition-all duration-150 active:scale-[0.97] ${
+                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl font-bold text-sm transition-all duration-200 active:scale-[0.97] ${
                   isActive
-                    ? "bg-slate-900 text-white font-bold shadow-md shadow-slate-900/15"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"
+                    ? "bg-slate-900 text-white shadow-md shadow-slate-900/15 scale-[1.01]"
+                    : "text-slate-600 hover:text-slate-950 hover:bg-white/80 hover:shadow-xs"
                 }`}
               >
-                <Icon size={18} className={isActive ? "text-white" : "text-slate-500"} />
-                {link.label}
+                <div
+                  className={`h-8 w-8 rounded-xl flex items-center justify-center transition-transform duration-200 ${
+                    isActive
+                      ? "bg-white/15 text-white"
+                      : "bg-slate-100 text-slate-500 group-hover:scale-105"
+                  }`}
+                >
+                  <Icon size={17} />
+                </div>
+                <span>{link.label}</span>
               </Link>
             );
           })}
         </nav>
 
         {/* Parte inferior */}
-        <div className="px-3 py-4 border-t border-slate-200/70 space-y-1">
+        <div className="px-3 py-4 border-t border-slate-200/70 space-y-1.5">
           <Link
             href="/cliente/ayuda"
-            className={`flex items-center gap-3 px-4 py-2 rounded-2xl text-xs font-semibold transition-all active:scale-[0.97] ${
+            className={`flex items-center gap-3 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all duration-200 active:scale-[0.97] ${
               ayudaActiva
-                ? "bg-slate-100 text-slate-900 font-bold"
-                : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/60"
+                ? "bg-slate-100 text-slate-950"
+                : "text-slate-600 hover:text-slate-950 hover:bg-white/80"
             }`}
           >
-            <HelpCircle size={17} />
-            Centro de soporte
+            <div className="h-7 w-7 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center">
+              <HelpCircle size={15} />
+            </div>
+            <span>Centro de soporte</span>
           </Link>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-2 rounded-2xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-all active:scale-[0.97]"
+            className="w-full flex items-center gap-3 px-3.5 py-2 rounded-2xl text-xs font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-50/80 transition-all duration-200 active:scale-[0.97]"
           >
-            <LogOut size={17} />
-            Cerrar sesión
+            <div className="h-7 w-7 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100">
+              <LogOut size={14} />
+            </div>
+            <span>Cerrar sesión</span>
           </button>
         </div>
       </aside>
@@ -176,36 +189,40 @@ export function ClienteShell({ children }: { children: React.ReactNode }) {
         <header className="bg-white/75 backdrop-blur-2xl border-b border-slate-200/70 sticky top-0 z-20 shadow-[0_1px_15px_-4px_rgba(15,23,42,0.03)]">
           <div className="px-6 py-3.5 flex items-center justify-between">
             <button
-              className="lg:hidden h-10 w-10 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition active:scale-[0.97]"
+              className="lg:hidden h-10 w-10 rounded-2xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-white flex items-center justify-center transition-all duration-200 active:scale-[0.97] shadow-xs"
               onClick={() => setMenuAbierto(true)}
               aria-label="Abrir menú"
             >
-              <Menu size={22} />
+              <Menu size={20} />
             </button>
-            <div className="hidden lg:flex items-center gap-2 text-xs font-bold tracking-wider text-slate-500 uppercase">
+            <div className="hidden lg:flex items-center gap-2 text-xs font-extrabold tracking-wider text-slate-500 uppercase">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               Banca Digital Segura • Bre-B
             </div>
 
             <div className="flex items-center gap-2.5 sm:gap-3.5">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-bold text-slate-900 tracking-tight">
+                <p className="text-sm font-extrabold text-slate-900 tracking-tight">
                   {nombreCompleto || sesion.usuario.nombre}
                 </p>
-                <p className="text-xs text-slate-500 font-mono">{sesion.usuario.email}</p>
+                <p className="text-[11px] text-slate-400 font-mono font-medium">{sesion.usuario.email}</p>
               </div>
               <ClaveDinamicaWidget idUsuario={sesion.usuario.id_usuario} />
               <NotificationBell idUsuario={sesion.usuario.id_usuario} />
-              <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-slate-900 to-slate-700 text-white font-bold text-sm flex items-center justify-center shadow-sm">
-                {sesion.usuario.nombre.charAt(0).toUpperCase()}
+              {/* Avatar con Apple badge y pulso en vivo */}
+              <div className="relative">
+                <div className="apple-avatar-badge h-9 w-9 bg-gradient-to-tr from-sky-500 via-indigo-600 to-slate-900 text-white font-black text-xs shadow-md shadow-slate-900/10">
+                  {sesion.usuario.nombre.charAt(0).toUpperCase()}
+                </div>
+                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white shadow-xs" title="Sesión activa" />
               </div>
               {/* Botón Cerrar Sesión en Header */}
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-extrabold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100/90 border border-rose-200/90 transition-all active:scale-[0.97] shadow-sm ml-1"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-extrabold text-rose-600 hover:text-rose-700 bg-rose-50/90 hover:bg-rose-100 border border-rose-200/80 transition-all duration-200 active:scale-[0.97] hover:scale-[1.02] shadow-xs ml-1"
                 title="Cerrar sesión de BankLite"
               >
-                <LogOut size={15} />
+                <LogOut size={14} />
                 <span className="hidden md:inline">Cerrar sesión</span>
               </button>
             </div>
