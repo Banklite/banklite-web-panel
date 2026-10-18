@@ -7,7 +7,6 @@ import { obtenerSesion } from "@/lib/auth";
 import {
   ShieldCheck,
   Zap,
-  CreditCard,
   Bell,
   ArrowRight,
   Building2,
@@ -17,7 +16,6 @@ import {
   Smartphone,
   Wallet,
   Compass,
-  Repeat,
   ChevronRight,
   TrendingUp,
   CheckCircle,
@@ -26,7 +24,6 @@ import {
 export default function AppleLandingPage() {
   const router = useRouter();
   const [verificando, setVerificando] = useState(true);
-  const [cardFlipped, setCardFlipped] = useState(false);
   const [trmCOP, setTrmCOP] = useState<number>(4180.5);
   const [eurCOP, setEurCOP] = useState<number>(4435.2);
 
@@ -39,7 +36,8 @@ export default function AppleLandingPage() {
     setVerificando(false);
 
     // Consultar TRM oficial en segundo plano
-    fetch("http://localhost:8004/transfers/trm")
+    const transferUrl = process.env.NEXT_PUBLIC_TRANSFER_API_URL ?? "http://localhost:8004";
+    fetch(`${transferUrl}/transfers/trm`)
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (data?.trm_vigente) setTrmCOP(parseFloat(data.trm_vigente));
@@ -159,90 +157,6 @@ export default function AppleLandingPage() {
           </div>
         </div>
 
-        {/* HERO INTERACTIVO: Tarjeta de Titanio Blanco 3D con Giro (Apple Card Replica) */}
-        <div className="relative z-10 max-w-lg mx-auto mt-16 perspective-1000">
-          <div
-            onClick={() => setCardFlipped(!cardFlipped)}
-            className={`cursor-pointer transition-transform duration-700 transform-style-3d ${
-              cardFlipped ? "rotate-y-180" : ""
-            }`}
-          >
-            {/* CARA FRONTAL: Apple Card White Titanium */}
-            <div className="w-full aspect-[1.586/1] rounded-3xl p-7 flex flex-col justify-between apple-white-titanium shadow-2xl relative overflow-hidden group select-none">
-              {/* Reflejo metálico de titanio blanco */}
-              <div className="absolute inset-0 titanium-shimmer pointer-events-none" />
-
-              <div className="flex items-start justify-between relative z-10">
-                <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-md">
-                    <Building2 size={18} />
-                  </div>
-                  <span className="font-extrabold tracking-tight text-slate-900 text-lg">BankLite</span>
-                </div>
-                {/* Chip EMV y Contactless */}
-                <div className="flex items-center gap-3">
-                  <div className="h-7 w-9 rounded-md bg-gradient-to-br from-amber-200 via-amber-300 to-amber-500 shadow-inner flex items-center justify-center border border-amber-600/30">
-                    <div className="w-5 h-4 border border-amber-700/40 rounded-sm" />
-                  </div>
-                  <span className="text-slate-400 text-lg font-bold">)))</span>
-                </div>
-              </div>
-
-              <div className="space-y-4 relative z-10">
-                <div className="font-mono text-xl sm:text-2xl tracking-[0.25em] text-slate-800 font-bold drop-shadow-sm">
-                  4532 •••• •••• 9012
-                </div>
-                <div className="flex items-end justify-between text-xs text-slate-500 uppercase tracking-widest">
-                  <div>
-                    <span className="text-[10px] text-slate-400 block font-bold">Titular</span>
-                    <span className="font-black text-slate-800 tracking-wider text-sm">
-                      BRANDON ALMANZA
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[10px] text-slate-400 block font-bold">Expira</span>
-                    <span className="font-mono text-slate-800 text-sm font-bold">10/30</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* CARA TRASERA: Reverso con Banda Magnética y CVV Dinámico */}
-            <div className="w-full aspect-[1.586/1] rounded-3xl py-7 flex flex-col justify-between apple-white-titanium shadow-2xl absolute inset-0 rotate-y-180 backface-hidden select-none">
-              {/* Banda Magnética */}
-              <div className="w-full h-11 bg-slate-800 border-y border-slate-700 mt-1" />
-
-              <div className="px-7 space-y-3">
-                <div className="flex items-center justify-between bg-slate-100/90 rounded-2xl px-4 py-2.5 border border-slate-200 shadow-inner">
-                  <span className="text-xs text-slate-600 uppercase tracking-wider font-bold">
-                    CVV Dinámico
-                  </span>
-                  <span className="font-mono text-lg font-extrabold text-emerald-600 tracking-widest">
-                    842
-                  </span>
-                </div>
-                <p className="text-[10px] text-slate-500 leading-tight text-center">
-                  Esta tarjeta digital cuenta con tokenización criptográfica y verificación 2FA integrada.
-                </p>
-              </div>
-
-              <div className="px-7 flex justify-between items-center text-[10px] text-slate-500 font-semibold">
-                <span>BankLite Core Banking</span>
-                <span className="font-mono">Hecho en Colombia</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-3 text-center">
-            <button
-              onClick={() => setCardFlipped(!cardFlipped)}
-              className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 font-semibold transition-colors"
-            >
-              <Repeat size={13} />
-              Toca para {cardFlipped ? "ver frente" : "ver reverso y CVV"}
-            </button>
-          </div>
-        </div>
       </section>
 
       {/* BENTO GRID: Apple WWDC Feature Architecture */}
