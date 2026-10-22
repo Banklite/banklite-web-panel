@@ -93,7 +93,7 @@ export default function UsuariosPage() {
             <p className="font-bold text-brand-700 text-sm">Verificación automática activa</p>
             <p className="text-brand-700 text-sm mt-1">
               Cuando un usuario se registra y provee su cédula, el sistema invoca automáticamente
-              el motor de verificación KYC (proveedor simulado en la demo). No se requiere aprobación manual
+              el motor de verificación KYC (proveedor oficial configurado, Verifik o Truora). No se requiere aprobación manual
               del administrador.
             </p>
           </div>

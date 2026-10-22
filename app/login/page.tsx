@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Building2, Lock, ShieldCheck, Phone, ArrowRight, MessageSquare, Mail, RefreshCw, ChevronLeft, Eye, EyeOff, KeyRound } from "lucide-react";
+import { Building2, Lock, ShieldCheck, ArrowRight, MessageSquare, Mail, RefreshCw, ChevronLeft, Eye, EyeOff, KeyRound } from "lucide-react";
 import {
   ApiError,
   createUsuario,
@@ -143,8 +143,7 @@ function LoginPageInner() {
   const [paso2FA, setPaso2FA] = useState(false);
   const [datos2FA, setDatos2FA] = useState<LoginIniciarResponse | null>(null);
   const [codigo2FA, setCodigo2FA] = useState("");
-  const [telefonoExtra, setTelefonoExtra] = useState("");
-  const [mostrarCampoTelefono, setMostrarCampoTelefono] = useState(false);
+  
   const [info2FA, setInfo2FA] = useState<string | null>(null);
   const [reenviando, setReenviando] = useState(false);
 
@@ -248,11 +247,11 @@ function LoginPageInner() {
     setInfo2FA(null);
     setCargando(true);
     try {
-      const res = await solicitarCodigoLogin(email, password, telefonoExtra.trim() || undefined);
+      const res = await solicitarCodigoLogin(email, password);
       setDatos2FA(res);
       setPaso2FA(true);
-      setInfo2FA(res.mensaje);
-      if (res.codigo_debug) setCodigo2FA(res.codigo_debug);
+      setCodigo2FA("");
+      setInfo2FA(res.mensaje || "Hemos enviado un código de verificación a los canales registrados.");
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.status === 401 ? "Credenciales incorrectas. Verifica e intenta de nuevo." : err.message);
@@ -294,10 +293,10 @@ function LoginPageInner() {
     setError(null);
     setReenviando(true);
     try {
-      const res = await solicitarCodigoLogin(email, password, telefonoExtra.trim() || undefined);
+      const res = await solicitarCodigoLogin(email, password);
       setDatos2FA(res);
-      setInfo2FA("Nuevo código enviado a tu WhatsApp y correo.");
-      if (res.codigo_debug) setCodigo2FA(res.codigo_debug);
+      setCodigo2FA("");
+      setInfo2FA("Nuevo código enviado a los canales registrados.");
     } catch {
       setError("No se pudo reenviar el código.");
     } finally {
@@ -319,7 +318,7 @@ function LoginPageInner() {
     setError(null); setResetInfo(null); setCargando(true);
     try {
       const r = await solicitarReset(resetEmail);
-      setResetInfo(r.codigo_debug ? `${r.mensaje} (código dev: ${r.codigo_debug})` : r.mensaje);
+      setResetInfo(r.mensaje || "Hemos enviado un código para restablecer tu contraseña por correo y WhatsApp.");
       setResetPaso(2);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "No se pudo conectar.");
@@ -391,7 +390,7 @@ function LoginPageInner() {
       setPaso2FA(true);
       setModo("login");
       setInfo2FA("¡Cuenta creada! Hemos enviado tu código a tu WhatsApp y correo.");
-      if (res.codigo_debug) setCodigo2FA(res.codigo_debug);
+      setCodigo2FA("");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "No se pudo conectar con el servidor.");
     } finally {
@@ -470,20 +469,16 @@ function LoginPageInner() {
 
               {info2FA && <SuccessMsg text={info2FA} />}
 
-              <div>
+              <div className="space-y-2">
                 <AppleLabel>Código de 6 dígitos</AppleLabel>
-                <input
+                <AppleInput
                   type="text"
                   inputMode="numeric"
                   required
                   autoFocus
-                  minLength={6}
-                  maxLength={6}
-                  pattern="[0-9]{6}"
-                  placeholder="000000"
+                  placeholder="123456"
                   value={codigo2FA}
                   onChange={(e) => setCodigo2FA(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  className="w-full bg-slate-50 border border-slate-200/90 rounded-2xl px-4 py-4 text-center text-3xl font-black font-mono tracking-[0.5em] text-slate-900 focus:bg-white focus:outline-none focus:border-sky-500 transition-all shadow-inner"
                 />
               </div>
 
@@ -637,20 +632,6 @@ function LoginPageInner() {
                   <div>
                     <AppleLabel>Contraseña</AppleLabel>
                     <AppleInput type="password" required placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} />
-                  </div>
-
-                  {/* Phone registration optional */}
-                  <div>
-                    <button type="button" onClick={() => setMostrarCampoTelefono(!mostrarCampoTelefono)} className="text-xs text-slate-500 hover:text-slate-800 font-semibold flex items-center gap-1 transition">
-                      <Phone size={13} />
-                      {mostrarCampoTelefono ? "Ocultar opción de WhatsApp" : "¿Sin WhatsApp registrado? Regístralo aquí"}
-                    </button>
-                    {mostrarCampoTelefono && (
-                      <div className="mt-2">
-                        <AppleLabel>Número de WhatsApp (+57...)</AppleLabel>
-                        <AppleInput type="tel" placeholder="+573104433445" value={telefonoExtra} onChange={(e) => setTelefonoExtra(e.target.value)} />
-                      </div>
-                    )}
                   </div>
 
                   <PrimaryBtn disabled={cargando}>

@@ -19,6 +19,8 @@ import {
   Copy,
   Check,
   Receipt,
+  Landmark,
+  Loader2,
 } from "lucide-react";
 import {
   Cuenta,
@@ -29,6 +31,7 @@ import {
   listCards,
   listTransfers,
   getLedgerBalance,
+  openAccount,
 } from "@/lib/api";
 import { obtenerSesion } from "@/lib/auth";
 
@@ -70,45 +73,69 @@ export default function ClienteAppleDashboard() {
   const [cardFlipped, setCardFlipped] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [copiadoCuenta, setCopiadoCuenta] = useState(false);
+  const [abriendoCuenta, setAbriendoCuenta] = useState(false);
 
   useEffect(() => {
     const s = obtenerSesion();
     if (!s) return;
     setNombre(s.usuario.nombre);
-
-    async function cargar() {
-      try {
-        const cuentas = await listAccounts();
-        const miCuenta = cuentas.find(
-          (c) => c.id_usuario === s!.usuario.id_usuario && c.estado === "activa"
-        );
-        if (miCuenta) {
-          setCuenta(miCuenta);
-          const [bal, tarjetas, transferencias] = await Promise.all([
-            getLedgerBalance(miCuenta.id_cuenta),
-            listCards(miCuenta.id_cuenta),
-            listTransfers().catch(() => [] as Transferencia[]),
-          ]);
-          setLedger(bal);
-          if (tarjetas.length > 0) setTarjeta(tarjetas[0]);
-          setMovimientos(
-            transferencias
-              .filter((t) => t.id_cuenta_origen === miCuenta.id_cuenta)
-              .sort(
-                (a, b) =>
-                  new Date(b.fecha_solicitud).getTime() - new Date(a.fecha_solicitud).getTime()
-              )
-              .slice(0, 5)
-          );
-        }
-      } catch {
-        // Silencioso
-      } finally {
-        setCargando(false);
-      }
-    }
     cargar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  async function cargar() {
+    const s = obtenerSesion();
+    if (!s) return;
+    try {
+      const cuentas = await listAccounts();
+      const miCuenta = cuentas.find(
+        (c) => c.id_usuario === s.usuario.id_usuario && c.estado === "activa"
+      );
+      if (miCuenta) {
+        setCuenta(miCuenta);
+        const [bal, tarjetas, transferencias] = await Promise.all([
+          getLedgerBalance(miCuenta.id_cuenta),
+          listCards(miCuenta.id_cuenta),
+          listTransfers().catch(() => [] as Transferencia[]),
+        ]);
+        setLedger(bal);
+        if (tarjetas.length > 0) setTarjeta(tarjetas[0]);
+        setMovimientos(
+          transferencias
+            .filter((t) => t.id_cuenta_origen === miCuenta.id_cuenta)
+            .sort(
+              (a, b) =>
+                new Date(b.fecha_solicitud).getTime() - new Date(a.fecha_solicitud).getTime()
+            )
+            .slice(0, 5)
+        );
+      } else {
+        setCuenta(null);
+        setLedger(null);
+        setTarjeta(null);
+        setMovimientos([]);
+      }
+    } catch {
+      // Silencioso
+    } finally {
+      setCargando(false);
+    }
+  }
+
+  async function handleAbrirCuenta() {
+    const s = obtenerSesion();
+    if (!s || abriendoCuenta) return;
+    setAbriendoCuenta(true);
+    try {
+      // Llamada REAL al core bancario: POST /accounts (account-service)
+      await openAccount({ id_usuario: s.usuario.id_usuario });
+      await cargar();
+    } catch {
+      // El usuario verá la cuenta vacia si falla; reintenta con el boton
+    } finally {
+      setAbriendoCuenta(false);
+    }
+  }
 
   function handleCopiarNumero() {
     if (cuenta?.numero_cuenta) {
@@ -155,6 +182,30 @@ export default function ClienteAppleDashboard() {
           </Link>
         </div>
       </div>
+
+      {/* CTA: abrir cuenta bancaria real cuando el usuario verificado no tiene ninguna */}
+      {!cargando && !cuenta && (
+        <div className="apple-glass rounded-3xl p-5 sm:p-6 flex flex-col sm:flex-row gap-4 items-start border border-sky-200/80 bg-sky-50/60">
+          <div className="flex gap-3 flex-1">
+            <Landmark size={24} className="text-sky-700 flex-shrink-0" />
+            <div>
+              <p className="font-black text-slate-950 text-sm">Todavía no tienes una cuenta bancaria</p>
+              <p className="text-xs text-slate-600 mt-1 font-medium">
+                Abre tu cuenta de ahorros en segundos: se crea en el core bancario con tu moneda
+                regulatoria, límites operativos y restricciones legales de tu país.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleAbrirCuenta}
+            disabled={abriendoCuenta}
+            className="apple-primary-button disabled:opacity-50 font-black py-3 px-5 rounded-2xl text-xs flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.97] hover:scale-[1.02] shadow-md shadow-sky-500/25 flex-shrink-0"
+          >
+            {abriendoCuenta ? <Loader2 size={16} className="animate-spin text-white" /> : <Landmark size={16} />}
+            <span>{abriendoCuenta ? "Abriendo cuenta…" : "Abrir mi cuenta"}</span>
+          </button>
+        </div>
+      )}
 
       {/* SECCIÓN PRINCIPAL: Saldo Apple White Glass Glow + Tarjeta 3D */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">

@@ -184,37 +184,15 @@ export default function AppleLandingPage() {
                 Bolsillos Inteligentes
               </h3>
               <p className="text-slate-600 text-sm max-w-md leading-relaxed">
-                Separa tu dinero en metas específicas con cálculo en vivo. Sin cobros de manejo ni límites de retiro.
+                Separa tu dinero en metas específicas y sigue tu progreso.
               </p>
             </div>
 
-            {/* Simulación visual de bolsillos */}
-            <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="p-4 rounded-2xl bg-white/90 border border-slate-200/80 shadow-sm">
-                <div className="flex justify-between items-center text-xs mb-2">
-                  <span className="font-bold text-slate-800">🏖️ Viaje Vacaciones</span>
-                  <span className="text-emerald-600 font-black font-mono">82%</span>
-                </div>
-                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                  <div className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full w-[82%]" />
-                </div>
-                <span className="text-[11px] text-slate-500 mt-2 block font-mono font-semibold">
-                  $1.640.000 / $2.000.000 COP
-                </span>
-              </div>
-              <div className="p-4 rounded-2xl bg-white/90 border border-slate-200/80 shadow-sm">
-                <div className="flex justify-between items-center text-xs mb-2">
-                  <span className="font-bold text-slate-800">🚗 Fondo Vehículo</span>
-                  <span className="text-sky-600 font-black font-mono">50%</span>
-                </div>
-                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                  <div className="bg-gradient-to-r from-sky-500 to-blue-500 h-full w-[50%]" />
-                </div>
-                <span className="text-[11px] text-slate-500 mt-2 block font-mono font-semibold">
-                  $3.500.000 / $7.000.000 COP
-                </span>
-              </div>
-            </div>
+            <ul className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-bold text-slate-700">
+              <li className="p-4 rounded-2xl bg-white/90 border border-slate-200/80 shadow-sm">Crea una meta de ahorro</li>
+              <li className="p-4 rounded-2xl bg-white/90 border border-slate-200/80 shadow-sm">Aparta dinero de tu cuenta</li>
+              <li className="p-4 rounded-2xl bg-white/90 border border-slate-200/80 shadow-sm">Sigue tu progreso</li>
+            </ul>
           </div>
 
           {/* Bento 2: Clave Dinámica 2FA (WhatsApp + Gmail) */}

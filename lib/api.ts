@@ -21,10 +21,24 @@ export class ApiError extends Error {
   }
 }
 
+function tokenDeSesion(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem("banklite_token");
+  } catch {
+    return null;
+  }
+}
+
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
+  const token = tokenDeSesion();
   const res = await fetch(url, {
     ...options,
-    headers: { "Content-Type": "application/json", ...(options?.headers ?? {}) },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options?.headers ?? {}),
+    },
   });
 
   const isJson = res.headers.get("content-type")?.includes("application/json");
@@ -114,6 +128,7 @@ export function updateUsuario(id_usuario: string, data: {
   fecha_expedicion?: string;
   fecha_vencimiento?: string;
   pais_expedicion?: string;
+  telefono?: string;
 }) {
   return request<Usuario>(`${IDENTITY_URL}/users/${id_usuario}`, {
     method: 'PATCH',
@@ -983,6 +998,13 @@ export function pagarConQR(data: { id_cuenta_origen: string; qr_payload: string;
 }
 
 // 6. Clave Dinámica / OTP (2FA)
+/** Clave dinámica real del usuario autenticado (la deriva el servidor, rota cada 60 s). */
+export function obtenerClaveDinamica(nueva = false) {
+  return request<{ codigo: string; segundos_restantes: number; ventana_segundos: number }>(
+    `${IDENTITY_URL}/auth/clave-dinamica${nueva ? "?nueva=true" : ""}`,
+  );
+}
+
 export function generarOTP(idUsuario: string, operacion = "general") {
   return request<{ valido: boolean; mensaje: string; codigo_debug?: string }>(`${IDENTITY_URL}/auth/otp/generar`, {
     method: "POST",

@@ -14,6 +14,7 @@ import {
   ShieldAlert,
   LayoutDashboard,
   Globe,
+  Send,
 } from "lucide-react";
 import Link from "next/link";
 import { Sesion, cerrarSesion, obtenerSesion } from "@/lib/auth";
@@ -22,6 +23,7 @@ const ADMIN_LINKS = [
   { href: "/admin", label: "Centro de Operaciones", icon: LayoutDashboard, hint: "Dashboard Admin" },
   { href: "/admin/usuarios", label: "Identidad & KYC", icon: Users, hint: "Gestion Usuarios" },
   { href: "/admin/cuentas", label: "Cuentas Bancarias", icon: Wallet, hint: "Abrir / Gestionar" },
+  { href: "/admin/enviar", label: "Enviar Dinero", icon: Send, hint: "Transferencia rápida" },
   { href: "/admin/tarjetas", label: "Tarjetas & Pagos", icon: CreditCard, hint: "Emitir / Bloquear" },
   { href: "/admin/fraude", label: "Monitoreo Fraude", icon: ShieldAlert, hint: "Alertas & Scoring" },
   { href: "/admin/ledger", label: "Ledger Contable", icon: BookOpen, hint: "Partida Doble" },
@@ -33,6 +35,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/admin": "Centro de Operaciones",
   "/admin/usuarios": "Identidad & KYC",
   "/admin/cuentas": "Cuentas Bancarias",
+  "/admin/enviar": "Enviar Dinero",
   "/admin/tarjetas": "Tarjetas & Pagos",
   "/admin/fraude": "Monitoreo de Fraude",
   "/admin/ledger": "Ledger Contable",

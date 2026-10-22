@@ -3,11 +3,11 @@ import { useEffect, useState } from "react";
 import { obtenerSesion } from "@/lib/auth";
 import {
   listCards, listAccounts, solicitarTarjetaCliente, revelarNumeroTarjeta,
-  toggleFreezeCard, Tarjeta, Cuenta,
+  toggleFreezeCard, openAccount, Tarjeta, Cuenta,
 } from "@/lib/api";
 import {
   CreditCard, Eye, EyeOff, Lock, CheckCircle, AlertCircle,
-  Loader2, Plus, ShieldCheck, ShieldX, Snowflake, Sun,
+  Loader2, Plus, ShieldCheck, ShieldX, Snowflake, Sun, Landmark,
 } from "lucide-react";
 
 function maskNumeroTarjeta(nt: string | null | undefined) {
@@ -44,6 +44,9 @@ export default function ClienteTarjetasPage() {
   const [errorEmision, setErrorEmision] = useState<string | null>(null);
   const [cuentaSeleccionada, setCuentaSeleccionada] = useState("");
   const [tipoSeleccionado, setTipoSeleccionado] = useState<"virtual" | "fisica">("virtual");
+
+  const [abriendoCuenta, setAbriendoCuenta] = useState(false);
+  const [errorCuenta, setErrorCuenta] = useState<string | null>(null);
 
   const sesion = obtenerSesion();
   const titular = sesion ? [sesion.usuario.nombre, sesion.usuario.apellido].filter(Boolean).join(" ").toUpperCase() : "";
@@ -105,8 +108,33 @@ export default function ClienteTarjetasPage() {
     finally { setSolicitando(false); }
   }
 
+  async function recargarCuentas() {
+    if (!sesion) return;
+    const todasLasCuentas = await listAccounts();
+    const misCuentas = todasLasCuentas.filter((cu) => cu.id_usuario === sesion.usuario.id_usuario);
+    setCuentas(misCuentas);
+    const primeraActiva = misCuentas.find((c) => c.estado === "activa");
+    if (primeraActiva) setCuentaSeleccionada(primeraActiva.id_cuenta);
+  }
+
+  async function handleAbrirCuenta() {
+    if (!sesion || abriendoCuenta) return;
+    setAbriendoCuenta(true);
+    setErrorCuenta(null);
+    try {
+      // Llamada REAL al core bancario: POST /accounts (account-service)
+      await openAccount({ id_usuario: sesion.usuario.id_usuario });
+      await recargarCuentas();
+      setEmitiendo(false);
+    } catch (err: unknown) {
+      setErrorCuenta(err instanceof Error ? err.message : "No fue posible abrir la cuenta.");
+    } finally {
+      setAbriendoCuenta(false);
+    }
+  }
+
   const estadoUsuario = sesion?.usuario.estado;
-  const cuentasActivas = cuentas.filter((c) => c.estado === "activa");
+  const cuentasActivas = cuentas.filter((c) => String(c.estado || "").toLowerCase() === "activa");
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-24 gap-4">
@@ -159,12 +187,28 @@ export default function ClienteTarjetasPage() {
           )}
 
           {estadoUsuario === "verificado" && cuentasActivas.length === 0 && (
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex gap-3 shadow-xs">
-              <AlertCircle size={24} className="text-amber-700 flex-shrink-0" />
-              <div>
-                <p className="font-bold text-amber-800 text-sm">Sin cuenta activa</p>
-                <p className="text-xs text-slate-600 mt-1">Necesitas una cuenta activa para solicitar una tarjeta. Contacta al administrador.</p>
+            <div className="bg-sky-50 border border-sky-200 rounded-2xl p-5 flex flex-col sm:flex-row gap-4 items-start shadow-xs">
+              <div className="flex gap-3 flex-1">
+                <Landmark size={24} className="text-sky-700 flex-shrink-0" />
+                <div>
+                  <p className="font-bold text-sky-900 text-sm">Sin cuenta activa</p>
+                  <p className="text-xs text-slate-600 mt-1">
+                    Tu identidad está verificada. Abre ahora tu cuenta de ahorros en el core bancario
+                    (límites regulatorios COP y restricciones legales incluidos).
+                  </p>
+                  {errorCuenta && (
+                    <p className="text-xs text-red-600 mt-2 font-semibold">{errorCuenta}</p>
+                  )}
+                </div>
               </div>
+              <button
+                onClick={handleAbrirCuenta}
+                disabled={abriendoCuenta}
+                className="apple-primary-button disabled:opacity-50 font-black py-3 px-5 rounded-2xl text-xs flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.97] hover:scale-[1.02] shadow-md shadow-sky-500/25 flex-shrink-0"
+              >
+                {abriendoCuenta ? <Loader2 size={16} className="animate-spin text-white" /> : <Landmark size={16} />}
+                <span>{abriendoCuenta ? "Abriendo cuenta…" : "Abrir mi cuenta"}</span>
+              </button>
             </div>
           )}
 

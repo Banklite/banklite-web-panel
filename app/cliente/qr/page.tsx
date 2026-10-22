@@ -154,18 +154,14 @@ export default function ClienteQRBreBPage() {
     init();
   }, []);
 
-  // Función auxiliar para renderizar un QR a DataURL (usando qrcode o fallback)
+  // Renderiza el QR en el navegador con la libreria local "qrcode" (sin servicios externos).
   async function generarQRDataURL(texto: string): Promise<string> {
-    try {
-      const QRCodeLib = (await import("qrcode")).default;
-      return await QRCodeLib.toDataURL(texto, {
-        margin: 2,
-        width: 320,
-        color: { dark: "#000000", light: "#ffffff" },
-      });
-    } catch {
-      return `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(texto)}`;
-    }
+    const QRCodeLib = (await import("qrcode")).default;
+    return QRCodeLib.toDataURL(texto, {
+      margin: 2,
+      width: 320,
+      color: { dark: "#000000", light: "#ffffff" },
+    });
   }
 
   // Genera el QR de cobro

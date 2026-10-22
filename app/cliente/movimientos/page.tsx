@@ -404,11 +404,7 @@ export default function ClienteMovimientosPage() {
           });
           setQrModalUrl(u);
         } catch {
-          setQrModalUrl(
-            `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(
-              payload
-            )}`
-          );
+          setQrModalUrl("");
         }
       })();
     } else {

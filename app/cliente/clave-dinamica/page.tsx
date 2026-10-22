@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState } from "react";
 import { obtenerSesion } from "@/lib/auth";
-import { generarOTP, configurarPIN, obtenerStatusPIN } from "@/lib/api";
+import { configurarPIN, obtenerStatusPIN } from "@/lib/api";
 import {
   KeyRound,
   ShieldCheck,
@@ -10,22 +10,20 @@ import {
   Copy,
   Check,
   Lock,
-  Smartphone,
   Sparkles,
   Info,
-  Clock,
   ArrowRight,
   Shield,
   Zap,
   Fingerprint,
+  Smartphone,
 } from "lucide-react";
+import { useClaveDinamica } from "@/context/ClaveDinamicaContext";
 
 export default function ClaveDinamicaPage() {
-  const [idUsuario, setIdUsuario] = useState<string | null>(null);
+  const { clave, cargando, segundosRestantes, error: errorClave, regenerar, setIdUsuario } = useClaveDinamica();
+  const [idUsuario, setIdUsuarioLocal] = useState<string | null>(null);
   const [nombreUsuario, setNombreUsuario] = useState<string>("Cliente");
-  const [clave, setClave] = useState<string>("••••••");
-  const [segundosRestantes, setSegundosRestantes] = useState<number>(60);
-  const [cargandoClave, setCargandoClave] = useState<boolean>(true);
   const [copiado, setCopiado] = useState<boolean>(false);
   const [mensajeInfo, setMensajeInfo] = useState<string | null>(null);
 
@@ -37,62 +35,23 @@ export default function ClaveDinamicaPage() {
   const [pinMensaje, setPinMensaje] = useState<{ tipo: "ok" | "error"; texto: string } | null>(null);
   const [mostrarFormPin, setMostrarFormPin] = useState<boolean>(false);
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  const solicitarNuevaClave = useCallback(async (uid: string) => {
-    setCargandoClave(true);
-    try {
-      const res = await generarOTP(uid, "consulta_clave_dinamica");
-      if (res.codigo_debug) {
-        setClave(res.codigo_debug);
-      } else {
-        const codigoVisual = Math.floor(100000 + Math.random() * 900000).toString();
-        setClave(codigoVisual);
-      }
-      setSegundosRestantes(60);
-      setMensajeInfo("Clave dinámica sincronizada y cifrada en tiempo real.");
-    } catch {
-      const codigoFallback = Math.floor(100000 + Math.random() * 900000).toString();
-      setClave(codigoFallback);
-      setSegundosRestantes(60);
-    } finally {
-      setCargandoClave(false);
-    }
-  }, []);
-
   useEffect(() => {
     const s = obtenerSesion();
     if (!s) return;
     const uid = s.usuario.id_usuario;
+    setIdUsuarioLocal(uid);
     setIdUsuario(uid);
     setNombreUsuario(s.usuario.nombre || "Cliente");
 
-    solicitarNuevaClave(uid);
+    setMensajeInfo("Clave dinámica sincronizada y cifrada en tiempo real.");
 
     obtenerStatusPIN(uid)
       .then((res) => setTienePin(res.tiene_pin))
       .catch(() => setTienePin(false));
-  }, [solicitarNuevaClave]);
-
-  // Temporizador de 60 segundos
-  useEffect(() => {
-    timerRef.current = setInterval(() => {
-      setSegundosRestantes((prev) => {
-        if (prev <= 1) {
-          if (idUsuario) solicitarNuevaClave(idUsuario);
-          return 60;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [idUsuario, solicitarNuevaClave]);
+  }, [setIdUsuario]);
 
   function copiarClave() {
-    if (clave && clave !== "••••••") {
+    if (clave) {
       navigator.clipboard.writeText(clave);
       setCopiado(true);
       setTimeout(() => setCopiado(false), 2500);
@@ -232,24 +191,30 @@ export default function ClaveDinamicaPage() {
           </div>
 
           <button
-            onClick={() => idUsuario && solicitarNuevaClave(idUsuario)}
-            disabled={cargandoClave}
+            onClick={() => regenerar(true)}
+            disabled={cargando}
             className="apple-glass-button px-3.5 py-2 rounded-2xl text-xs font-bold text-slate-700 hover:text-slate-950 flex items-center gap-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.97] shadow-sm disabled:opacity-40"
           >
-            <RefreshCw size={14} className={cargandoClave ? "animate-spin text-sky-600" : "text-slate-600"} />
+            <RefreshCw size={14} className={cargando ? "animate-spin text-sky-600" : "text-slate-600"} />
             <span>Generar nueva</span>
           </button>
         </div>
 
+        {errorClave && (
+          <p className="relative z-10 text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-2xl px-4 py-2">
+            No se pudo obtener tu clave dinámica: {errorClave}
+          </p>
+        )}
+
         {/* DÍGITOS DE LA CLAVE DINÁMICA CON ANIMACIÓN POP-IN */}
         <div className="py-2 relative z-10 space-y-4">
           <div className="inline-flex items-center justify-center gap-2.5 sm:gap-4 p-4 sm:p-5 rounded-[28px] bg-gradient-to-b from-slate-50/90 to-slate-100/70 border border-slate-200/90 shadow-inner">
-            {clave.split("").map((digito, idx) => (
+            {(clave || "••••••").split("").map((digito, idx) => (
               <div
                 key={idx}
                 className="w-11 sm:w-14 h-16 sm:h-20 rounded-2xl bg-white border border-slate-200 text-3xl sm:text-4xl font-mono font-black text-slate-950 flex items-center justify-center shadow-md tracking-wider transition-all duration-200 hover:scale-105 select-none"
               >
-                {cargandoClave ? (
+                {cargando ? (
                   <span className="w-2.5 h-2.5 rounded-full bg-slate-300 animate-ping" />
                 ) : (
                   digito
@@ -290,8 +255,7 @@ export default function ClaveDinamicaPage() {
         <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs text-slate-600 text-left flex items-start gap-3 relative z-10">
           <Info size={16} className="text-sky-600 flex-shrink-0 mt-0.5" />
           <p className="leading-relaxed">
-            Usa esta clave de 6 dígitos para validar pagos con QR, transferencias por celular y retiros.
-            Funciona como tu factor de seguridad 2FA bancario en cada operación.
+            Tu clave de seguridad de 6 dígitos cambia cada 60 segundos y el servidor puede verificarla (no se envía por correo ni WhatsApp).
           </p>
         </div>
       </div>
