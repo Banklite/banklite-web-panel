@@ -255,7 +255,7 @@ export default function ClaveDinamicaPage() {
         <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs text-slate-600 text-left flex items-start gap-3 relative z-10">
           <Info size={16} className="text-sky-600 flex-shrink-0 mt-0.5" />
           <p className="leading-relaxed">
-            Tu clave de seguridad de 6 dígitos cambia cada 60 segundos y el servidor puede verificarla (no se envía por correo ni WhatsApp).
+            Tu clave de seguridad de 6 dígitos cambia cada 60 segundos y el servidor puede verificarla (no se envía por correo).
           </p>
         </div>
       </div>
@@ -362,10 +362,10 @@ export default function ClaveDinamicaPage() {
             <div className="apple-icon-badge h-9 w-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white shadow-xs">
               <Smartphone size={16} />
             </div>
-            <span>WhatsApp Protegido</span>
+            <span>Correo Protegido</span>
           </div>
           <p className="text-xs text-slate-500 leading-relaxed font-medium">
-            Las confirmaciones 2FA y los comprobantes se envían de forma cifrada a tu número celular registrado mediante Green API.
+            Las confirmaciones 2FA se envían de forma segura a tu correo electrónico registrado mediante Brevo Transactional Email.
           </p>
         </div>
 

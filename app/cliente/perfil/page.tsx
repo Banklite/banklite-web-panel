@@ -98,7 +98,7 @@ export default function ClientePerfilPage() {
   const campos = [
     { label: "Número de cuenta bancaria", value: `📱 +57 ${celCuenta} (Tu Celular es tu Cuenta)`, icon: CreditCard, highlight: true },
     { label: "Documento de identidad", value: u.cedula ?? "No registrada", icon: ShieldCheck, locked: true },
-    { label: "Teléfono celular / WhatsApp", value: `+57 ${formatTelefono(u.telefono)}`, icon: Phone, locked: true },
+    { label: "Teléfono celular", value: `+57 ${formatTelefono(u.telefono)}`, icon: Phone, locked: true },
     { label: "Nombre completo", value: [u.nombre, u.apellido].filter(Boolean).join(" "), icon: User },
     { label: "Correo electrónico", value: u.email || "No registrado (puedes agregarlo editando tu perfil)", icon: Mail },
     { label: "País de residencia", value: u.pais_residencia, icon: MapPin },

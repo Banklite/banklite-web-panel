@@ -318,7 +318,7 @@ function LoginPageInner() {
     setError(null); setResetInfo(null); setCargando(true);
     try {
       const r = await solicitarReset(resetEmail);
-      setResetInfo(r.mensaje || "Hemos enviado un código para restablecer tu contraseña por correo y WhatsApp.");
+      setResetInfo(r.mensaje || "Hemos enviado un código para restablecer tu contraseña por correo electrónico.");
       setResetPaso(2);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "No se pudo conectar.");
@@ -349,7 +349,7 @@ function LoginPageInner() {
     setError(null);
     const cleanTel = telefonoLocal.replace(/\D/g, "");
     if (!cleanTel || cleanTel.length < 10) {
-      setError("El número de teléfono celular es obligatorio y debe tener 10 dígitos (ej: 300 123 4567). Este número será tu cuenta bancaria y donde recibirás tus notificaciones de WhatsApp y SMS.");
+      setError("El número de teléfono celular es obligatorio y debe tener 10 dígitos (ej: 300 123 4567). Este número será tu cuenta bancaria.");
       return;
     }
     if (regPin && (regPin.length !== 4 || !/^\d{4}$/.test(regPin))) {
@@ -389,7 +389,7 @@ function LoginPageInner() {
       setDatos2FA(res);
       setPaso2FA(true);
       setModo("login");
-      setInfo2FA("¡Cuenta creada! Hemos enviado tu código a tu WhatsApp y correo.");
+      setInfo2FA("¡Cuenta creada! Hemos enviado tu código a tu correo electrónico.");
       setCodigo2FA("");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "No se pudo conectar con el servidor.");
@@ -450,18 +450,11 @@ function LoginPageInner() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center gap-2.5">
-                  <MessageSquare size={14} className="text-emerald-500 flex-shrink-0" />
-                  <div>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">WhatsApp</p>
-                    <p className="text-xs font-mono font-bold text-slate-800">{datos2FA.telefono_enmascarado}</p>
-                  </div>
-                </div>
+              <div className="grid grid-cols-1 gap-2">
                 <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center gap-2.5">
                   <Mail size={14} className="text-sky-500 flex-shrink-0" />
                   <div>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Email</p>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Correo electrónico</p>
                     <p className="text-xs font-mono font-bold text-slate-800">{datos2FA.email_enmascarado}</p>
                   </div>
                 </div>
@@ -690,7 +683,7 @@ function LoginPageInner() {
                   />
                 </div>
                 <p className="text-[11px] text-sky-700 font-bold mt-1.5 flex items-center gap-1">
-                  <span>📱 Tu celular será tu número de cuenta bancaria y donde recibirás tus WhatsApp y SMS.</span>
+                  <span>📱 Tu celular será tu número de cuenta bancaria.</span>
                 </p>
               </div>
 

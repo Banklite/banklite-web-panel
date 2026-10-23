@@ -137,7 +137,7 @@ export default function AppleLandingPage() {
           </h1>
 
           <p className="text-lg sm:text-2xl text-slate-600 max-w-2xl mx-auto font-normal leading-relaxed">
-            Ingreso biométrico con confirmación instantánea por WhatsApp y correo. Cero fricción, máxima protección de capital.
+            Ingreso biométrico con confirmación instantánea por correo electrónico. Cero fricción, máxima protección de capital.
           </p>
 
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -195,7 +195,7 @@ export default function AppleLandingPage() {
             </ul>
           </div>
 
-          {/* Bento 2: Clave Dinámica 2FA (WhatsApp + Gmail) */}
+          {/* Bento 2: Clave Dinámica 2FA (Email) */}
           <div className="apple-glass-card rounded-3xl p-8 flex flex-col justify-between">
             <div className="space-y-3">
               <div className="h-12 w-12 rounded-2xl bg-sky-50 border border-sky-200/80 text-sky-600 flex items-center justify-center shadow-sm">
@@ -205,7 +205,7 @@ export default function AppleLandingPage() {
                 2FA Multicanal
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed">
-                Confirmación de acceso enviada al instante a tu WhatsApp vía Green API y a tu correo con Gmail SMTP.
+                Confirmación de acceso enviada al instante a tu correo electrónico vía Brevo Transactional Email.
               </p>
             </div>
             <div className="mt-6 p-4 rounded-2xl bg-sky-50/70 border border-sky-200/70 text-center shadow-inner">

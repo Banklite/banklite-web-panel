@@ -418,7 +418,7 @@ export default function ClienteAppleDashboard() {
             </div>
             <div>
               <p className="font-bold text-sm text-slate-900">Seguridad 2FA</p>
-              <p className="text-xs text-slate-500 mt-0.5">Perfil y WhatsApp</p>
+              <p className="text-xs text-slate-500 mt-0.5">Perfil y correo</p>
             </div>
           </Link>
         </div>
