@@ -30,6 +30,12 @@ function tokenDeSesion(): string | null {
   }
 }
 
+/** Cabecera Authorization para las llamadas que no pasan por request() (DELETE, POST sin cuerpo). */
+function authHeaders(): Record<string, string> {
+  const token = tokenDeSesion();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const token = tokenDeSesion();
   const res = await fetch(url, {
@@ -397,7 +403,7 @@ export function updateBeneficiary(id: string, data: { favorito?: boolean; alias?
 }
 
 export async function deleteBeneficiary(id: string): Promise<void> {
-  const res = await fetch(`${TRANSFER_URL}/beneficiaries/${id}`, { method: "DELETE" });
+  const res = await fetch(`${TRANSFER_URL}/beneficiaries/${id}`, { method: "DELETE", headers: authHeaders() });
   if (!res.ok) throw new ApiError(`Error HTTP ${res.status}`, res.status);
 }
 
@@ -470,7 +476,7 @@ export function marcarNotificacionLeida(id: string) {
 }
 
 export async function marcarTodasLeidas(idUsuario: string): Promise<void> {
-  const res = await fetch(`${NOTIFICATION_URL}/notifications/read-all?id_usuario=${idUsuario}`, { method: "POST" });
+  const res = await fetch(`${NOTIFICATION_URL}/notifications/read-all?id_usuario=${idUsuario}`, { method: "POST", headers: authHeaders() });
   if (!res.ok) throw new ApiError(`Error HTTP ${res.status}`, res.status);
 }
 
@@ -572,7 +578,7 @@ export function toggleFreezeCard(idTarjeta: string) {
 
 /** El administrador puede eliminar (marcar como vencida) una tarjeta. */
 export async function eliminarTarjeta(idTarjeta: string): Promise<void> {
-  const res = await fetch(`${CARD_URL}/cards/${idTarjeta}`, { method: "DELETE" });
+  const res = await fetch(`${CARD_URL}/cards/${idTarjeta}`, { method: "DELETE", headers: authHeaders() });
   if (!res.ok) {
     const isJson = res.headers.get("content-type")?.includes("application/json");
     const body = isJson ? await res.json() : null;
@@ -900,7 +906,7 @@ export function sacarPlataBolsillo(idBolsillo: string, monto: number) {
 }
 
 export function deleteBolsillo(idBolsillo: string) {
-  return fetch(`${ACCOUNT_URL}/accounts/bolsillos/${idBolsillo}`, { method: "DELETE" });
+  return fetch(`${ACCOUNT_URL}/accounts/bolsillos/${idBolsillo}`, { method: "DELETE", headers: authHeaders() });
 }
 
 // 3. Saca Plata / Retiro sin Tarjeta (Nequi Cashout)
