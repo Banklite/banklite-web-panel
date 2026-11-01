@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { obtenerSesion } from "@/lib/auth";
 import {
   listAccounts, listRails, createBeneficiary, createTransfer,
-  getLedgerBalance, buscarCuentaPorNumero, buscarCuentaPorTelefono,
+  getLedgerBalance, buscarCuentaPorNumero, buscarCuentaPorTelefono, buscarCuentaPorLlave,
   listBeneficiaries, updateBeneficiary, deleteBeneficiary, getCuentaPublica,
   Cuenta, RielPago, CuentaContable, DestinatarioPublico, Beneficiario,
 } from "@/lib/api";
@@ -119,18 +119,18 @@ export default function ClienteTransferenciasPage() {
     return rielApi ? rielApi.id_riel : RIEL_INTERNO_ID;
   }
 
-  // Búsqueda por celular (Nequi / Bre-B)
+  // Búsqueda por llave Bre-B: celular, cédula o correo
   async function handleBuscarPorTelefono() {
-    const clean = telefonoDest.replace(/\D/g, "");
-    if (clean.length < 10) {
-      setErrorBusqueda("Ingresa un número de celular de 10 dígitos (ej: 300 123 4567)");
+    const llave = telefonoDest.trim();
+    if (llave.length < 5) {
+      setErrorBusqueda("Ingresa un celular, una cédula o un correo electrónico.");
       return;
     }
     setBuscando(true);
     setErrorBusqueda(null);
     setDestinatario(null);
     try {
-      const dest = await buscarCuentaPorTelefono(clean);
+      const dest = await buscarCuentaPorLlave(llave);
       const cuentaOrig = cuentas.find((c) => c.id_cuenta === cuentaOrigen);
       if (cuentaOrig?.id_cuenta === dest.id_cuenta) {
         setErrorBusqueda("No puedes transferir a tu propia cuenta.");
@@ -138,7 +138,7 @@ export default function ClienteTransferenciasPage() {
         setDestinatario(dest);
       }
     } catch (err: unknown) {
-      setErrorBusqueda(err instanceof Error ? err.message : "No se encontró ningún usuario con ese número de celular.");
+      setErrorBusqueda(err instanceof Error ? err.message : "No se encontró ningún usuario con esa llave Bre-B.");
     } finally {
       setBuscando(false);
     }
@@ -291,7 +291,7 @@ export default function ClienteTransferenciasPage() {
     const idRiel = getRielInternoId();
     try {
       const sesion = obtenerSesion();
-      const celAsociado = destinatario.telefono ?? (metodoBusqueda === "telefono" ? telefonoDest.replace(/\D/g, "") : null);
+      const celAsociado = destinatario.telefono ?? (metodoBusqueda === "telefono" && /^\d{10}$/.test(telefonoDest.replace(/\D/g, "")) && !telefonoDest.includes("@") ? telefonoDest.replace(/\D/g, "") : null);
       
       const beneficiario = await createBeneficiary({
         id_usuario: sesion!.usuario.id_usuario,
@@ -565,7 +565,7 @@ export default function ClienteTransferenciasPage() {
 
             <div>
               <h2 className="text-lg font-black text-slate-950 mb-1">¿A quién vas a enviar dinero?</h2>
-              <p className="text-xs text-slate-500">Pasa plata al instante por número de teléfono o cuenta bancaria.</p>
+              <p className="text-xs text-slate-500">Pasa plata al instante con la llave Bre-B (celular, cédula o correo) o con el número de cuenta.</p>
             </div>
 
             {/* SELECTOR DE MÉTODO: POR CELULAR vs POR NÚMERO DE CUENTA */}
@@ -580,7 +580,7 @@ export default function ClienteTransferenciasPage() {
                 }`}
               >
                 <Smartphone size={16} />
-                <span>Por Celular (Bre-B)</span>
+                <span>Por Llave Bre-B</span>
               </button>
 
               <button
@@ -601,21 +601,16 @@ export default function ClienteTransferenciasPage() {
             {metodoBusqueda === "telefono" ? (
               <div className="space-y-2">
                 <label className="block text-[11px] font-black uppercase tracking-wider text-slate-600">
-                  Número de celular del destinatario
+                  Llave Bre-B del destinatario
                 </label>
                 <div className="flex gap-2">
-                  <div className="flex items-center gap-1.5 px-3.5 bg-slate-50 border border-slate-200/90 rounded-2xl text-xs font-bold text-slate-700">
-                    <span className="text-base">🇨🇴</span>
-                    <span>+57</span>
-                  </div>
                   <input
                     type="text"
-                    inputMode="numeric"
-                    maxLength={10}
-                    placeholder="Ej: 300 123 4567"
+                    maxLength={80}
+                    placeholder="Celular, cédula o correo"
                     value={telefonoDest}
                     onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, "");
+                      const val = e.target.value;
                       setTelefonoDest(val);
                       setDestinatario(null);
                       setErrorBusqueda(null);
@@ -625,7 +620,7 @@ export default function ClienteTransferenciasPage() {
                   />
                   <button
                     onClick={handleBuscarPorTelefono}
-                    disabled={buscando || telefonoDest.length < 10}
+                    disabled={buscando || telefonoDest.trim().length < 5}
                     className="bg-sky-600 hover:bg-sky-700 disabled:opacity-40 text-white font-black px-5 py-3.5 rounded-2xl flex items-center gap-2 text-xs transition-all duration-200 active:scale-[0.97] hover:scale-[1.02] shadow-sm shadow-sky-500/15"
                   >
                     {buscando ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
@@ -633,7 +628,7 @@ export default function ClienteTransferenciasPage() {
                   </button>
                 </div>
                 <p className="text-[11px] text-slate-400 font-medium">
-                  El sistema busca la cuenta activa registrada en BankLite vinculada a este número.
+                  Busca por celular, número de cédula o correo electrónico: la cuenta activa de BankLite vinculada a esa llave.
                 </p>
               </div>
             ) : (

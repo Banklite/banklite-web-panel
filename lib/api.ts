@@ -1055,3 +1055,8 @@ export function solicitarCodigoConPIN(identificador: string, pin: string) {
 export function buscarCuentaPorTelefono(telefono: string) {
   return request<DestinatarioPublico>(`${ACCOUNT_URL}/accounts/by-telefono/${telefono}`);
 }
+
+// Búsqueda por llave Bre-B: celular, número de documento (cédula) o correo electrónico
+export function buscarCuentaPorLlave(llave: string) {
+  return request<DestinatarioPublico>(`${ACCOUNT_URL}/accounts/by-llave/${encodeURIComponent(llave.trim())}`);
+}

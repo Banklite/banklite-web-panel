@@ -58,9 +58,10 @@ function formatNumeroCuenta(nc: string | null | undefined): string {
 }
 
 function maskNumeroTarjeta(nt: string | null | undefined): string {
-  if (!nt) return "4532 •••• •••• 9012";
+  if (!nt) return "•••• •••• •••• ••••";
   const c = nt.replace(/\s/g, "");
-  return `4532 •••• •••• ${c.slice(-4)}`;
+  // Primeros y últimos 4 dígitos de la tarjeta real (el mismo número que ve el cliente en Mis Tarjetas)
+  return `${c.slice(0, 4)} •••• •••• ${c.slice(-4)}`;
 }
 
 export default function ClienteAppleDashboard() {
@@ -295,7 +296,7 @@ export default function ClienteAppleDashboard() {
 
                 <div className="space-y-3 relative z-10">
                   <p className="font-mono text-lg sm:text-xl tracking-[0.2em] text-slate-800 font-bold">
-                    {tarjeta ? maskNumeroTarjeta(tarjeta.numero_tarjeta) : "4532 •••• •••• 9012"}
+                    {tarjeta ? maskNumeroTarjeta(tarjeta.numero_tarjeta) : "•••• •••• •••• ••••"}
                   </p>
                   <div className="flex justify-between items-end text-[10px] text-slate-500 uppercase tracking-widest">
                     <span className="font-black text-slate-800 text-xs">{nombre}</span>
