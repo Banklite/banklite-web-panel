@@ -552,12 +552,20 @@ export default function CompliancePage() {
                         </button>
                       )}
                       {r.estado === "enviado" && (
-                        <button
-                          onClick={() => handleCambiarEstadoReporte(r.id_reporte, "aprobado")}
-                          className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded text-xs font-medium text-emerald-700 transition flex items-center gap-1 mx-auto"
-                        >
-                          <Check size={12} /> Aprobar
-                        </button>
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => handleCambiarEstadoReporte(r.id_reporte, "aceptado")}
+                            className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded text-xs font-medium text-emerald-700 transition flex items-center gap-1"
+                          >
+                            <Check size={12} /> Aceptar
+                          </button>
+                          <button
+                            onClick={() => handleCambiarEstadoReporte(r.id_reporte, "rechazado")}
+                            className="px-2 py-1 bg-red-50 hover:bg-red-100 border border-red-200 rounded text-xs font-medium text-red-700 transition"
+                          >
+                            Rechazar
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>
