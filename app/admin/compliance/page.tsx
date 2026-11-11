@@ -7,6 +7,7 @@ import { StatusPill } from "@/components/StatusPill";
 import { Field } from "@/components/Field";
 import { FlowBanner } from "@/components/FlowBanner";
 import { short } from "@/lib/format";
+import { obtenerSesion } from "@/lib/auth";
 import {
   ApiError,
   ReporteRegulatorio,
@@ -101,8 +102,12 @@ export default function CompliancePage() {
       const res = await createReporteRegulatorio({
         tipo_reporte: tipoReporte,
         periodo: periodo.trim(),
-        contenido: contenido.trim() || undefined,
-        generado_por: generadoPor.trim() || undefined,
+        contenido:
+          [contenido.trim(), generadoPor.trim() ? `Oficial: ${generadoPor.trim()}` : ""]
+            .filter(Boolean)
+            .join(" | ") || undefined,
+        // El backend exige un UUID: se usa el id del admin con sesion activa.
+        generado_por: obtenerSesion()?.usuario.id_usuario || undefined,
       });
       setFeedback({ kind: "success", text: `Reporte "${res.tipo_reporte}" creado para el periodo ${res.periodo}.` });
       setPeriodo("");
