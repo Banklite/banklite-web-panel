@@ -1,0 +1,56 @@
+# Integracion continua del panel web (Next.js).
+#
+# Se ejecuta en cada push y en cada pull request. En main no se dispara solo:
+# deploy.yml lo llama como primer paso, de modo que nunca se despliega algo que no compila.
+#
+#   compilacion -> instala dependencias y construye la aplicacion
+#   imagen      -> comprueba que la imagen Docker construye (no la publica)
+name: CI
+
+on:
+  push:
+    branches-ignore: [main]
+  pull_request:
+    branches: [main]
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compilacion:
+    name: Compilacion
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descarga el codigo
+        uses: actions/checkout@v4
+
+      - name: Instala Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Instala las dependencias
+        run: npm install --no-audit --no-fund
+
+      - name: Construye la aplicacion
+        run: npm run build
+
+  imagen:
+    name: La imagen Docker construye
+    needs: compilacion
+    # En main la imagen la construye y publica deploy.yml; aqui solo se valida.
+    if: github.ref != 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descarga el codigo
+        uses: actions/checkout@v4
+
+      - name: Construye la imagen sin publicarla
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: banklite-web-panel:ci
